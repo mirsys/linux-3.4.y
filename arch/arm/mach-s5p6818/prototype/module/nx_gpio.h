@@ -117,8 +117,9 @@ extern "C"
 		NX_GPIO_PADFUNC_2			= 2UL,			///< Alternate function 2
 		NX_GPIO_PADFUNC_3			= 3UL			///< Alternate function 3
 
-	} NX_GPIO_PADFUNC ;
+	}NX_GPIO_PADFUNC;
 
+	/// @brief	Pull I/O mode
 	typedef enum
 	{
 		NX_GPIO_DRVSTRENGTH_0		= 0UL,
@@ -126,7 +127,7 @@ extern "C"
 		NX_GPIO_DRVSTRENGTH_2		= 2UL,
 		NX_GPIO_DRVSTRENGTH_3		= 3UL
 
-	}NX_GPIO_DRVSTRENGTH;
+	} NX_GPIO_DRVSTRENGTH;
 
 	typedef enum
 	{
@@ -134,7 +135,7 @@ extern "C"
 		NX_GPIO_PULL_UP			    = 1UL,
 		NX_GPIO_PULL_OFF			= 2UL
 	} NX_GPIO_PULL;
-
+    
 //------------------------------------------------------------------------------
 /// @name	Module Interface
 //@{
@@ -195,14 +196,37 @@ CBOOL			NX_GPIO_GetOutputValue	( U32 ModuleIndex, U32 BitNumber );
 void			NX_GPIO_SetOutputValue32	( U32 ModuleIndex, U32 Value );
 U32				NX_GPIO_GetOutputValue32	( U32 ModuleIndex );
 CBOOL			NX_GPIO_GetInputValue		( U32 ModuleIndex, U32 BitNumber );
+void			NX_GPIO_SetPullMode ( U32 ModuleIndex, U32 BitNumber, NX_GPIO_PULL mode);
+void			NX_GPIO_SetPullSelect ( U32 ModuleIndex, U32 BitNumber, CBOOL enable);
+CBOOL			NX_GPIO_GetPullSelect ( U32 ModuleIndex, U32 BitNumber );
+void			NX_GPIO_SetPullSelect32 ( U32 ModuleIndex, U32 Value );
+U32				NX_GPIO_GetPullSelect32 ( U32 ModuleIndex );
+void			NX_GPIO_SetPullEnable ( U32 ModuleIndex, U32 BitNumber, CBOOL enable);
+CBOOL			NX_GPIO_GetPullEnable ( U32 ModuleIndex, U32 BitNumber );
+void			NX_GPIO_SetPullEnable32 ( U32 ModuleIndex, U32 Value );
+U32				NX_GPIO_GetPullEnable32 ( U32 ModuleIndex );
 
 void			NX_GPIO_SetPadFunction( U32 ModuleIndex, U32 BitNumber, NX_GPIO_PADFUNC padfunc );
-void	NX_GPIO_SetPadFunction32( U32 ModuleIndex, U32 MSBValue, U32 LSBValue );
+void	NX_GPIO_SetPadFunction32_0( U32 ModuleIndex, U32 Value );
+void	NX_GPIO_SetPadFunction32_1( U32 ModuleIndex, U32 Value );
 NX_GPIO_PADFUNC	NX_GPIO_GetPadFunction( U32 ModuleIndex, U32 BitNumber );
 
 //------------------------------------------------------------------------------
 ///	@name	GPIO Operation.
 //@{
+void	NX_GPIO_SetSLEW	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetSLEW	( U32 ModuleIndex );
+void	NX_GPIO_SetSLEW_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetSLEW_DISABLE_DEFAULT	( U32 ModuleIndex );
+void	NX_GPIO_SetDRV1	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetDRV1	( U32 ModuleIndex );
+void	NX_GPIO_SetDRV1_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetDRV1_DISABLE_DEFAULT	( U32 ModuleIndex );
+void	NX_GPIO_SetDRV0	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetDRV0	( U32 ModuleIndex );
+void	NX_GPIO_SetDRV0_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetDRV0_DISABLE_DEFAULT	( U32 ModuleIndex );
+
 void	NX_GPIO_SetSlew	( U32 ModuleIndex, U32 BitNumber, CBOOL Enable );
 CBOOL	NX_GPIO_GetSlew	( U32 ModuleIndex, U32 BitNumber );
 void	NX_GPIO_SetSlewDisableDefault	( U32 ModuleIndex, U32 BitNumber, CBOOL Enable );
@@ -213,14 +237,17 @@ void	NX_GPIO_SetDriveStrength(U32 ModuleIndex, U32 BitNumber, NX_GPIO_DRVSTRENGT
 NX_GPIO_DRVSTRENGTH		NX_GPIO_GetDriveStrength(U32 ModuleIndex, U32 BitNumber);
 void	NX_GPIO_SetDriveStrengthDisableDefault	( U32 ModuleIndex, U32 BitNumber, CBOOL Enable );
 
-void	NX_GPIO_SetPullSelect   ( U32 ModuleIndex, U32 BitNumber, CBOOL enable);
-CBOOL	NX_GPIO_GetPullSelect   ( U32 ModuleIndex, U32 BitNumber );
 
-void	NX_GPIO_SetPullEnable	( U32 ModuleIndex, U32 BitNumber, NX_GPIO_PULL PullSel );
-NX_GPIO_PULL	NX_GPIO_GetPullEnable	( U32 ModuleIndex, U32 BitNumber );
-void	NX_GPIO_SetPullEnable32	( U32 ModuleIndex, U32 PullEnb, U32 PullSel );
-void	NX_GPIO_GetPullEnable32	( U32 ModuleIndex, U32* PullEnb, U32* PullSel );
-
+void	NX_GPIO_SetPULLSEL	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetPULLSEL	( U32 ModuleIndex );
+void	NX_GPIO_SetPULLSEL_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetPULLSEL_DISABLE_DEFAULT	( U32 ModuleIndex );
+void	NX_GPIO_SetPULLENB	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetPULLENB	( U32 ModuleIndex );
+void	NX_GPIO_SetPULLENB_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetPULLENB_DISABLE_DEFAULT	( U32 ModuleIndex );
+void	NX_GPIO_SetInputMuxSelect0	( U32 ModuleIndex, U32 Value );
+void	NX_GPIO_SetInputMuxSelect1	( U32 ModuleIndex, U32 Value );
 
 U32				NX_GPIO_GetValidBit( U32 ModuleIndex );
 

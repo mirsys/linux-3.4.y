@@ -175,9 +175,12 @@ enum nxp_i2c_pin_descript {
 struct nxp_i2c_plat_data {
     int  port;
     int  irq;
+	int retry_cnt;
+	int retry_delay;
     long rate;
     unsigned int base_addr;
     struct i2c_gpio_platform_data *gpio;
+
 };
 
 /*
