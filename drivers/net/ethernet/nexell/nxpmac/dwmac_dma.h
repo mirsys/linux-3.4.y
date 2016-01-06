@@ -104,7 +104,6 @@
 #define DMA_STATUS_TI	0x00000001	/* Transmit Interrupt */
 #define DMA_CONTROL_FTF		0x00100000	/* Flush transmit FIFO */
 
-extern void dwmac_enable_dma_receive(void __iomem *ioaddr); /* add by jhkim */
 extern void dwmac_enable_dma_transmission(void __iomem *ioaddr);
 extern void dwmac_enable_dma_irq(void __iomem *ioaddr);
 extern void dwmac_disable_dma_irq(void __iomem *ioaddr);

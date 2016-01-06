@@ -104,6 +104,15 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
 	period_hz = TO_HZ(pwm->period_ns);
 	duty_percent = TO_PERCENT(pwm->duty_ns, pwm->period_ns);
 
+	if(pwm->pwm_id == 0)
+	{
+		duty_percent = 100 - duty_percent;
+		if(duty_percent < 0)
+			duty_percent = 0;
+		if(duty_percent > 100)
+			duty_percent = 100;
+	}
+
 	pr_debug("pwm ch[%d]: set duty(%u percent), frequency(%u HZ)\n",
 		pwm->pwm_id, duty_percent, period_hz);
 	nxp_soc_pwm_set_frequency(pwm->pwm_id, period_hz, duty_percent);

@@ -19,7 +19,6 @@
 #include "nxp-scaler.h"
 #include "nxp-out.h"
 #include "nxp-v4l2.h"
-#include "loopback-sensor.h"
 
 /**
  * static variable for public api
@@ -60,12 +59,10 @@ static int __devinit nxp_v4l2_probe(struct platform_device *pdev)
 #ifdef CONFIG_NXP_M2M_SCALER
     struct nxp_scaler *scaler;
 #endif
-
-#ifdef CONFIG_LOOPBACK_SENSOR_DRIVER
-		struct nxp_loopback_sensor *loopback_sensor = NULL;
-#endif
-
     int ret;
+
+	if(CFG_DISP_HDMI_USING != 0)
+		return -1;
 
     pr_debug("%s entered\n", __func__);
 
@@ -117,23 +114,6 @@ static int __devinit nxp_v4l2_probe(struct platform_device *pdev)
 
     __me = nxp_v4l2;
 
-#ifdef CONFIG_LOOPBACK_SENSOR_DRIVER
-		loopback_sensor =	create_nxp_loopback_sensor(pdata->captures);
-		if (!loopback_sensor) {
-				pr_err("%s: failed to create_nxp_loopback_sensor()\n", __func__);
-				ret = -EINVAL;
-				goto err_loopback_sensor_create;
-		}
-
-		ret = register_nxp_loopback_sensor(loopback_sensor);
-		if (ret < 0) {
-				pr_err("%s: failed to register_nxp_loopback_sensor()\n", __func__);
-				goto err_loopback_sensor_create;
-		}
-
-    nxp_v4l2->loopback_sensor = loopback_sensor;
-#endif
-
 #ifdef CONFIG_VIDEO_NXP_CAPTURE
     /* capture */
     for (capture_pdata = pdata->captures, i = 0;
@@ -147,13 +127,11 @@ static int __devinit nxp_v4l2_probe(struct platform_device *pdev)
             ret = -EINVAL;
             goto err_capture_create;
         }
-
         ret = register_nxp_capture(capture);
         if (ret < 0) {
             pr_err("%s: failed to %dth register_nxp_capture()\n", __func__, i);
             goto err_capture_create;
         }
-
         nxp_v4l2->capture[i] = capture;
     }
 #endif
@@ -201,7 +179,7 @@ static int __devinit nxp_v4l2_probe(struct platform_device *pdev)
     }
 
     platform_set_drvdata(pdev, nxp_v4l2);
-   // printk("%s success!!!\n", __func__);
+    printk("%s success!!!\n", __func__);
 
     return 0;
 
@@ -228,15 +206,6 @@ err_capture_create:
     }
     media_device_unregister(&nxp_v4l2->media_dev);
 #endif
-#ifdef CONFIG_LOOPBACK_SENSOR_DRIVER
-err_loopback_sensor_create:
-		if( loopback_sensor )
-		{
-			unregister_nxp_loopback_sensor(loopback_sensor);
-    	release_nxp_loopback_sensor(loopback_sensor);
-		}
-#endif
-
 err_media_reg:
     v4l2_device_unregister(&nxp_v4l2->v4l2_dev);
 err_v4l2_reg:

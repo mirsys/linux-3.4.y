@@ -8,10 +8,6 @@
 #include <linux/v4l2-mediabus.h>
 #include <linux/i2c.h>
 #include <linux/platform_device.h>
-#include <linux/syscalls.h>
-#include <linux/fcntl.h>
-#include <asm/uaccess.h>
-#include <linux/unistd.h>
 
 #include <media/media-entity.h>
 #include <media/v4l2-dev.h>
@@ -195,6 +191,7 @@ void dump_register(int module)
 
 #endif
 }
+
 
 static int _hw_get_irq_num(struct nxp_capture *me)
 {
@@ -424,7 +421,7 @@ static void _restore_register(int module)
 
 static void _backup_reset_restore_register(int module)
 {
-  //  printk("%s!\n", __func__);
+    printk("%s!\n", __func__);
     _backup_register(module);
     NX_VIP_SetVIPEnable(module, CFALSE, CFALSE, CFALSE, CFALSE);
     NX_VIP_ResetFIFO(module);
@@ -475,7 +472,6 @@ static void _hw_child_enable(struct nxp_capture *me, u32 child, bool on)
             NX_VIP_SetVIPEnable(me->module, CFALSE, CFALSE, CFALSE, CFALSE);
         }
         /*dump_register(me->module);*/
-
         me->clip_enable = clip_enable;
         me->deci_enable = deci_enable;
 
@@ -655,35 +651,14 @@ static void _set_sensor_entity_name(int module, char *type, int i2c_adapter_num,
     vmsg("%s: module %d, sensor name %s\n", __func__, module, p_entity_name);
 }
 
-static void set_sensor_entity_name_without_i2c(int module)
-{
-    char *p_entity_name;
-
-    if (module == 0)
-        p_entity_name = _sensor_info[0].name;
-    else if (module == 1)
-        p_entity_name = _sensor_info[1].name;
-    else
-        return;
-
-    sprintf(p_entity_name, "%s", "loopback-sensor");
-    vmsg("%s: module %d, sensor name %s\n", __func__, module, p_entity_name);
-}
-
 static void _set_sensor_mipi_info(int module, int is_mipi)
 {
     if (module == 0 || module == 1)
         _sensor_info[module].is_mipi = is_mipi;
 }
 
-static struct v4l2_subdev *external_sensor = NULL;
-void nxp_v4l2_capture_set_sensor_subdev(struct v4l2_subdev *sd)
-{
-    external_sensor = sd;
-}
-/*EXPORT_SYMBOL(nxp_v4l2_capture_set_sensor_subdev);*/
-
-static struct v4l2_subdev *_register_sensor(struct nxp_capture *me,
+static struct v4l2_subdev *
+_register_sensor(struct nxp_capture *me,
         struct nxp_v4l2_i2c_board_info *board_info)
 {
     struct v4l2_subdev *sensor = NULL;
@@ -692,35 +667,28 @@ static struct v4l2_subdev *_register_sensor(struct nxp_capture *me,
     u32 pad;
     u32 flags;
     int ret;
-
+    // psw0523 add for urbetter...
+    // TODO
     static int sensor_index = 0;
 
-	
-    if (board_info && board_info->board_info) {
-        adapter = i2c_get_adapter(board_info->i2c_adapter_id);
-        if (!adapter) {
-            pr_err("%s: unable to get i2c adapter %d for device %s\n",
-                    __func__,
-                    board_info->i2c_adapter_id,
-                    board_info->board_info->type);
-            return NULL;
-        }
+    if (!board_info->board_info)
+        return NULL;
 
-        sensor = v4l2_i2c_new_subdev_board(me->get_v4l2_device(me),
-                adapter, board_info->board_info, NULL);
-        if (!sensor) {
-            pr_err("%s: unable to register subdev %s\n",
-                    __func__, board_info->board_info->type);
-            return NULL;
-        }
-    } else {
-        if (external_sensor)
-            sensor = external_sensor;
-        else {
-             pr_err("%s: external sensor is NULL!!!\n", __func__);
-             return NULL;
-        }
+    adapter = i2c_get_adapter(board_info->i2c_adapter_id);
+    if (!adapter) {
+        pr_err("%s: unable to get i2c adapter %d for device %s\n",
+                __func__,
+                board_info->i2c_adapter_id,
+                board_info->board_info->type);
+        return NULL;
+    }
 
+    sensor = v4l2_i2c_new_subdev_board(me->get_v4l2_device(me),
+            adapter, board_info->board_info, NULL);
+    if (!sensor) {
+        pr_err("%s: unable to register subdev %s\n",
+                __func__, board_info->board_info->type);
+        return NULL;
     }
 
     sensor->host_priv = board_info;
@@ -742,14 +710,8 @@ static struct v4l2_subdev *_register_sensor(struct nxp_capture *me,
         return NULL;
     }
 
-	if (board_info && board_info->board_info) {
-   	/* _set_sensor_entity_name(me->module, board_info->board_info->type, board_info->i2c_adapter_id, board_info->board_info->addr); */
-   	_set_sensor_entity_name(sensor_index, board_info->board_info->type, board_info->i2c_adapter_id, board_info->board_info->addr);
-	} else {
-    //	_set_sensor_entity_name(sensor_index, "loopback-sensor", 0, 0x00);
-		set_sensor_entity_name_without_i2c(sensor_index);
-	}
-
+    /* _set_sensor_entity_name(me->module, board_info->board_info->type, board_info->i2c_adapter_id, board_info->board_info->addr); */
+    _set_sensor_entity_name(sensor_index, board_info->board_info->type, board_info->i2c_adapter_id, board_info->board_info->addr);
     sensor_index++;
 
     return sensor;
@@ -991,7 +953,6 @@ int register_nxp_capture(struct nxp_capture *me)
 #endif
 
     /* find sensor subdev */
-#if 0
     sensor_info = me->platdata->sensor;
     if (!sensor_info) {
         pr_err("%s: can't find sensor platdata\n", __func__);
@@ -1003,12 +964,6 @@ int register_nxp_capture(struct nxp_capture *me)
         pr_err("%s: can't register sensor subdev\n", __func__);
         goto error_sensor;
     }
-#else
-    if (NULL == _register_sensor(me, me->platdata->sensor)) {
-        pr_err("%s: can't register sensor subdev\n", __func__);
-        goto error_sensor;
-    }
-#endif
 
     // psw0523 fix for urbetter
     /* ret = request_irq(me->irq, &_irq_handler, IRQF_DISABLED, "nxp-capture", me); */

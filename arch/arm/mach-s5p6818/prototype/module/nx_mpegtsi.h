@@ -59,10 +59,8 @@ U32		NX_MPEGTSI_GetNumberOfModule( void );
 //@{
 U32     NX_MPEGTSI_GetPhysicalAddress( void );
 U32     NX_MPEGTSI_GetSizeOfRegisterSet( void );
-
-void    NX_MPEGTSI_SetBaseAddress( void* BaseAddress );
-void*   NX_MPEGTSI_GetBaseAddress( void );
-
+void    NX_MPEGTSI_SetBaseAddress( U32 BaseAddress );
+U32     NX_MPEGTSI_GetBaseAddress( void );
 CBOOL   NX_MPEGTSI_OpenModule( void );
 CBOOL   NX_MPEGTSI_CloseModule( void );
 CBOOL   NX_MPEGTSI_CheckBusy( void );

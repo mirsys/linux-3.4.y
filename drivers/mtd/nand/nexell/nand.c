@@ -104,8 +104,6 @@ static void nand_select_chip(struct mtd_info *mtd, int chipnr)
 		NX_MCUS_SetNFBank(chipnr);
 		NX_MCUS_SetNFCSEnable(CTRUE);
 	}
-
-	dmb();
 }
 
 #define MASK_CLE	0x10	/* NFCM   + 2C00_0000 */
@@ -359,48 +357,21 @@ static int nand_dev_ready(struct mtd_info *mtd)
 	return ret;
 }
 
-#ifdef CONFIG_ARM64
-void __mtd_read_burst(const void __iomem *addr, void *data, int len);
-void __mtd_write_burst(const void __iomem *addr, void *data, int len);
-
+#if 0
 static void nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
 {
 	struct nand_chip *chip = mtd->priv;
-
-	__mtd_read_burst(chip->IO_ADDR_R, buf, len);
+	readsl(chip->IO_ADDR_R, buf, (len >> 2));
+	if (len & 3)
+		readsb(chip->IO_ADDR_R, buf + (len & ~0x3), (len & 3));
 }
 
 static void nand_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
 {
 	struct nand_chip *chip = mtd->priv;
-
-	__mtd_read_burst(chip->IO_ADDR_W, buf, len);
-}
-#else
-void __mtd_readsb(const void __iomem *addr, void *data, int bytelen);
-void __mtd_readsl(const void __iomem *addr, void *data, int longlen);
-void __mtd_writesb(void __iomem *addr, const void *data, int bytelen);
-void __mtd_writesl(void __iomem *addr, const void *data, int longlen);
-
-static void nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
-{
-	struct nand_chip *chip = mtd->priv;
-	int burst_len = len & ~(4-1);
-
-	//printk("nfcShadowI: %p, burst_len: %d, len: %d\n", nfcShadowI, burst_len, len);
-	__mtd_readsl(chip->IO_ADDR_R, buf, burst_len/4);
-	__mtd_readsb(chip->IO_ADDR_R, buf+ burst_len, len-burst_len);
-}
-
-static void nand_write_buf(struct mtd_info *mtd, const uint8_t *buf, int len)
-{
-	struct nand_chip *chip = mtd->priv;
-	int burst_len = len & ~(4-1);
-
-	//printk("nfcShadowI: %p, burst_len: %d, len: %d\n", nfcShadowI, burst_len, len);
-	__mtd_writesl(chip->IO_ADDR_W, buf, burst_len/4);
-	__mtd_writesb(chip->IO_ADDR_W, buf+ burst_len, len-burst_len);
-
+	writesl(chip->IO_ADDR_W, buf, (len >> 2));
+	if (len & 3)
+		writesb(chip->IO_ADDR_W, buf + (len & ~0x3), (len & 3));
 }
 #endif
 
@@ -663,8 +634,8 @@ static int nand_probe(struct platform_device *pdev)
 	chip->dev_ready 	= nand_dev_ready;
 	chip->select_chip 	= nand_select_chip;
 	chip->chip_delay 	= chip_delay;
-	chip->read_buf 		= nand_read_buf;
-	chip->write_buf 	= nand_write_buf;
+//	chip->read_buf 		= nand_read_buf;
+//	chip->write_buf 	= nand_write_buf;
 #if defined (CONFIG_MTD_NAND_ECC_BCH)
 //	chip->write_page	= nand_bch_write_page;
 #endif

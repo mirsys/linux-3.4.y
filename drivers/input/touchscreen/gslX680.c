@@ -32,7 +32,22 @@
 
 #include "gslX680.h"
 
-#define REPORT_DATA_ANDROID_4_0
+unsigned char tp_name[32] = "gslx680";
+EXPORT_SYMBOL(tp_name);
+
+static int __init tp_setup(char * str)
+{
+    if((str != NULL) && (*str != '\0'))
+    	strcpy(tp_name, str);
+	return 1;
+}
+__setup("tp=", tp_setup);
+
+static int REPORT_DATA_ANDROID_4_0 = 1;
+static int is_linux = 0;
+static int MAX_FINGERS = 10;
+static int MAX_CONTACTS = 10;
+
 //#define GSL_DEBUG
 //#define GSL_MONITOR
 //#define HAVE_TOUCH_KEY
@@ -49,10 +64,8 @@
 #define GSL_DATA_REG		0x80
 #define GSL_STATUS_REG		0xe0
 #define GSL_PAGE_REG		0xf0
-
 #define PRESS_MAX    		255
-#define MAX_FINGERS 		10
-#define MAX_CONTACTS 		10
+
 #define DMA_TRANS_LEN		0x20
 #ifdef GSL_MONITOR
 static struct delayed_work gsl_monitor_work;
@@ -146,36 +159,41 @@ struct gsl_ts {
 #endif
 
 
-static u32 id_sign[MAX_CONTACTS+1] = {0};
-static u8 id_state_flag[MAX_CONTACTS+1] = {0};
-static u8 id_state_old_flag[MAX_CONTACTS+1] = {0};
-static u16 x_old[MAX_CONTACTS+1] = {0};
-static u16 y_old[MAX_CONTACTS+1] = {0};
+static u32 id_sign[10+1] = {0};
+static u8 id_state_flag[10+1] = {0};
+static u8 id_state_old_flag[10+1] = {0};
+static u16 x_old[10+1] = {0};
+static u16 y_old[10+1] = {0};
 static u16 x_new = 0;
 static u16 y_new = 0;
 
+#define	CFG_IO_TOUCH_WAKE_PIN				(PAD_GPIO_C + 2)	//hdc 20150129
 
 
 static int gslX680_init(void)
 {
-/*
-	gpio_request(GPIO_TS_WAKE, "ts-wake-en");
-	gpio_request(GPIO_TS_POWER, "ts-power-en");
+	/* shutdown pin */
+	gpio_request(CFG_IO_TOUCH_WAKE_PIN, "ts-wake-en");
+	mdelay(5);
+	gpio_direction_output(CFG_IO_TOUCH_WAKE_PIN, 0);
 	mdelay(50);
-	gpio_direction_output(GPIO_TS_WAKE, 0);
-	mdelay(50);
-	gpio_direction_output(GPIO_TS_POWER, 1);
-	mdelay(50);
-	gpio_direction_output(GPIO_TS_WAKE, 1);
-	s3c_gpio_setpull(GPIO_TS_EINT, S3C_GPIO_PULL_UP);
-  	irq_set_irq_type(IRQ_PORT, IRQ_TYPE_EDGE_RISING);
-*/
+	gpio_direction_output(CFG_IO_TOUCH_WAKE_PIN, 1);
+	mdelay(5);
+
+	/* config interrupt pin */
+	
 	return 0;
 }
 
 static int gslX680_shutdown_low(void)
 {
-//	gpio_direction_output(GPIO_TS_WAKE, 0);
+	gpio_direction_output(CFG_IO_TOUCH_WAKE_PIN, 0);	//hdc 20150129
+	return 0;
+}
+
+static int gslX680_shutdown_high(void)
+{
+	gpio_direction_output(CFG_IO_TOUCH_WAKE_PIN, 1);	//hdc 20150129
 	return 0;
 }
 
@@ -295,7 +313,7 @@ static void gsl_load_fw(struct i2c_client *client)
 	u32 source_len;
 	struct fw_data *ptr_fw;
 
-	printk("=============gsl_load_fw start==============\n");
+	//printk("=============gsl_load_fw start==============\n");
 
 	ptr_fw = GSLX680_FW;
 	source_len = ARRAY_SIZE(GSLX680_FW);
@@ -331,34 +349,22 @@ static void gsl_load_fw(struct i2c_client *client)
 
 }
 
-#if 0
 static int test_i2c(struct i2c_client *client)
 {
-	u8 read_buf = 0;
-	u8 write_buf = 0x12;
-	int ret, rc = 1;
+	u8 buf;
 
-	ret = gsl_ts_read( client, 0xf0, &read_buf, sizeof(read_buf) );
-	if  (ret  < 0)
-    		rc --;
-	else
-		printk("I read reg 0xf0 is %x\n", read_buf);
+	buf = 0x12;
+	if(gsl_ts_write(client, 0xf0, &buf, 1) < 0)
+		return -1;
 
-	msleep(2);
-	ret = gsl_ts_write(client, 0xf0, &write_buf, sizeof(write_buf));
-	if(ret  >=  0 )
-		printk("I write reg 0xf0 0x12\n");
+	buf = 0x00;
+	if(gsl_ts_read(client, 0xf0, &buf, 1) < 0)
+		return -1;
 
-	msleep(2);
-	ret = gsl_ts_read( client, 0xf0, &read_buf, sizeof(read_buf) );
-	if(ret <  0 )
-		rc --;
-	else
-		printk("I read reg 0xf0 is 0x%x\n", read_buf);
-
-	return rc;
+	if(buf == 0x12)
+		return 0;
+	return -1;
 }
-#endif
 
 static void startup_chip(struct i2c_client *client)
 {
@@ -391,26 +397,36 @@ static void clr_reg(struct i2c_client *client)
 
 	write_buf[0] = 0x88;
 	gsl_ts_write(client, 0xe0, &write_buf[0], 1);
-	msleep(20);
+	//msleep(20);
 	write_buf[0] = 0x03;
 	gsl_ts_write(client, 0x80, &write_buf[0], 1);
-	msleep(5);
+	//msleep(5);
 	write_buf[0] = 0x04;
 	gsl_ts_write(client, 0xe4, &write_buf[0], 1);
-	msleep(5);
+	//msleep(5);
 	write_buf[0] = 0x00;
 	gsl_ts_write(client, 0xe0, &write_buf[0], 1);
-	msleep(20);
+	//msleep(20);
 }
 
-static void init_chip(struct i2c_client *client)
+static int init_chip(struct i2c_client *client)
 {
+	int rc;
+	
+	gslX680_shutdown_low();	
+	msleep(20); 	
+	gslX680_shutdown_high();	
+	msleep(20); 		
+	rc = test_i2c(client);
+	if(rc < 0)
+		return -1;
 	clr_reg(client);
 	reset_chip(client);
 	gsl_load_fw(client);
 	startup_chip(client);
 	reset_chip(client);
 	startup_chip(client);
+	return 0;
 }
 
 #if 0
@@ -561,8 +577,6 @@ static void report_data(struct gsl_ts *ts, u16 x, u16 y, u8 pressure, u8 id)
 {
 	swap(x, y);
 
-	print_info("#####id=%d,x=%d,y=%d######\n",id,x,y);
-
 	if(x > SCREEN_MAX_X || y > SCREEN_MAX_Y)
 	{
 	#ifdef HAVE_TOUCH_KEY
@@ -570,12 +584,24 @@ static void report_data(struct gsl_ts *ts, u16 x, u16 y, u8 pressure, u8 id)
 	#endif
 		return;
 	}
-	input_report_abs(ts->input, ABS_MT_PRESSURE, id);
-	input_report_abs(ts->input, ABS_MT_TOUCH_MAJOR, 1);
-	input_report_abs(ts->input, ABS_MT_POSITION_X, x);
-	input_report_abs(ts->input, ABS_MT_POSITION_Y, y);
-
-	input_mt_sync(ts->input);
+	if(is_linux > 0)
+	{
+		 input_report_abs(ts->input, ABS_X, x);
+	 	input_report_abs(ts->input, ABS_Y, y);
+		if(pressure != 0)
+			input_report_key(ts->input, BTN_TOUCH, 1);
+		else
+			input_report_key(ts->input, BTN_TOUCH, 0);
+		input_sync(ts->input);
+	}
+	else
+	{
+		input_report_abs(ts->input, ABS_MT_PRESSURE, id);
+		input_report_abs(ts->input, ABS_MT_TOUCH_MAJOR, 1);
+		input_report_abs(ts->input, ABS_MT_POSITION_X, x);
+		input_report_abs(ts->input, ABS_MT_POSITION_Y, y);
+		input_mt_sync(ts->input);
+	}
 }
 
 static void gslX680_ts_worker(struct work_struct *work)
@@ -698,19 +724,23 @@ static void gslX680_ts_worker(struct work_struct *work)
 	{
 		if( (0 == touches) || ((0 != id_state_old_flag[i]) && (0 == id_state_flag[i])) )
 		{
-		#ifdef REPORT_DATA_ANDROID_4_0
-			input_report_abs(ts->input, ABS_MT_TOUCH_MAJOR, 0);
-			input_mt_sync(ts->input);
-		#endif
+			if(REPORT_DATA_ANDROID_4_0 > 0)
+			{
+				input_report_abs(ts->input, ABS_MT_TOUCH_MAJOR, 0);
+				input_mt_sync(ts->input);
+			}
+			if(is_linux > 0)
+			{
+				report_data(ts, x_new, y_new, 0, i);
+			}
 			id_sign[i]=0;
 		}
 		id_state_old_flag[i] = id_state_flag[i];
 	}
 	if(0 == touches)
 	{
-#ifndef REPORT_DATA_ANDROID_4_0
-		input_mt_sync(ts->input);
-#endif
+		if(REPORT_DATA_ANDROID_4_0 > 0)
+			input_mt_sync(ts->input);
 	#ifdef HAVE_TOUCH_KEY
 		if(key_state_flag)
 		{
@@ -874,10 +904,21 @@ static int gslX680_ts_init(struct i2c_client *client, struct gsl_ts *ts)
 //	__set_bit(INPUT_PROP_DIRECT, input_device->propbit);
 //	input_mt_init_slots(input_device, (MAX_CONTACTS + 1));
 
-	input_set_abs_params(input_device,ABS_MT_POSITION_X, 0, SCREEN_MAX_X, 0, 0);
-	input_set_abs_params(input_device,ABS_MT_POSITION_Y, 0, SCREEN_MAX_Y, 0, 0);
-	input_set_abs_params(input_device,ABS_MT_TOUCH_MAJOR, 0, PRESS_MAX, 0, 0);
-	input_set_abs_params(input_device, ABS_MT_PRESSURE, 0, 255, 0, 0);
+	if(is_linux > 0)
+	{
+		 set_bit(BTN_TOUCH, input_device->keybit);
+	 	set_bit(EV_ABS, input_device->evbit);
+		set_bit(EV_KEY, input_device->evbit);
+		input_set_abs_params(input_device, ABS_X, 0, SCREEN_MAX_X, 0, 0);
+		input_set_abs_params(input_device, ABS_Y, 0, SCREEN_MAX_Y, 0, 0);
+	}
+	else
+	{
+		input_set_abs_params(input_device,ABS_MT_POSITION_X, 0, SCREEN_MAX_X, 0, 0);
+		input_set_abs_params(input_device,ABS_MT_POSITION_Y, 0, SCREEN_MAX_Y, 0, 0);
+		input_set_abs_params(input_device,ABS_MT_TOUCH_MAJOR, 0, PRESS_MAX, 0, 0);
+		input_set_abs_params(input_device, ABS_MT_PRESSURE, 0, 255, 0, 0);
+	}
 #ifdef HAVE_TOUCH_KEY
 	input_device->evbit[0] = BIT_MASK(EV_KEY);
 	//input_device->evbit[0] = BIT_MASK(EV_SYN) | BIT_MASK(EV_KEY) | BIT_MASK(EV_ABS);
@@ -928,15 +969,19 @@ static int gsl_ts_suspend(struct i2c_client *client, pm_message_t mesg)
 
 #ifdef SLEEP_CLEAR_POINT
 	msleep(10);
-	#ifdef REPORT_DATA_ANDROID_4_0
-	for(i = 1; i <= MAX_CONTACTS ;i ++)
+
+	if(REPORT_DATA_ANDROID_4_0 > 0)
 	{
-		input_report_abs(ts->input, ABS_MT_TOUCH_MAJOR, 0);
+		for(i = 1; i <= MAX_CONTACTS ;i ++)
+		{
+			input_report_abs(ts->input, ABS_MT_TOUCH_MAJOR, 0);
+			input_mt_sync(ts->input);
+		}
+	}
+	else
+	{
 		input_mt_sync(ts->input);
 	}
-	#else
-	input_mt_sync(ts->input);
-	#endif
 	input_sync(ts->input);
 	msleep(10);
 	report_data(ts, 1, 1, 10, 1);
@@ -971,7 +1016,7 @@ static int __devinit gsl_ts_probe(struct i2c_client *client,
 	struct gsl_ts *ts;
 	int rc;
 
-	printk("GSLX680 Enter %s\n", __func__);
+	//printk("GSLX680 Enter %s\n", __func__);
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
 		dev_err(&client->dev, "I2C functionality not supported\n");
 		return -ENODEV;
@@ -986,18 +1031,16 @@ static int __devinit gsl_ts_probe(struct i2c_client *client,
 	i2c_set_clientdata(client, ts);
 	ts->device_id = id->driver_data;
 
+	gslX680_init();
+	if(init_chip(ts->client) < 0)
+		return -1;
+
 	rc = gslX680_ts_init(client, ts);
 	if (rc < 0) {
 		dev_err(&client->dev, "GSLX680 init failed\n");
 		goto error_mutex_destroy;
 	}
-
 	gsl_client = client;
-
-	gslX680_init();
-	init_chip(ts->client);
-	//check_mem_data(ts->client);
-
 
 	rc=  request_irq(client->irq, gsl_ts_irq, IRQF_TRIGGER_RISING, client->name, ts);
 	if (rc < 0) {
@@ -1051,6 +1094,8 @@ static int __devexit gsl_ts_remove(struct i2c_client *client)
 	kfree(ts->touch_data);
 	kfree(ts);
 
+	gpio_free(CFG_IO_TOUCH_WAKE_PIN);	//hdc 20150129
+
 	return 0;
 }
 
@@ -1075,9 +1120,31 @@ static struct i2c_driver gsl_ts_driver = {
 static int __init gsl_ts_init(void)
 {
     int ret;
-	printk("==gsl_ts_init==\n");
+
+	if(strcasecmp(tp_name, "gslx680-linux") == 0)
+	{
+		printk("Initial gslx680-linux Touch Driver\n");
+		REPORT_DATA_ANDROID_4_0 = 0;
+		is_linux = 1;
+		MAX_FINGERS = 1;
+		MAX_CONTACTS = 1;
+	}
+	else if(strcasecmp(tp_name, "gslx680") == 0)
+	{
+		printk("Initial gslx680 Touch Driver\n");
+		REPORT_DATA_ANDROID_4_0 = 1;
+		is_linux = 0;
+		MAX_FINGERS = 10;
+		MAX_CONTACTS = 10;
+	}
+	else
+	{
+		return 0;
+	}
+
+	//printk("==gsl_ts_init==\n");
 	ret = i2c_add_driver(&gsl_ts_driver);
-	printk("ret=%d\n",ret);
+	printk("==gsl_ts_init== ret=%d\n",ret);
 	return ret;
 }
 static void __exit gsl_ts_exit(void)

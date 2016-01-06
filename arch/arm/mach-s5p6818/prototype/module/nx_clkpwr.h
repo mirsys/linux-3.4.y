@@ -233,8 +233,8 @@ U32		NX_CLKPWR_GetNumberOfModule( void );
 //@{
 U32		NX_CLKPWR_GetPhysicalAddress( void );
 U32		NX_CLKPWR_GetSizeOfRegisterSet( void );
-void	NX_CLKPWR_SetBaseAddress( void* BaseAddress );
-void*	NX_CLKPWR_GetBaseAddress( void );
+void	NX_CLKPWR_SetBaseAddress( U32 BaseAddress );
+U32		NX_CLKPWR_GetBaseAddress( void );
 CBOOL	NX_CLKPWR_OpenModule( void );
 CBOOL	NX_CLKPWR_CloseModule( void );
 CBOOL	NX_CLKPWR_CheckBusy( void );

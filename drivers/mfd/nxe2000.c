@@ -34,7 +34,6 @@
 #include <linux/mfd/core.h>
 #include <linux/mfd/nxe2000.h>
 #include <mach/platform.h>
-#include <mach/pm.h>
 
 #define NXE2000_PM_RESTART		(0)
 
@@ -365,8 +364,8 @@ out:
 	return ret;
 }
 
-//extern void (*pm_power_off)(void);
-//static void (*backup_pm_power_off)(void);
+extern void (*pm_power_off)(void);
+static void (*backup_pm_power_off)(void);
 
 #if (NXE2000_PM_RESTART == 1)
 extern void (*arm_pm_restart)(char str, const char *cmd);
@@ -437,9 +436,10 @@ void nxe2000_power_off(void)
 	if (ret < 0)
 		ret = nxe2000_write(&nxe2000_i2c_client->dev, NXE2000_PWR_SLP_CNT, 0x1);
 
-	//if (backup_pm_power_off)
-	//	backup_pm_power_off();
-	//halt();
+	if (backup_pm_power_off)
+		backup_pm_power_off();
+
+	halt();
 }
 
 #if (NXE2000_PM_RESTART == 1)
@@ -869,9 +869,8 @@ static int nxe2000_i2c_probe(struct i2c_client *client,
 
 	nxe2000_i2c_client = client;
 
-	//backup_pm_power_off = pm_power_off;
-	//pm_power_off = nxe2000_power_off;
-	nxp_board_shutdown = nxe2000_power_off;
+	backup_pm_power_off = pm_power_off;
+	pm_power_off = nxe2000_power_off;
 
 #if (NXE2000_PM_RESTART == 1)
 	backup_pm_restart = arm_pm_restart;

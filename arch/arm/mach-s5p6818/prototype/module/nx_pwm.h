@@ -22,7 +22,7 @@
 //------------------------------------------------------------------------------
 //  includes
 //------------------------------------------------------------------------------
-#include "../base/nx_prototype.h"
+#include "nx_prototype.h"
 
 #ifdef	__cplusplus
 extern "C"
@@ -32,7 +32,8 @@ extern "C"
 //------------------------------------------------------------------------------
 //  defines
 //------------------------------------------------------------------------------
-#define NUMBER_OF_PWM_CHANNEL	5
+#define NUMBER_PWMTIMER_SUBMODULE	5
+#define NX_PWM_CHANNEL	4
 #define NX_PWM_INT		4
 
 //------------------------------------------------------------------------------
@@ -96,8 +97,8 @@ U32		NX_PWM_GetPhysicalAddress( U32 ModuleIndex );
 //U32		NX_PWM_GetResetNumber( U32 ModuleIndex, U32 ChannelIndex );
 //U32		NX_PWM_GetNumberOfReset( void );
 U32		NX_PWM_GetSizeOfRegisterSet( void );
-void	NX_PWM_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*	NX_PWM_GetBaseAddress( U32 ModuleIndex );
+void	NX_PWM_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32		NX_PWM_GetBaseAddress( U32 ModuleIndex );
 CBOOL	NX_PWM_OpenModule( U32 ModuleIndex );
 CBOOL	NX_PWM_CloseModule( U32 ModuleIndex );
 CBOOL	NX_PWM_CheckBusy( U32 ModuleIndex );
@@ -162,7 +163,7 @@ CBOOL	NX_PWM_GetOutInvert(U32 Channel);
 void	NX_PWM_SetShotMode(U32 Channel, NX_PWM_LOADMODE ShotMode);
 NX_PWM_LOADMODE	NX_PWM_GetShotMode(U32 Channel);
 
-void	NX_PWM_UpdateCounter( U32 Channel );
+void	NX_PWM_UpdateCounter(U32 Channel);
 
 void	NX_PWM_Run(U32 Channel);
 void	NX_PWM_Stop(U32 Channel);

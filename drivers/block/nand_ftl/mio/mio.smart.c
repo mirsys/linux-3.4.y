@@ -18,7 +18,6 @@
 #include "media/exchange.h"
 #include "mio.block.h"
 #include "media/nfc/phy/nfc.phy.h"
-#include "media/nfc/phy/nfc.phy.scan.h"
 #include "mio.media.h"
 
 /******************************************************************************
@@ -61,7 +60,7 @@ static struct
  ******************************************************************************/
 static int mioadmin_init(void);
 static void mioadmin_deinit(void);
-static int mioadmin_cmd_to_ftl(unsigned short usCommand, unsigned char ucFeature, unsigned long uiAddress, unsigned int uiLength);
+static int mioadmin_cmd_to_ftl(unsigned short usCommand, unsigned char ucFeature, unsigned int uiAddress, unsigned int uiLength);
 static int mioadmin_write(unsigned char region, void * buff, unsigned int sectors);
 static int mioadmin_read(unsigned char region, void * buff, unsigned int sectors, unsigned char sequent);
 
@@ -709,7 +708,7 @@ void mioadmin_deinit(void)
     }
 }
 
-static int mioadmin_cmd_to_ftl(unsigned short usCommand, unsigned char ucFeature, unsigned long uiAddress, unsigned int uiLength)
+static int mioadmin_cmd_to_ftl(unsigned short usCommand, unsigned char ucFeature, unsigned int uiAddress, unsigned int uiLength)
 {
     int resp = -1;
     int ext_idx = -1;
@@ -844,7 +843,7 @@ int mioadmin_write(unsigned char region, void * buff, unsigned int sectors)
                 if (diffbytes < sectors)
                 {
                     memcpy((void *)dest_buff, (void *)buff, diffbytes);
-                    memcpy((void *)(*Exchange.buffer.BaseOfWriteCache), (void *)((unsigned long)buff + diffbytes), (__SECTOR_SIZEOF(sectors) - diffbytes));
+                    memcpy((void *)(*Exchange.buffer.BaseOfWriteCache), (void *)((unsigned int)buff + diffbytes), (__SECTOR_SIZEOF(sectors) - diffbytes));
                 }
                 else
                 {

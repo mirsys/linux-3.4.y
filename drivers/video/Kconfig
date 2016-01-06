@@ -19,15 +19,13 @@ source "drivers/char/agp/Kconfig"
 
 source "drivers/gpu/vga/Kconfig"
 
-source "drivers/gpu/arm/Kconfig"
-
 source "drivers/gpu/drm/Kconfig"
 
 source "drivers/gpu/stub/Kconfig"
 
 source "drivers/gpu/ion/Kconfig"
 
-source "drivers/gpu/ump/Kconfig"
+source "drivers/gpu/arm/Kconfig"
 
 config VGASTATE
        tristate
@@ -2459,13 +2457,6 @@ config FB_NXP
 	  Frame buffer driver for the built-in display controller.
 	  SLsiAP processor.
 	  Say Y here to enable support for the display adaptor.
-
-config FB_NXP_X8R8G8B8
-	bool "Use pixel format X8R8G8B8"
-	depends on FB_NXP
-	default n
-	---help---
-	  Say Y here to config RGB layer format to X8R8G8B8 (4653h).
 
 source "drivers/video/omap/Kconfig"
 source "drivers/video/omap2/Kconfig"

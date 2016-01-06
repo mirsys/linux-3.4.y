@@ -399,9 +399,11 @@ static int mma8653_hw_init(struct i2c_client *client)
 	//comres += mma8653_set_rate(client, MMA8653_RATE_120);
 
     ret = i2c_smbus_read_byte_data(client,MMA865X_WHO_AM_I);
+	if(ret < 0)
+		return -1;
+
 	printk("%s:addr = 0x%x, Read ID value is :%d\n",
 		        __func__, client->addr, ret);
-
 	i2c_smbus_write_byte_data(client, MMA865X_CTRL_REG1, 0);
 	i2c_smbus_write_byte_data(client, MMA865X_XYZ_DATA_CFG,0);
 
@@ -1002,8 +1004,8 @@ static void mma8653_work_func(struct work_struct *work)
 
 		//printk(KERN_ERR "after  %d,%d,%d!\n",acc.x,acc.y,acc.z);
 
-		input_report_abs(mma8653->input, ABS_X, acc.x);
-		input_report_abs(mma8653->input, ABS_Y, acc.y);
+		input_report_abs(mma8653->input, ABS_X, acc.y);
+		input_report_abs(mma8653->input, ABS_Y, acc.x);
 		input_report_abs(mma8653->input, ABS_Z, acc.z);
 		input_sync(mma8653->input);
 	}

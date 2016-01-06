@@ -175,7 +175,6 @@ static int rtl_op_add_interface(struct ieee80211_hw *hw,
 					rtlpriv->cfg->maps
 					[RTL_IBSS_INT_MASKS]);
 		}
-		mac->link_state = MAC80211_LINKED;
 		break;
 	case NL80211_IFTYPE_ADHOC:
 		RT_TRACE(rtlpriv, COMP_MAC80211, DBG_LOUD,
@@ -573,19 +572,6 @@ static int rtl_op_conf_tx(struct ieee80211_hw *hw,
 	return 0;
 }
 
-static void send_beacon_frame(struct ieee80211_hw *hw,
-			      struct ieee80211_vif *vif)
-{
-	struct rtl_priv *rtlpriv = rtl_priv(hw);
-	struct sk_buff *skb = ieee80211_beacon_get(hw, vif);
-	struct rtl_tcb_desc tcb_desc;
-
-	if (skb) {
-		memset(&tcb_desc, 0, sizeof(struct rtl_tcb_desc));
-		rtlpriv->intf_ops->adapter_tx(hw, skb, &tcb_desc);
-	}
-}
-
 static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 			     struct ieee80211_vif *vif,
 			     struct ieee80211_bss_conf *bss_conf, u32 changed)
@@ -617,7 +603,6 @@ static void rtl_op_bss_info_changed(struct ieee80211_hw *hw,
 
 				if (rtlpriv->cfg->ops->linked_set_reg)
 					rtlpriv->cfg->ops->linked_set_reg(hw);
-				send_beacon_frame(hw, vif);
 			}
 		}
 		if ((changed & BSS_CHANGED_BEACON_ENABLED &&

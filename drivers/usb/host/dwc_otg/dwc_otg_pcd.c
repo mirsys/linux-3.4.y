@@ -1686,7 +1686,7 @@ int dwc_otg_pcd_ep_disable(dwc_otg_pcd_t * pcd, void *ep_handle)
 			DWC_SPINUNLOCK_IRQRESTORE(pcd->lock, flags);
 #ifdef CONFIG_ARCH_CPU_SLSI
 			if (irqoff) {
-				DWC_DEBUGPL(DBG_PCD, "irqs disabled, force irqs enable (in interrupt %s)",
+				DWC_WARN(" irqs disabled, force irqs enable  (in interrupt %s)...\n",
 					in_interrupt() ? "O":"X");
 				local_irq_enable();
 			}
@@ -1695,7 +1695,7 @@ int dwc_otg_pcd_ep_disable(dwc_otg_pcd_t * pcd, void *ep_handle)
 						   MAX_DMA_DESC_CNT);
 #ifdef CONFIG_ARCH_CPU_SLSI
 			if (irqoff) {
-				DWC_DEBUGPL(DBG_PCD, "restore irqs disabled status");
+				DWC_WARN(" restore irqs disabled status ...\n");
 				local_irq_disable();
 			}
 #endif
@@ -1708,6 +1708,7 @@ out_unlocked:
 	DWC_DEBUGPL(DBG_PCD, "%d %s disabled\n", ep->dwc_ep.num,
 		    ep->dwc_ep.is_in ? "IN" : "OUT");
 	return 0;
+
 }
 
 /******************************************************************************/

@@ -52,9 +52,6 @@
 #include <linux/wait.h>
 #include <linux/vmalloc.h>
 #include <linux/gfp.h>
-#if defined (__COMPILE_MODE_X64__)
-    #include <nexell/nxp-ftl-nand.h>
-#endif
 #elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
 #include <div64.h>
 #include <linux/math64.h>
@@ -66,10 +63,12 @@
  * Import Extern
  ******************************************************************************/
 extern void FTL_Configuration(void * _Config);
-extern int FTL_Format(unsigned char * _chip_name, unsigned long _chip_id_base, unsigned char _option);
-extern int FTL_Open(unsigned char * _chip_name, unsigned long _chip_id_base, unsigned int _format_open);
+extern int FTL_Format(unsigned char * _chip_name, unsigned int _chip_id_base, unsigned char _option);
+extern int FTL_Open(unsigned char * _chip_name, unsigned int _chip_id_base, unsigned int _format_open);
 extern int FTL_Close(void);
 extern int FTL_Boot(unsigned char _mode);
+
+extern unsigned int NFC_GetEccParitySize(unsigned int _eccbits);
 
 extern unsigned int NFC_PHY_Init(unsigned int _scan_format);
 extern void NFC_PHY_DeInit(void);
@@ -142,11 +141,7 @@ int __memcmp(const void * _p1, const void * _p2, unsigned int _n)
 
 unsigned long long __div64(unsigned long long _dividend, unsigned long long _divisor)
 {
-#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
-    return div64_u64(_dividend, _divisor);
-#elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
     return div_u64(_dividend, _divisor);
-#endif
 }
 
 void __ratio(unsigned char * _sz, unsigned long long _v1, unsigned long long _v2)
@@ -261,87 +256,23 @@ void __ratio(unsigned char * _sz, unsigned long long _v1, unsigned long long _v2
 /******************************************************************************
  *
  ******************************************************************************/
-#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
-#if !defined (__COMPILE_MODE_X64__)
 extern unsigned long nxp_ftl_start_block; /* byte address, Must Be Multiple of 8MB */
-#endif
-#elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
-extern unsigned long nxp_ftl_start_block; /* byte address, Must Be Multiple of 8MB */
-#endif
 #define _BLOCK_ALIGN_			(8<<20)
 
 /******************************************************************************
  *
  ******************************************************************************/
-#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
-static void __usleep_range(unsigned long min, unsigned long max)
-{
-	#ifdef __MIO_UNIT_TEST_SLEEP__
-	ktime_t t1;
-	s64 ns = 0;
-
-	t1 = ktime_get();
-	#endif
-
-	#ifdef __USING_DELAY_FOR_SHORT_SLEEP__
-	if (min < NSEC_PER_USEC)
-		udelay(min);
-	else
-	#endif
-		usleep_range(min, max);
-
-	#ifdef __MIO_UNIT_TEST_SLEEP__
-	ns = ktime_to_ns(ktime_sub(ktime_get(), t1));
-	ns = div64_u64(ns, 1000L);
-
-	if (ns >= min * 20)
-		Exchange.sys.fn.print("%s: sleeping too long!!! (req: %lu, elapse: %lld)\n", __func__, min, ns);
-	#endif
-}
-
-void __msleep(unsigned int msecs)
-{
-	#ifdef __MIO_UNIT_TEST_SLEEP__
-	ktime_t t1;
-	s64 ns = 0;
-
-	t1 = ktime_get();
-	#endif
-
-	msleep(msecs);
-
-	#ifdef __MIO_UNIT_TEST_SLEEP__
-	ns = ktime_to_ns(ktime_sub(ktime_get(), t1));
-	ns = div64_u64(ns, 1000L * 1000L);
-
-	if (ns >= msecs * 2)
-		Exchange.sys.fn.print("%s: sleeping too long!!! (req: %u, elapse: %lld)\n", __func__, msecs, ns);
-	#endif
-}
-#endif
-
 void EXCHANGE_init(void)
 {
-	unsigned long ftl_start_block = 0;
     /**************************************************************************
      * FTL Start Offset Must Be Multiple Of 8MB
      **************************************************************************/
-#if defined (__BUILD_MODE_ARM_LINUX_DEVICE_DRIVER__)
-#if defined (__COMPILE_MODE_X64__)
-    ftl_start_block = nxp_nand.nxp_ftl_start_block;
-#else    
-    ftl_start_block = nxp_ftl_start_block;
-#endif
-#elif defined (__BUILD_MODE_ARM_UBOOT_DEVICE_DRIVER__)
-    ftl_start_block = nxp_ftl_start_block;
-#endif
-
-	if (ftl_start_block & (_BLOCK_ALIGN_-1))
+	if (nxp_ftl_start_block & (_BLOCK_ALIGN_-1))
     {
-		ftl_start_block = ALIGN(ftl_start_block, _BLOCK_ALIGN_);
+		nxp_ftl_start_block = ALIGN(nxp_ftl_start_block, _BLOCK_ALIGN_);
 	}
 
-    Exchange.ewsftl_start_offset  = ftl_start_block;
+    Exchange.ewsftl_start_offset  = nxp_ftl_start_block;
     Exchange.ewsftl_start_page    = 0;
     Exchange.ewsftl_start_block   = 0;
 
@@ -367,10 +298,10 @@ void EXCHANGE_init(void)
     Exchange.nfc.fnRandomize_Init = NFC_PHY_RAND_Init;
     Exchange.nfc.fnRandomize_DeInit = NFC_PHY_RAND_DeInit;
 
-    Exchange.sys.fn.usleep = __usleep_range;
-    Exchange.sys.fn.msleep = __msleep;
+    Exchange.sys.fn.usleep = usleep_range;
+    Exchange.sys.fn.msleep = msleep;
     Exchange.sys.fn.print = printk;
-    Exchange.sys.fn.sprint = sprintf;
+    Exchange.sys.fn.sprintf = sprintf;
     Exchange.sys.fn.strlen = strlen;
     Exchange.sys.fn._memset = __memset;
     Exchange.sys.fn._memcpy = __memcpy;
@@ -398,7 +329,7 @@ void EXCHANGE_init(void)
     Exchange.nfc.fnRandomize_DeInit = NFC_PHY_RAND_DeInit;
 
     Exchange.sys.fn.print = printf;
-    Exchange.sys.fn.sprint = sprintf;
+    Exchange.sys.fn.sprintf = sprintf;
     Exchange.sys.fn.strlen = strlen;
     Exchange.sys.fn._memset = __memset;
     Exchange.sys.fn._memcpy = __memcpy;
@@ -410,7 +341,7 @@ void EXCHANGE_init(void)
 
 #endif
 
-    Exchange.sys.fn.print("EWS.FTL Start Block is 0x%x\n", ftl_start_block);
+    Exchange.sys.fn.print("EWS.FTL Start Block is 0x%x\n", nxp_ftl_start_block);
 }
 
 /******************************************************************************

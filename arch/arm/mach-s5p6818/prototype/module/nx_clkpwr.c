@@ -31,8 +31,9 @@ static	U32 __g_OSC_KHz;
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize of prototype enviroment & local variables.
- *	@return		 CTRUE	indicates that Initialize is succeeded.
- *				 CFALSE	indicates that Initialize is failed.
+ *	@return		\b CTRUE	indicates that Initialize is succeeded.\n
+ *				\b CFALSE	indicates that Initialize is failed.\n
+ *	@see									NX_CLKPWR_GetNumberOfModule
  */
 CBOOL	NX_CLKPWR_Initialize( void )
 {
@@ -65,6 +66,10 @@ U32		NX_CLKPWR_GetNumberOfModule( void )
 /**
  *	@brief		Get module's physical address.
  *	@return		Module's physical address
+ *	@see											NX_CLKPWR_GetSizeOfRegisterSet,
+ *				NX_CLKPWR_SetBaseAddress,			NX_CLKPWR_GetBaseAddress,
+ *				NX_CLKPWR_OpenModule,				NX_CLKPWR_CloseModule,
+ *				NX_CLKPWR_CheckBusy,				NX_CLKPWR_CanPowerDown
  */
 U32		NX_CLKPWR_GetPhysicalAddress( void )
 {
@@ -75,6 +80,10 @@ U32		NX_CLKPWR_GetPhysicalAddress( void )
 /**
  *	@brief		Get a size, in byte, of register set.
  *	@return		Size of module's register set.
+ *	@see		NX_CLKPWR_GetPhysicalAddress,
+ *				NX_CLKPWR_SetBaseAddress,			NX_CLKPWR_GetBaseAddress,
+ *				NX_CLKPWR_OpenModule,				NX_CLKPWR_CloseModule,
+ *				NX_CLKPWR_CheckBusy,				NX_CLKPWR_CanPowerDown
  */
 U32		NX_CLKPWR_GetSizeOfRegisterSet( void )
 {
@@ -86,9 +95,12 @@ U32		NX_CLKPWR_GetSizeOfRegisterSet( void )
  *	@brief		Set a base address of register set.
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
-
+ *	@see		NX_CLKPWR_GetPhysicalAddress,		NX_CLKPWR_GetSizeOfRegisterSet,
+ *													NX_CLKPWR_GetBaseAddress,
+ *				NX_CLKPWR_OpenModule,				NX_CLKPWR_CloseModule,
+ *				NX_CLKPWR_CheckBusy,				NX_CLKPWR_CanPowerDown
  */
-void	NX_CLKPWR_SetBaseAddress( void* BaseAddress )
+void	NX_CLKPWR_SetBaseAddress( U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
 
@@ -97,19 +109,41 @@ void	NX_CLKPWR_SetBaseAddress( void* BaseAddress )
 
 //------------------------------------------------------------------------------
 /**
+ *	@brief		Set a base address of register set.
+ *	@param[in]	BaseAddress Module's base address
+ *	@return		None.
+ *	@see		NX_CLKPWR_GetPLLFreq
+ */
+void	NX_CLKPWR_SetOSCFreq( U32 FreqKHz )
+{
+	NX_ASSERT( CNULL != FreqKHz );
+
+	__g_OSC_KHz = FreqKHz;
+}
+
+//------------------------------------------------------------------------------
+/**
  *	@brief		Get a base address of register set
  *	@return		Module's base address.
+ *	@see		NX_CLKPWR_GetPhysicalAddress,		NX_CLKPWR_GetSizeOfRegisterSet,
+ *				NX_CLKPWR_SetBaseAddress,
+ *				NX_CLKPWR_OpenModule,				NX_CLKPWR_CloseModule,
+ *				NX_CLKPWR_CheckBusy,				NX_CLKPWR_CanPowerDown
  */
-void*	NX_CLKPWR_GetBaseAddress( void )
+U32		NX_CLKPWR_GetBaseAddress( void )
 {
-	return (void*)__g_pRegister;
+	return (U32)__g_pRegister;
 }
 
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize selected modules with default value.
- *	@return		 CTRUE	indicates that Initialize is succeeded. 
- *				 CFALSE	indicates that Initialize is failed.
+ *	@return		\b CTRUE	indicates that Initialize is succeeded. \n
+ *				\b CFALSE	indicates that Initialize is failed.
+ *	@see		NX_CLKPWR_GetPhysicalAddress,		NX_CLKPWR_GetSizeOfRegisterSet,
+ *				NX_CLKPWR_SetBaseAddress,			NX_CLKPWR_GetBaseAddress,
+ *													NX_CLKPWR_CloseModule,
+ *				NX_CLKPWR_CheckBusy,				NX_CLKPWR_CanPowerDown
  */
 CBOOL	NX_CLKPWR_OpenModule( void )
 {
@@ -119,8 +153,12 @@ CBOOL	NX_CLKPWR_OpenModule( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Deinitialize selected module to the proper stage.
- *	@return		 CTRUE	indicates that Deinitialize is succeeded. 
- *				 CFALSE	indicates that Deinitialize is failed.
+ *	@return		\b CTRUE	indicates that Deinitialize is succeeded. \n
+ *				\b CFALSE	indicates that Deinitialize is failed.
+ *	@see		NX_CLKPWR_GetPhysicalAddress,		NX_CLKPWR_GetSizeOfRegisterSet,
+ *				NX_CLKPWR_SetBaseAddress,			NX_CLKPWR_GetBaseAddress,
+ *				NX_CLKPWR_OpenModule,
+ *				NX_CLKPWR_CheckBusy,				NX_CLKPWR_CanPowerDown
  */
 CBOOL	NX_CLKPWR_CloseModule( void )
 {
@@ -130,8 +168,12 @@ CBOOL	NX_CLKPWR_CloseModule( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether the selected modules is busy or not.
- *	@return		 CTRUE	indicates that Module is Busy. 
- *				 CFALSE	indicates that Module is NOT Busy.
+ *	@return		\b CTRUE	indicates that Module is Busy. \n
+ *				\b CFALSE	indicates that Module is NOT Busy.
+ *	@see		NX_CLKPWR_GetPhysicalAddress,		NX_CLKPWR_GetSizeOfRegisterSet,
+ *				NX_CLKPWR_SetBaseAddress,			NX_CLKPWR_GetBaseAddress,
+ *				NX_CLKPWR_OpenModule,				NX_CLKPWR_CloseModule,
+ *													NX_CLKPWR_CanPowerDown
  */
 CBOOL	NX_CLKPWR_CheckBusy( void )
 {
@@ -146,8 +188,12 @@ CBOOL	NX_CLKPWR_CheckBusy( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicaes whether the selected modules is ready to enter power-down stage
- *	@return		 CTRUE	indicates that Ready to enter power-down stage. 
- *				 CFALSE	indicates that This module can't enter to power-down stage.
+ *	@return		\b CTRUE	indicates that Ready to enter power-down stage. \n
+ *				\b CFALSE	indicates that This module can't enter to power-down stage.
+ *	@see		NX_CLKPWR_GetPhysicalAddress,		NX_CLKPWR_GetSizeOfRegisterSet,
+ *				NX_CLKPWR_SetBaseAddress,			NX_CLKPWR_GetBaseAddress,
+ *				NX_CLKPWR_OpenModule,				NX_CLKPWR_CloseModule,
+ *				NX_CLKPWR_CheckBusy
  */
 CBOOL	NX_CLKPWR_CanPowerDown( void )
 {
@@ -164,7 +210,14 @@ CBOOL	NX_CLKPWR_CanPowerDown( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get a interrupt number for interrupt controller.
- *	@return		Interrupt numberer
+ *	@return		Interrupt number
+ *	@see												NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 S32		NX_CLKPWR_GetInterruptNumber( void )
 {
@@ -174,12 +227,19 @@ S32		NX_CLKPWR_GetInterruptNumber( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Set a specified interrupt to be enable or disable.
- *	@param[in]	IntNum	Interrupt Number(0 ~ 10). 
- *						0:ALIVEGPIO0, 1:ALIVEGPIO1, 2:ALIVEGPIO2, 3:ALIVEGPIO3, 4:ALIVEGPIO4, 5:ALIVEGPIO5, 
+ *	@param[in]	IntNum	Interrupt Number(0 ~ 10). \n
+ *						0:ALIVEGPIO0, 1:ALIVEGPIO1, 2:ALIVEGPIO2, 3:ALIVEGPIO3, 4:ALIVEGPIO4, 5:ALIVEGPIO5, \n
  *						6:ALIVEGPIO6, 7:ALIVEGPIO7, 8:VDDTOGGLE, 9:RTC, 10:BATF
- *	@param[in]	Enable	 CTRUE	indicates that Interrupt Enable. 
- *						 CFALSE	indicates that Interrupt Disable.
+ *	@param[in]	Enable	\b CTRUE	indicates that Interrupt Enable. \n
+ *						\b CFALSE	indicates that Interrupt Disable.
  *	@return		None.
+ *	@see		NX_CLKPWR_GetInterruptNumber,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 void	NX_CLKPWR_SetInterruptEnable( S32 IntNum, CBOOL Enable )
 {
@@ -212,11 +272,18 @@ void	NX_CLKPWR_SetInterruptEnable( S32 IntNum, CBOOL Enable )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether a specified interrupt is enabled or disabled.
- *	@param[in]	IntNum	Interrupt Number(0 ~ 10). 
- *						0:ALIVEGPIO0, 1:ALIVEGPIO1, 2:ALIVEGPIO2, 3:ALIVEGPIO3, 4:ALIVEGPIO4, 5:ALIVEGPIO5, 
+ *	@param[in]	IntNum	Interrupt Number(0 ~ 10). \n
+ *						0:ALIVEGPIO0, 1:ALIVEGPIO1, 2:ALIVEGPIO2, 3:ALIVEGPIO3, 4:ALIVEGPIO4, 5:ALIVEGPIO5, \n
  *						6:ALIVEGPIO6, 7:ALIVEGPIO7, 8:VDDTOGGLE, 9:RTC, 10:BATF
- *	@return		 CTRUE	indicates that Interrupt is enabled. 
- *				 CFALSE	indicates that Interrupt is disabled.
+ *	@return		\b CTRUE	indicates that Interrupt is enabled. \n
+ *				\b CFALSE	indicates that Interrupt is disabled.
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *														NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 CBOOL	NX_CLKPWR_GetInterruptEnable( S32 IntNum )
 {
@@ -236,14 +303,21 @@ CBOOL	NX_CLKPWR_GetInterruptEnable( S32 IntNum )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Set a specified interrupt to be enable or disable.
- *	@param[in]	EnableFlag	Specify interrupt bit for enable of disable. Each bit's meaning is like below	
- *							- EnableFlag[0] : ALIVE GPIO0 interrupt enable or disable. 
+ *	@param[in]	EnableFlag	Specify interrupt bit for enable of disable. Each bit's meaning is like below	\n
+ *							- EnableFlag[0] : ALIVE GPIO0 interrupt enable or disable. \n
  *							...
- *							- EnableFlag[7] : ALIVE GPIO7 interrupt enable or disable. 
- *							- EnableFlag[8] : VDD power toggle interrupt enable or disable. 
- *							- EnableFlag[9] : RTC interrupt enable or disable. 
- *							- EnableFlag[10]: Battery Fault interrupt enable or disable. 
+ *							- EnableFlag[7] : ALIVE GPIO7 interrupt enable or disable. \n
+ *							- EnableFlag[8] : VDD power toggle interrupt enable or disable. \n
+ *							- EnableFlag[9] : RTC interrupt enable or disable. \n
+ *							- EnableFlag[10]: Battery Fault interrupt enable or disable. \n
  *	@return		None.
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 void	NX_CLKPWR_SetInterruptEnable32( U32 EnableFlag )
 {
@@ -259,15 +333,22 @@ void	NX_CLKPWR_SetInterruptEnable32( U32 EnableFlag )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates current setting value of interrupt enable bit.
- *	@return		Current setting value of interrupt. 
- *				"1" means interrupt is enabled. 
- *				"0" means interrupt is disabled. 
- *				- Return Value[0] : ALIVE GPIO0 interrupt's setting value. 
+ *	@return		Current setting value of interrupt. \n
+ *				"1" means interrupt is enabled. \n
+ *				"0" means interrupt is disabled. \n
+ *				- Return Value[0] : ALIVE GPIO0 interrupt's setting value. \n
  *				...
- *				- Return Value[7] : ALIVE GPIO7 interrupt's setting value. 
- *				- Return Value[8] : VDD power toggle interrupt's setting value. 
- *				- Return Value[9] : RTC interrupt's setting value. 
- *				- Return Value[10]: Battery Fault interrupt's setting value. 
+ *				- Return Value[7] : ALIVE GPIO7 interrupt's setting value. \n
+ *				- Return Value[8] : VDD power toggle interrupt's setting value. \n
+ *				- Return Value[9] : RTC interrupt's setting value. \n
+ *				- Return Value[10]: Battery Fault interrupt's setting value. \n
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *														NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 U32		NX_CLKPWR_GetInterruptEnable32( void )
 {
@@ -282,11 +363,18 @@ U32		NX_CLKPWR_GetInterruptEnable32( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether a specified interrupt is pended or not
- *	@param[in]	IntNum	Interrupt Number(0 ~ 10). 
- *						0:ALIVEGPIO0, 1:ALIVEGPIO1, 2:ALIVEGPIO2, 3:ALIVEGPIO3, 4:ALIVEGPIO4, 5:ALIVEGPIO5, 
+ *	@param[in]	IntNum	Interrupt Number(0 ~ 10). \n
+ *						0:ALIVEGPIO0, 1:ALIVEGPIO1, 2:ALIVEGPIO2, 3:ALIVEGPIO3, 4:ALIVEGPIO4, 5:ALIVEGPIO5, \n
  *						6:ALIVEGPIO6, 7:ALIVEGPIO7, 8:VDDTOGGLE, 9:RTC, 10:BATF
- *	@return		 CTRUE	indicates that Pending is seted. 
- *				 CFALSE	indicates that Pending is Not Seted.
+ *	@return		\b CTRUE	indicates that Pending is seted. \n
+ *				\b CFALSE	indicates that Pending is Not Seted.
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 CBOOL	NX_CLKPWR_GetInterruptPending( S32 IntNum )
 {
@@ -306,15 +394,22 @@ CBOOL	NX_CLKPWR_GetInterruptPending( S32 IntNum )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates current setting value of interrupt pending bit.
- *	@return		Current setting value of pending bit. 
- *				"1" means pend bit is occured. 
- *				"0" means pend bit is NOT occured. 
- *				- Return Value[0] : ALIVE GPIO0 pending state. 
+ *	@return		Current setting value of pending bit. \n
+ *				"1" means pend bit is occured. \n
+ *				"0" means pend bit is NOT occured. \n
+ *				- Return Value[0] : ALIVE GPIO0 pending state. \n
  *				...
- *				- Return Value[7] : ALIVE GPIO7 pending state. 
- *				- Return Value[8] : VDD power toggle pending state. 
- *				- Return Value[9] : RTC pending state. 
- *				- Return Value[10]: Battery Fault pending state. 
+ *				- Return Value[7] : ALIVE GPIO7 pending state. \n
+ *				- Return Value[8] : VDD power toggle pending state. \n
+ *				- Return Value[9] : RTC pending state. \n
+ *				- Return Value[10]: Battery Fault pending state. \n
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *														NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 U32		NX_CLKPWR_GetInterruptPending32( void )
 {
@@ -329,10 +424,17 @@ U32		NX_CLKPWR_GetInterruptPending32( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Clear a pending state of specified interrupt.
- *	@param[in]	IntNum	Interrupt Number(0 ~ 10). 
- *						0:ALIVEGPIO0, 1:ALIVEGPIO1, 2:ALIVEGPIO2, 3:ALIVEGPIO3, 4:ALIVEGPIO4, 5:ALIVEGPIO5, 
+ *	@param[in]	IntNum	Interrupt Number(0 ~ 10). \n
+ *						0:ALIVEGPIO0, 1:ALIVEGPIO1, 2:ALIVEGPIO2, 3:ALIVEGPIO3, 4:ALIVEGPIO4, 5:ALIVEGPIO5, \n
  *						6:ALIVEGPIO6, 7:ALIVEGPIO7, 8:VDDTOGGLE, 9:RTC, 10:BATF
  *	@return		None.
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 void	NX_CLKPWR_ClearInterruptPending( S32 IntNum )
 {
@@ -352,14 +454,21 @@ void	NX_CLKPWR_ClearInterruptPending( S32 IntNum )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Clear a pending state of specified interrupt.
- *	@param[in]	PendingFlag		Specify pend bit to clear. Each bit's meaning is like below	 
- *								- PendingFlag[0] : ALIVE GPIO0 pending bit. 
+ *	@param[in]	PendingFlag		Specify pend bit to clear. Each bit's meaning is like below	\n \n
+ *								- PendingFlag[0] : ALIVE GPIO0 pending bit. \n
  *								...
- *								- PendingFlag[7] : ALIVE GPIO7 pending bit. 
- *								- PendingFlag[8] : VDD power toggle pending bit. 
- *								- PendingFlag[9] : RTC pending bit. 
- *								- PendingFlag[10]: Battery Fault pending bit. 
+ *								- PendingFlag[7] : ALIVE GPIO7 pending bit. \n
+ *								- PendingFlag[8] : VDD power toggle pending bit. \n
+ *								- PendingFlag[9] : RTC pending bit. \n
+ *								- PendingFlag[10]: Battery Fault pending bit. \n
  *	@return		None.
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *														NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 void	NX_CLKPWR_ClearInterruptPending32( U32 PendingFlag )
 {
@@ -375,9 +484,16 @@ void	NX_CLKPWR_ClearInterruptPending32( U32 PendingFlag )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Set all interrupts to be enables or disables.
- *	@param[in]	Enable	 CTRUE	indicates that Set to all interrupt enable. 
- *						 CFALSE	indicates that Set to all interrupt disable.
+ *	@param[in]	Enable	\b CTRUE	indicates that Set to all interrupt enable. \n
+ *						\b CFALSE	indicates that Set to all interrupt disable.
  *	@return		None.
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 void	NX_CLKPWR_SetInterruptEnableAll( CBOOL Enable )
 {
@@ -398,8 +514,15 @@ void	NX_CLKPWR_SetInterruptEnableAll( CBOOL Enable )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether some of interrupts are enable or not.
- *	@return		 CTRUE	indicates that At least one( or more ) interrupt is enabled. 
- *				 CFALSE	indicates that All interrupt is disabled.
+ *	@return		\b CTRUE	indicates that At least one( or more ) interrupt is enabled. \n
+ *				\b CFALSE	indicates that All interrupt is disabled.
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *														NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 CBOOL	NX_CLKPWR_GetInterruptEnableAll( void )
 {
@@ -419,8 +542,15 @@ CBOOL	NX_CLKPWR_GetInterruptEnableAll( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether some of interrupts are pended or not.
- *	@return		 CTRUE	indicates that At least one( or more ) pending is seted. 
- *				 CFALSE	indicates that All pending is NOT seted.
+ *	@return		\b CTRUE	indicates that At least one( or more ) pending is seted. \n
+ *				\b CFALSE	indicates that All pending is NOT seted.
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll,		NX_CLKPWR_GetInterruptPendingNumber
  */
 CBOOL	NX_CLKPWR_GetInterruptPendingAll( void )
 {
@@ -442,6 +572,13 @@ CBOOL	NX_CLKPWR_GetInterruptPendingAll( void )
 /**
  *	@brief		Clear pending state of all interrupts.
  *	@return		None.
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *														NX_CLKPWR_GetInterruptPendingNumber
  */
 void	NX_CLKPWR_ClearInterruptPendingAll( void )
 {
@@ -458,6 +595,13 @@ void	NX_CLKPWR_ClearInterruptPendingAll( void )
 /**
  *	@brief		Get a interrupt number which has the most prority of pended interrupts
  *	@return		Pending Number( If all pending is not set then return -1 ).
+ *	@see		NX_CLKPWR_GetInterruptNumber,			NX_CLKPWR_SetInterruptEnable,
+ *				NX_CLKPWR_GetInterruptEnable,			NX_CLKPWR_SetInterruptEnable32,
+ *				NX_CLKPWR_GetInterruptEnable32,			NX_CLKPWR_GetInterruptPending,
+ *				NX_CLKPWR_GetInterruptPending32,		NX_CLKPWR_ClearInterruptPending,
+ *				NX_CLKPWR_ClearInterruptPending32,		NX_CLKPWR_SetInterruptEnableAll,
+ *				NX_CLKPWR_GetInterruptEnableAll,		NX_CLKPWR_GetInterruptPendingAll,
+ *				NX_CLKPWR_ClearInterruptPendingAll
  */
 S32		NX_CLKPWR_GetInterruptPendingNumber( void )	// -1 if None
 {
@@ -493,16 +637,19 @@ S32		NX_CLKPWR_GetInterruptPendingNumber( void )	// -1 if None
  *	@param[in]	MDIV		VCO frequency divider	: PLL0, 1(64~1023), PLL2, 3(13~255)
  *	@param[in]	SDIV		Output frequency scaler : 0 ~ 3
  *	@return		None.
- *	@remark		PLL can be calculated by following fomula. 
+ *	@remark		PLL can be calculated by following fomula. \n
  *				(m * Fin)/(p * 2^s ).
- *				- PLL0, 1 : 40 ~ 2500 Mhz 
- *				- PLL2, 3 : 40 ~ 2200 Mhz 
- *				- IMPORTANT : 
- *					You should set a PMS value carefully. 
+ *				- PLL0, 1 : 40 ~ 2500 Mhz \n
+ *				- PLL2, 3 : 40 ~ 2200 Mhz \n
+ *				- IMPORTANT : \n
+ *					You should set a PMS value carefully. \n
  *					Please refer PMS table we are recommend or Contact Nexell or
  *						Samsung(manufacture of PLL core) if you wish to change it.
  *
  *	@remark		PLL is not changed until NX_CLKPWR_DoPLLChange() function is called.
+ *	@see									NX_CLKPWR_SetPLLPowerOn,
+ *				NX_CLKPWR_DoPLLChange,		NX_CLKPWR_IsPLLStable,
+ *				NX_CLKPWR_SetClockCPU,		NX_CLKPWR_SetClockMCLK
  */
 void	NX_CLKPWR_SetPLLPMS ( U32 pllnumber, U32 PDIV, U32 MDIV, U32 SDIV )
 {
@@ -517,9 +664,10 @@ void	NX_CLKPWR_SetPLLPMS ( U32 pllnumber, U32 PDIV, U32 MDIV, U32 SDIV )
 //	NX_ASSERT( (2 > pllnumber) && (3	>= SDIV) );
 	NX_ASSERT( (2 <= pllnumber) && (13	<= MDIV && MDIV <= 255) );
 //	NX_ASSERT( (2 <= pllnumber) && (3	>= SDIV) );
-//	NX_ASSERT( 5 >= SDIV && 0 <= SDIV );
-    NX_ASSERT( 5 >= SDIV );
+	NX_ASSERT( 5 >= SDIV && 0 <= SDIV );
 
+//	__g_pRegister->PLLSETREG[pllnumber] = (PDIV<<PLL_PDIV_BIT_POS) | (MDIV<<PLL_MDIV_BIT_POS) | (SDIV<<PLL_SDIV_BIT_POS);
+	//WriteIO32(&__g_pRegister->PLLSETREG[pllnumber], (PDIV<<PLL_PDIV_BIT_POS) | (MDIV<<PLL_MDIV_BIT_POS) | (SDIV<<PLL_SDIV_BIT_POS));
 	WriteIO32(&__g_pRegister->PLLSETREG[pllnumber],
 		NX_BIT_SetBitRange32(ReadIO32(&__g_pRegister->PLLSETREG[pllnumber]),
 				(PDIV<<PLL_PDIV_BIT_POS) | (MDIV<<PLL_MDIV_BIT_POS) | (SDIV<<PLL_SDIV_BIT_POS),
@@ -589,10 +737,13 @@ void	NX_CLKPWR_SetPLLDither ( U32 pllnumber, S32 K, U32 MFR, U32 MRR, U32 SEL_PF
 #if 0
 /*
  *	@brief		Set PLL1 power On/Off.
- *	@param[in]	On	 CTRUE	indicates that Normal mode . 
- *					 CFALSE	indicates that Power Down.
+ *	@param[in]	On	\b CTRUE	indicates that Normal mode . \n
+ *					\b CFALSE	indicates that Power Down.
  *	@return		None.
  *	@remark		PLL1 is only available.
+ *	@see		NX_CLKPWR_SetPLLPMS,
+ *				NX_CLKPWR_DoPLLChange,		NX_CLKPWR_IsPLLStable,
+ *				NX_CLKPWR_SetClockCPU,		NX_CLKPWR_SetClockMCLK
 
  */
 void	NX_CLKPWR_SetPLLPowerOn ( CBOOL On )
@@ -617,13 +768,16 @@ void	NX_CLKPWR_SetPLLPowerOn ( CBOOL On )
  *	@brief		Change PLL with P, M, S value on PLLSETREG.
  *	@return		None.
  *	@remark		If you call this function, you must check by NX_CLKPWR_IsPLLStable(),
- *				because PLL change need stable time.
+ *				because PLL change need stable time.\n
  *				Therefore the sequence for changing PLL is as follows.
  *	@code
  *		NX_CLKPWR_SetPLLPMS( PLLn, P, M, S );	// Change P, M, S values
  *		NX_CLKPWR_DoPLLChange();				// Change PLL
  *		while( !NX_CLKPWR_IsPLLStable() );		// wait until PLL is stable.
  *	@endcode
+ *	@see		NX_CLKPWR_SetPLLPMS,		NX_CLKPWR_SetPLLPowerOn,
+ *											NX_CLKPWR_IsPLLStable,
+ *				NX_CLKPWR_SetClockCPU,		NX_CLKPWR_SetClockMCLK
  */
 void	NX_CLKPWR_DoPLLChange ( void )
 {
@@ -639,7 +793,10 @@ void	NX_CLKPWR_DoPLLChange ( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Check whether PLL are stable or not.
- *	@return		If PLL is stable, return  CTRUE. Otherwise, return  CFALSE.
+ *	@return		If PLL is stable, return \b CTRUE. Otherwise, return \b CFALSE.
+ *	@see		NX_CLKPWR_SetPLLPMS,		NX_CLKPWR_SetPLLPowerOn,
+ *				NX_CLKPWR_DoPLLChange,
+ *				NX_CLKPWR_SetClockCPU,		NX_CLKPWR_SetClockMCLK
  */
 CBOOL	NX_CLKPWR_IsPLLStable ( void )
 {
@@ -656,9 +813,12 @@ CBOOL	NX_CLKPWR_IsPLLStable ( void )
  *	@param[in]	CoreDivider	Divider for CPU core clock, 1 ~ 16.
  *	@param[in]	BusDivider	Divider for CPU Bus clock, 2 ~ 16.
  *	@return		None.
- *	@remark		
+ *	@remark		\n
  *				- CPU core clock = Source clock / CoreDivider, CoreDivider = 1 ~ 16
  *				- CPU bus clock = CPU core clock / BusDivider, BusDivider = 2 ~ 16
+ *	@see		NX_CLKPWR_SetPLLPMS,		NX_CLKPWR_SetPLLPowerOn,
+ *				NX_CLKPWR_DoPLLChange,		NX_CLKPWR_IsPLLStable,
+ *											NX_CLKPWR_SetClockMCLK
  */
 void	NX_CLKPWR_SetClockCPU	( U32 ClkSrc, U32 CoreDivider, U32 BusDivider )
 {
@@ -686,8 +846,11 @@ void	NX_CLKPWR_SetClockCPU	( U32 ClkSrc, U32 CoreDivider, U32 BusDivider )
  *	@param[in]	Divider1		Divider for 1st clock, 1 ~ 16.
  *	@param[in]	Divider2		Divider for 2nd clock, 2 ~ 16.
  *	@return		None.
- *	@remark		
+ *	@remark		\n
  *				- Divider = 1 ~ 16
+ *	@see		NX_CLKPWR_SetPLLPMS,		NX_CLKPWR_SetPLLPowerOn,
+ *				NX_CLKPWR_DoPLLChange,		NX_CLKPWR_IsPLLStable,
+ *											NX_CLKPWR_SetClockMCLK
  */
 void	NX_CLKPWR_SetClockDivider2	( NX_CLKPWR_CLOCK clock_number, U32 ClkSrc, U32 Divider1, U32 Divider2 )
 {
@@ -769,15 +932,18 @@ void	NX_CLKPWR_SetClockDivider4	( NX_CLKPWR_CLOCK clock_number, U32 ClkSrc, U32 
  *	@param[in]	PCLKDivider		Divide value for PCLK, 2.
  *	@return		None.
  *	@remark
- *				MCLK is memory bus clock. It must be lesser than 400MHz. 
+ *				MCLK is memory bus clock. It must be lesser than 400MHz. \n
  *				- MCLK = PLL0 or PLL1 / MCLKDivider, MCLKDivider = 1 ~ 16.
  *
- *				BCLK is system bus clock. BCLK must set same clock of MCLK or half clock. 
+ *				BCLK is system bus clock. BCLK must set same clock of MCLK or half clock. \n
  *				- BCLK = MCLK / BCLKDivider, BCLKDivider = 1 or 2.
  *
- *				PCLK is registe access clock.	PCLKDivide commonly set 2. 
+ *				PCLK is registe access clock.	PCLKDivide commonly set 2. \n
  *				- PCLK = BCLK / PCLKDivider, PCLKDivider = 2.
  *
+ *	@see		NX_CLKPWR_SetPLLPMS,		NX_CLKPWR_SetPLLPowerOn,
+ *				NX_CLKPWR_DoPLLChange,		NX_CLKPWR_IsPLLStable,
+ *				NX_CLKPWR_SetClockCPU
  */
 void	NX_CLKPWR_SetClockMCLK( U32 ClkSrc, U32 MCLKDivider, U32 BCLKDivider, U32 PCLKDivider )
 {
@@ -821,9 +987,13 @@ void NX_CLKPWR_SetCPUBUSSyncMode(CBOOL Enable)
 //--------------------------------------------------------------------------
 /**
  *	@brief		Enable/Disable RTC Wakeup.
- *	@param[in]	Enable	Set to  CTRUE to enable RTC wakeup. Otherwise, set to  CFALSE.
+ *	@param[in]	Enable	Set to \b CTRUE to enable RTC wakeup. Otherwise, set to \b CFALSE.
  *	@return		None.
  *	@remark		Wakeup control for RTC.
+ *	@see															NX_CLKPWR_GetRTCWakeUpEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeupEnable,					NX_CLKPWR_GetALIVEGPIOWakeupEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpRiseEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpRiseEdgeDetectEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpFallEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpFallEdgeDetectEnable
  */
 void	NX_CLKPWR_SetRTCWakeUpEnable ( CBOOL Enable )
 {
@@ -846,8 +1016,12 @@ void	NX_CLKPWR_SetRTCWakeUpEnable ( CBOOL Enable )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get a status of RTC Wakeup Enable.
- *	@return	If RTC Wakeup is enabled, return  CTRUE. Otherwise, return  CFALSE.
+ *	@return	If RTC Wakeup is enabled, return \b CTRUE. Otherwise, return \b CFALSE.
  *	@remark		Wakeup control for RTC.
+ *	@see		NX_CLKPWR_SetRTCWakeUpEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeupEnable,					NX_CLKPWR_GetALIVEGPIOWakeupEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpRiseEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpRiseEdgeDetectEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpFallEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpFallEdgeDetectEnable
  */
 CBOOL	NX_CLKPWR_GetRTCWakeUpEnable ( void )
 {
@@ -862,10 +1036,14 @@ CBOOL	NX_CLKPWR_GetRTCWakeUpEnable ( void )
 /**
  *	@brief		Set wakeup source of ALIVEGPIO
  *	@param[in]	dwBitNumber		Select wakeup source (0 ~ 8). AliveGPIO(0~7), VDD Power Toggle Pin(8)
- *	@param[in]	bEnable			 CTRUE indicates that ALIVEGPIO is use wakeup source. 
- *								 CFALSE indicates that ALIVEGPIO is NOT use wakeup source. 
+ *	@param[in]	bEnable			\b CTRUE indicates that ALIVEGPIO is use wakeup source. \n
+ *								\b CFALSE indicates that ALIVEGPIO is NOT use wakeup source. \n
  *	@return		None.
- *	@remark		ALIVEGPIO only chose one function(reset or wakeup source). 
+ *	@remark		ALIVEGPIO only chose one function(reset or wakeup source). \n
+ *	@see		NX_CLKPWR_SetRTCWakeUpEnable,						NX_CLKPWR_GetRTCWakeUpEnable,
+ *																	NX_CLKPWR_GetALIVEGPIOWakeupEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpRiseEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpRiseEdgeDetectEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpFallEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpFallEdgeDetectEnable
  */
 void	NX_CLKPWR_SetALIVEGPIOWakeupEnable( U32 dwBitNumber, CBOOL bEnable )
 {
@@ -908,8 +1086,12 @@ void	NX_CLKPWR_SetALIVEGPIOResetEnableAll(  CBOOL bEnable )
 /**
  *	@brief		Get setting value of wakeup source
  *	@param[in]	dwBitNumber		Select wakeup source (0 ~ 8). AliveGPIO(0~7), VDD Power Toggle Pin(8)
- *	@return		bEnable			 CTRUE indicates that ALIVEGPIO is use wakeup source. 
- *								 CFALSE indicates that ALIVEGPIO is NOT use wakeup source. 
+ *	@return		bEnable			\b CTRUE indicates that ALIVEGPIO is use wakeup source. \n
+ *								\b CFALSE indicates that ALIVEGPIO is NOT use wakeup source. \n
+ *	@see		NX_CLKPWR_SetRTCWakeUpEnable,						NX_CLKPWR_GetRTCWakeUpEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeupEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpRiseEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpRiseEdgeDetectEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpFallEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpFallEdgeDetectEnable
  */
 CBOOL	NX_CLKPWR_GetALIVEGPIOWakeupEnable( U32 dwBitNumber )
 {
@@ -923,9 +1105,13 @@ CBOOL	NX_CLKPWR_GetALIVEGPIOWakeupEnable( U32 dwBitNumber )
 /**
  *	@brief		Set enable or disable of ALIVEGPIO's rising edge detection.
  *	@param[in]	dwBitNumber		Select wakeup source (0 ~ 8). AliveGPIO(0~7), VDD Power Toggle Pin(8)
- *	@param[in]	bEnable			 CTRUE indicates that rising edge detection enable.
- *								 CFALSE indicates that rising edge detection disable.
+ *	@param[in]	bEnable			\b CTRUE indicates that rising edge detection enable.\n
+ *								\b CFALSE indicates that rising edge detection disable.\n
  *	@return		None.
+ *	@see		NX_CLKPWR_SetRTCWakeUpEnable,						NX_CLKPWR_GetRTCWakeUpEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeupEnable,					NX_CLKPWR_GetALIVEGPIOWakeupEnable,
+ *																	NX_CLKPWR_GetALIVEGPIOWakeUpRiseEdgeDetectEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpFallEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpFallEdgeDetectEnable
  */
 void	NX_CLKPWR_SetALIVEGPIOWakeUpRiseEdgeDetectEnable( U32 dwBitNumber, CBOOL bEnable )
 {
@@ -947,8 +1133,12 @@ void	NX_CLKPWR_SetALIVEGPIOWakeUpRiseEdgeDetectEnable( U32 dwBitNumber, CBOOL bE
 /**
  *	@brief		Get setting value of rising edge detection is enabled or disabled.
  *	@param[in]	dwBitNumber		Select wakeup source (0 ~ 8). AliveGPIO(0~7), VDD Power Toggle Pin(8)
- *	@return		bEnable			 CTRUE indicates that rising edge detection is enabled. 
- *								 CFALSE indicates that rising edge detection is disabled. 
+ *	@return		bEnable			\b CTRUE indicates that rising edge detection is enabled. \n
+ *								\b CFALSE indicates that rising edge detection is disabled. \n
+ *	@see		NX_CLKPWR_SetRTCWakeUpEnable,						NX_CLKPWR_GetRTCWakeUpEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeupEnable,					NX_CLKPWR_GetALIVEGPIOWakeupEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpRiseEdgeDetectEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpFallEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpFallEdgeDetectEnable
  */
 CBOOL	NX_CLKPWR_GetALIVEGPIOWakeUpRiseEdgeDetectEnable( U32 dwBitNumber )
 {
@@ -962,9 +1152,13 @@ CBOOL	NX_CLKPWR_GetALIVEGPIOWakeUpRiseEdgeDetectEnable( U32 dwBitNumber )
 /**
  *	@brief		Set enable or disable of ALIVEGPIO's faling edge detection.
  *	@param[in]	dwBitNumber		Select wakeup source (0 ~ 8). AliveGPIO(0~7), VDD Power Toggle Pin(8)
- *	@param[in]	bEnable			 CTRUE indicates that falling edge detection enable.
- *								 CFALSE indicates that falling edge detection disable.
+ *	@param[in]	bEnable			\b CTRUE indicates that falling edge detection enable.\n
+ *								\b CFALSE indicates that falling edge detection disable.\n
  *	@return		None.
+ *	@see		NX_CLKPWR_SetRTCWakeUpEnable,						NX_CLKPWR_GetRTCWakeUpEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeupEnable,					NX_CLKPWR_GetALIVEGPIOWakeupEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpRiseEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpRiseEdgeDetectEnable,
+ *																	NX_CLKPWR_GetALIVEGPIOWakeUpFallEdgeDetectEnable
  */
 void	NX_CLKPWR_SetALIVEGPIOWakeUpFallEdgeDetectEnable( U32 dwBitNumber, CBOOL bEnable )
 {
@@ -986,8 +1180,12 @@ void	NX_CLKPWR_SetALIVEGPIOWakeUpFallEdgeDetectEnable( U32 dwBitNumber, CBOOL bE
 /**
  *	@brief		Get setting value of falling edge detection is enabled or disabled.
  *	@param[in]	dwBitNumber		Select wakeup source (0 ~ 8). AliveGPIO(0~7), VDD Power Toggle Pin(8)
- *	@return		 CTRUE	indicates that falling edge detection is enabled. 
- *				 CFALSE	indicates that falling edge detection is disabled. 
+ *	@return		\b CTRUE	indicates that falling edge detection is enabled. \n
+ *				\b CFALSE	indicates that falling edge detection is disabled. \n
+ *	@see		NX_CLKPWR_SetRTCWakeUpEnable,						NX_CLKPWR_GetRTCWakeUpEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeupEnable,					NX_CLKPWR_GetALIVEGPIOWakeupEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpRiseEdgeDetectEnable,	NX_CLKPWR_GetALIVEGPIOWakeUpRiseEdgeDetectEnable,
+ *				NX_CLKPWR_SetALIVEGPIOWakeUpFallEdgeDetectEnable
  */
 CBOOL	NX_CLKPWR_GetALIVEGPIOWakeUpFallEdgeDetectEnable( U32 dwBitNumber )
 {
@@ -1001,9 +1199,12 @@ CBOOL	NX_CLKPWR_GetALIVEGPIOWakeUpFallEdgeDetectEnable( U32 dwBitNumber )
 // Reset Management
 //--------------------------------------------------------------------------
 /** @brief		Set enable or disable of software reset.
- *	@param[in]	bEnable		 CTRUE indicates that software reset enable.
- *							 CFALSEindicates that software reset disable.
+ *	@param[in]	bEnable		\b CTRUE indicates that software reset enable.\n
+ *							\b CFALSEindicates that software reset disable.
  *	@return		None.
+ *	@see													NX_CLKPWR_GetSoftwareResetEnable,
+ *				NX_CLKPWR_DoSoftwareReset,					NX_CLKPWR_SetALIVEGPIOResetEnable,
+ *				NX_CLKPWR_GetALIVEGPIOResetEnable
  */
 void	NX_CLKPWR_SetSoftwareResetEnable( CBOOL bEnable )
 {
@@ -1025,8 +1226,11 @@ void	NX_CLKPWR_SetSoftwareResetEnable( CBOOL bEnable )
 
 //--------------------------------------------------------------------------
 /** @brief		Get setting value of software reset is enabled or disabled.
- *	@return		 CTRUE	indicates that software reset is enabled.
- *				 CFALSE	indicates that software reset is disabled.
+ *	@return		\b CTRUE	indicates that software reset is enabled.\n
+ *				\b CFALSE	indicates that software reset is disabled.
+ *	@see		NX_CLKPWR_SetSoftwareResetEnable,
+ *				NX_CLKPWR_DoSoftwareReset,					NX_CLKPWR_SetALIVEGPIOResetEnable,
+ *				NX_CLKPWR_GetALIVEGPIOResetEnable
  */
 CBOOL	NX_CLKPWR_GetSoftwareResetEnable( void )
 {
@@ -1041,6 +1245,9 @@ CBOOL	NX_CLKPWR_GetSoftwareResetEnable( void )
 //--------------------------------------------------------------------------
 /** @brief		Generate a software reset.
  *	@return		None.
+ *	@see		NX_CLKPWR_SetSoftwareResetEnable,			NX_CLKPWR_GetSoftwareResetEnable,
+ *															NX_CLKPWR_SetALIVEGPIOResetEnable,
+ *				NX_CLKPWR_GetALIVEGPIOResetEnable
  */
 void	NX_CLKPWR_DoSoftwareReset( void )
 {
@@ -1055,10 +1262,13 @@ void	NX_CLKPWR_DoSoftwareReset( void )
 //------------------------------------------------------------------------------
 /** @brief		Set enable or disable of ALIVEGPIO's reset source.
  *	@param[in]	dwBitNumber		Select ALIVEGPIO (0 ~7).
- *	@param[in]	bEnable			 CTRUE indicates that ALIVEGPIO is use to reset source.
- *								 CFALSE indicates that ALIVEGPIO is NOT use to reset source.
+ *	@param[in]	bEnable			\b CTRUE indicates that ALIVEGPIO is use to reset source.\n
+ *								\b CFALSE indicates that ALIVEGPIO is NOT use to reset source.\n
  *	@return		None.
- *	@remark		ALIVEGPIO only chose one function(reset or wakeup source). 
+ *	@remark		ALIVEGPIO only chose one function(reset or wakeup source). \n
+ *	@see		NX_CLKPWR_SetSoftwareResetEnable,			NX_CLKPWR_GetSoftwareResetEnable,
+ *				NX_CLKPWR_DoSoftwareReset,
+ *				NX_CLKPWR_GetALIVEGPIOResetEnable
  */
 void	NX_CLKPWR_SetALIVEGPIOResetEnable( U32 dwBitNumber, CBOOL bEnable )
 {
@@ -1079,8 +1289,10 @@ void	NX_CLKPWR_SetALIVEGPIOResetEnable( U32 dwBitNumber, CBOOL bEnable )
 //------------------------------------------------------------------------------
 /** @brief		Get setting value that ALIVEGPIO's reset source is enabled or disabled.
  *	@param[in]	dwBitNumber		Select ALIVEGPIO (0 ~7).
- *	@return		 CTRUE indicates that ALIVEGPIO's reset source is enabled.
- *				 CFALSEindicates that ALIVEGPIO's reset source is disabled.
+ *	@return		\b CTRUE indicates that ALIVEGPIO's reset source is enabled.\n
+ *				\b CFALSEindicates that ALIVEGPIO's reset source is disabled.
+ *	@see		NX_CLKPWR_SetSoftwareResetEnable,			NX_CLKPWR_GetSoftwareResetEnable,
+ *				NX_CLKPWR_DoSoftwareReset,					NX_CLKPWR_SetALIVEGPIOResetEnable
  */
 CBOOL	NX_CLKPWR_GetALIVEGPIOResetEnable( U32 dwBitNumber )
 {
@@ -1095,7 +1307,7 @@ CBOOL	NX_CLKPWR_GetALIVEGPIOResetEnable( U32 dwBitNumber )
 //------------------------------------------------------------------------------
 /** @brief		Get last reset status
  *	@return		Reset status
- *	@remarks	Reset priority is 
+ *	@remarks	Reset priority is \n
  *				POR > GPIO > Watchdog > Software > DSleep > Sleep.
  *	@code
  *				NX_CLKPWR_RESETSTATUS ResetStatus;
@@ -1155,7 +1367,7 @@ void	NX_CLKPWR_SetImmediateSleepEnable( CBOOL enable  )
 	NX_ASSERT( CNULL != __g_pRegister );
 
 	WriteIO32(&__g_pRegister->PWRCONT,
-	NX_BIT_SetBit32(ReadIO32(&__g_pRegister->PWRCONT), enable, 0 ));
+		NX_BIT_SetBit32(ReadIO32(&__g_pRegister->PWRCONT), enable, 0 ));
 }
 
 
@@ -1371,7 +1583,7 @@ U32		NX_CLKPWR_GetCPUClockOnStatus( void )
 {
 	register U32 regvalue;
 
-//	NX_ASSERT( nCPU	< 8 );
+	NX_ASSERT( nCPU	< 8 );
 
 	NX_ASSERT( CNULL != __g_pRegister );
 

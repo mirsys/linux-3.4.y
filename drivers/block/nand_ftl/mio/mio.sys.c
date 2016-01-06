@@ -17,7 +17,6 @@
 #include "media/exchange.h"
 #include "mio.definition.h"
 #include "mio.smart.h"
-#include "mio.media.h"
 
 #include "media/nfc/phy/nfc.phy.lowapi.h"
 
@@ -41,14 +40,6 @@ static int miosys_print_wearleveldata(void);
 static int miosys_print_smart(void);
 static int miosys_print_readretrytable(void);
 static int miosys_print_elapsed_t(void);
-static int miosys_print_elapsed_media(void);
-static int miosys_print_threadstatus(void);
-static int miosys_print_ftlinfo(const char * text, unsigned int len);
-#ifdef __MIO_UNIT_TEST_RANDOMIZER__
-static int miosys_run_randomizer(int);
-static int miosys_prt_randomizer(void);
-static int miosys_clr_randomizer(void);
-#endif
 
 struct file_operations miosys_fops =
 {
@@ -82,7 +73,7 @@ int miosys_init(void)
 static ssize_t miosys_read(struct file * file, char * buf, size_t count, loff_t * ppos)
 {
     char kbuf[16];
-  //DBG_MIOSYS(KERN_ERR "miosys_read(file:0x%08x buf:0x%08x count:%d ppos:0x%08x)", (unsigned int)file, (unsigned int)buf, count, (unsigned int)ppos);
+  //DBG_MIOSYS(KERN_INFO "miosys_read(file:0x%08x buf:0x%08x count:%d ppos:0x%08x)", (unsigned int)file, (unsigned int)buf, count, (unsigned int)ppos);
 
     if (count < 256) { return -EINVAL; }
     if (*ppos != 0) { return 0; }
@@ -113,13 +104,7 @@ static ssize_t miosys_write(struct file * file, const char * buf, size_t count, 
             MIOSYS_REQUEST_WEARLEVEL = 0x20000000,
             MIOSYS_REQUEST_READRETRYTABLE = 0x30000000,
             MIOSYS_REQUEST_ELAPSED_T = 0x40000000,
-            MIOSYS_REQUEST_ELAPSED_MEDIA = 0x41000000,
-            MIOSYS_REQUEST_THREAD_STATUS = 0x50000000,
-#ifdef __MIO_UNIT_TEST_RANDOMIZER__
-			MIOSYS_REQUEST_RUN_RANDOMIZER = 0x60000000,			// MIO_UNIT_TEST_RANDOMIZER
-			MIOSYS_REQUEST_PRT_RANDOMIZER = 0x61000000,
-			MIOSYS_REQUEST_CLR_RANDOMIZER = 0x62000000,
-#endif
+
             MIOSYS_MAX = 0xFFFFFFFF
 
         } state = MIOSYS_NONE;
@@ -127,9 +112,6 @@ static ssize_t miosys_write(struct file * file, const char * buf, size_t count, 
         char delim[] = " \n";
         char * token = strtok(cmd_buf, delim);
         int breaker = 0;
-#ifdef __MIO_UNIT_TEST_RANDOMIZER__
-		int run_randomizer_cnt = run_randomizer_cnt;
-#endif
 
         while ((token != NULL) && !breaker)
         {
@@ -153,35 +135,6 @@ static ssize_t miosys_write(struct file * file, const char * buf, size_t count, 
                     {
                         state = MIOSYS_REQUEST_ELAPSED_T;
                     }
-                    else if (!memcmp((const void *)token, (const void *)"elapse_media", strlen("elapse_media")))
-                    {
-                        state = MIOSYS_REQUEST_ELAPSED_MEDIA;
-                    }
-                    else if (!memcmp((const void *)token, (const void *)"thread", strlen("thread")))
-                    {
-                        state = MIOSYS_REQUEST_THREAD_STATUS;
-                    }
-                    else if (!memcmp((const void *)token, (const void *)"ftl_", strlen("ftl_")))
-                    {
-                        miosys_print_ftlinfo((const char *)token, strlen(token));
-                    }
-#ifdef __MIO_UNIT_TEST_RANDOMIZER__
-					/***********************************************************************
-					 * MIO_UNIT_TEST_RANDOMIZER
-					 ***********************************************************************/
-					else if (!memcmp((const void *)token, (const void *)"randtest", strlen("randtest")))
-					{
-						state = MIOSYS_REQUEST_RUN_RANDOMIZER;
-					}
-					else if (!memcmp((const void *)token, (const void *)"randprint", strlen("randprint")))
-					{
-						state = MIOSYS_REQUEST_PRT_RANDOMIZER;
-					}
-					else if (!memcmp((const void *)token, (const void *)"randclear", strlen("randclear")))
-					{
-						state = MIOSYS_REQUEST_CLR_RANDOMIZER;
-					}
-#endif
                     else
                     {
                         breaker = 1;
@@ -191,16 +144,6 @@ static ssize_t miosys_write(struct file * file, const char * buf, size_t count, 
 
                 case MIOSYS_REQUEST_SMART: { breaker = 1; } break;
                 case MIOSYS_REQUEST_WEARLEVEL: { breaker = 1; } break;
-                case MIOSYS_REQUEST_THREAD_STATUS: { breaker = 1; } break;
-#ifdef __MIO_UNIT_TEST_RANDOMIZER__
-				case MIOSYS_REQUEST_RUN_RANDOMIZER:
-				{
-					run_randomizer_cnt = simple_strtoul(token, NULL, 10);
-					breaker = 1;
-				} break;
-				case MIOSYS_REQUEST_PRT_RANDOMIZER: { breaker = 1; } break;
-				case MIOSYS_REQUEST_CLR_RANDOMIZER: { breaker = 1; } break;
-#endif
 
                 default: { breaker = 1; } break;
 
@@ -216,20 +159,6 @@ static ssize_t miosys_write(struct file * file, const char * buf, size_t count, 
             case MIOSYS_REQUEST_WEARLEVEL:      { miosys_print_wearleveldata(); } break;
             case MIOSYS_REQUEST_READRETRYTABLE: { miosys_print_readretrytable(); } break;
             case MIOSYS_REQUEST_ELAPSED_T:      { miosys_print_elapsed_t(); } break;
-            case MIOSYS_REQUEST_ELAPSED_MEDIA:  { miosys_print_elapsed_media(); } break;
-            case MIOSYS_REQUEST_THREAD_STATUS:  { miosys_print_threadstatus(); } break;
-#ifdef __MIO_UNIT_TEST_RANDOMIZER__
-			case MIOSYS_REQUEST_RUN_RANDOMIZER:
-			{
-				if (run_randomizer_cnt < 1 || run_randomizer_cnt > 1000000)
-					run_randomizer_cnt = 1;
-				//Exchange.sys.fn.print("  > run randomize %d times.\n", run_randomizer_cnt);
-
-				miosys_run_randomizer(run_randomizer_cnt);
-			} break;
-			case MIOSYS_REQUEST_PRT_RANDOMIZER: { miosys_prt_randomizer(); } break;
-			case MIOSYS_REQUEST_CLR_RANDOMIZER: { miosys_clr_randomizer(); } break;
-#endif
 
             default: {} break;
         }
@@ -331,24 +260,24 @@ int miosys_print_smart(void)
         }
     }
 
-    __PRINT("SMART Information\n");
+    __PRINT(KERN_INFO "SMART Information");
 
-    __PRINT("\n Life Cycle I/O\n");
-    __PRINT(" - Read (%lld MB, %lld Sectors) and Retried (%u Times)\n", MioSmartInfo.io_accumulate.read_bytes >> 20, MioSmartInfo.io_accumulate.read_sectors, accumulated_sum_readretrycount);
-    __PRINT(" - Write (%lld MB, %lld Sectors)\n", MioSmartInfo.io_accumulate.write_bytes >> 20, MioSmartInfo.io_accumulate.write_sectors);
+    __PRINT(KERN_INFO "\n Life Cycle I/O");
+    __PRINT(KERN_INFO " - Read (%lld MB, %lld Sectors) and Retried (%u Times)", MioSmartInfo.io_accumulate.read_bytes >> 20, MioSmartInfo.io_accumulate.read_sectors, accumulated_sum_readretrycount);
+    __PRINT(KERN_INFO " - Write (%lld MB, %lld Sectors)", MioSmartInfo.io_accumulate.write_bytes >> 20, MioSmartInfo.io_accumulate.write_sectors);
 
-    __PRINT("\n Power Cycle I/O\n");
-    __PRINT(" - Read (%lld MB, %lld Sectors) and Retried (%u Times)\n", MioSmartInfo.io_current.read_bytes >> 20, MioSmartInfo.io_current.read_sectors, *Exchange.ftl.ReadRetryCount);
-    __PRINT(" - Write (%lld MB, %lld Sectors)\n", MioSmartInfo.io_current.write_bytes >> 20, MioSmartInfo.io_current.write_sectors);
+    __PRINT(KERN_INFO "\n Power Cycle I/O");
+    __PRINT(KERN_INFO " - Read (%lld MB, %lld Sectors) and Retried (%u Times)", MioSmartInfo.io_current.read_bytes >> 20, MioSmartInfo.io_current.read_sectors, *Exchange.ftl.ReadRetryCount);
+    __PRINT(KERN_INFO " - Write (%lld MB, %lld Sectors)", MioSmartInfo.io_current.write_bytes >> 20, MioSmartInfo.io_current.write_sectors);
 
-    __PRINT("\n Erase Status\n");
-    __PRINT(" - Total Erase Count:    %u\n", sum_erasecount);
-    __PRINT(" - Max Erase Count:      %u\n", max_erasecount);
-    __PRINT(" - Min Erase Count:      %u\n", min_erasecount);
-    __PRINT(" - Average Erase Count:  %u.%02u\n", average_erasecount[0], average_erasecount[1]);
+    __PRINT(KERN_INFO "\n Erase Status");
+    __PRINT(KERN_INFO " - Total Erase Count:    %u", sum_erasecount);
+    __PRINT(KERN_INFO " - Max Erase Count:      %u", max_erasecount);
+    __PRINT(KERN_INFO " - Min Erase Count:      %u", min_erasecount);
+    __PRINT(KERN_INFO " - Average Erase Count:  %u.%02u", average_erasecount[0], average_erasecount[1]);
 
-    __PRINT("\n Block Status\n");
-    __PRINT(" - Total Usable Blocks: %u\n", sum_usableblocks);
+    __PRINT(KERN_INFO "\n Block Status");
+    __PRINT(KERN_INFO " - Total Usable Blocks: %u", sum_usableblocks);
 
     for (way = 0; way < *Exchange.ftl.Way; way++)
     {
@@ -382,35 +311,35 @@ int miosys_print_smart(void)
             free_block         = Exchange.ftl.fnGetBlocksCount(channel, way, BLOCK_TYPE_FREE, 0xFF);
             used_block         = total_usable_block - free_block;
 
-            __PRINT("\n NAND CHANNEL:%d WAY:%d Information\n", channel, way);
+            __PRINT(KERN_INFO "\n NAND CHANNEL:%d WAY:%d Information", channel, way);
 
             /******************************************************************
              * ECC Information
              ******************************************************************/
 
-            __PRINT("\n  ECC Status                    Power Cycle          Life Cycle\n");
-            __PRINT("  - Corrected Sectors:           %10u %19u\n", pnand_current->ecc_sector.corrected, pnand_accumulate->ecc_sector.corrected);
-            __PRINT("  - Level Detected Sectors:      %10u %19u\n", pnand_current->ecc_sector.leveldetected, pnand_accumulate->ecc_sector.leveldetected);
-            __PRINT("  - Uncorrectable Sectors:       %10u %19u\n", pnand_current->ecc_sector.uncorrectable, pnand_accumulate->ecc_sector.uncorrectable);
+            __PRINT(KERN_INFO "\n  ECC Status                    Power Cycle          Life Cycle");
+            __PRINT(KERN_INFO "  - Corrected Sectors:           %10u %19u", pnand_current->ecc_sector.corrected, pnand_accumulate->ecc_sector.corrected);
+            __PRINT(KERN_INFO "  - Level Detected Sectors:      %10u %19u", pnand_current->ecc_sector.leveldetected, pnand_accumulate->ecc_sector.leveldetected);
+            __PRINT(KERN_INFO "  - Uncorrectable Sectors:       %10u %19u", pnand_current->ecc_sector.uncorrectable, pnand_accumulate->ecc_sector.uncorrectable);
 
-            __PRINT("\n  Fail Status                   Power Cycle          Life Cycle\n");
-            __PRINT("  - Write Fail Count:            %10u %19u\n", pnand_current->writefail_count, pnand_accumulate->writefail_count);
-            __PRINT("  - Erase Fail Count:            %10u %19u\n", pnand_current->erasefail_count, pnand_accumulate->erasefail_count);
+            __PRINT(KERN_INFO "\n  Fail Status                   Power Cycle          Life Cycle");
+            __PRINT(KERN_INFO "  - Write Fail Count:            %10u %19u", pnand_current->writefail_count, pnand_accumulate->writefail_count);
+            __PRINT(KERN_INFO "  - Erase Fail Count:            %10u %19u", pnand_current->erasefail_count, pnand_accumulate->erasefail_count);
 
-            __PRINT("\n  Retry Status                  Power Cycle          Life Cycle\n");
-            __PRINT("  - Read Retry Count:            %10u %19u\n", pnand_current->readretry_count, pnand_accumulate->readretry_count);
+            __PRINT(KERN_INFO "\n  Retry Status                  Power Cycle          Life Cycle");
+            __PRINT(KERN_INFO "  - Read Retry Count:            %10u %19u", pnand_current->readretry_count, pnand_accumulate->readretry_count);
 
-            __PRINT("\n  Block Status\n");
-            __PRINT("  - Total Block:        %d\n", total_block);
-            __PRINT("  - Total Usable Block: %d\n", total_usable_block);
-            __PRINT("  - Total Bad Block:    %d\n", total_bad_block);
-            __PRINT("  - Retired Block:      %d\n", retired_block);
-            __PRINT("  - Free Block:         %d\n", free_block);
-            __PRINT("  - Used Block:         %d\n", used_block);
+            __PRINT(KERN_INFO "\n  Block Status");
+            __PRINT(KERN_INFO "  - Total Block:        %d", total_block);
+            __PRINT(KERN_INFO "  - Total Usable Block: %d", total_usable_block);
+            __PRINT(KERN_INFO "  - Total Bad Block:    %d", total_bad_block);
+            __PRINT(KERN_INFO "  - Retired Block:      %d", retired_block);
+            __PRINT(KERN_INFO "  - Free Block:         %d", free_block);
+            __PRINT(KERN_INFO "  - Used Block:         %d", used_block);
 
         }
     }
-    __PRINT(" \n");
+    __PRINT(KERN_INFO " \n");
 
     return 0;
 }
@@ -435,7 +364,7 @@ int miosys_print_wearleveldata(void)
 
     if (!miosmart_is_init())
     {
-        __PRINT(KERN_ERR "miosys_print_smart: miosmart is not inited!");
+        __PRINT(KERN_INFO "miosys_print_smart: miosmart is not inited!");
         return -1;
     }
 
@@ -448,7 +377,7 @@ int miosys_print_wearleveldata(void)
     buff = (unsigned int *)vmalloc(buff_size);
     if (!buff)
     {
-        __PRINT(KERN_ERR "mio.sys: wearlevel: memory alloc: fail");
+        __PRINT(KERN_INFO "mio.sys: wearlevel: memory alloc: fail");
         return -1;
     }
 
@@ -456,7 +385,7 @@ int miosys_print_wearleveldata(void)
     {
         for (way=0; way < *Exchange.ftl.Way; way++)
         {
-            __PRINT("NAND CH%02d-WAY%02d\n", channel, way);
+            __PRINT(KERN_INFO "NAND CH%02d-WAY%02d", channel, way);
 
             // Get Wearlevel data
             Exchange.ftl.fnGetWearLevelData(channel, way, buff, buff_size);
@@ -480,29 +409,29 @@ int miosys_print_wearleveldata(void)
                     case BLOCK_TYPE_DATA_COLD:
                     case BLOCK_TYPE_DATA_COLD_BAD:
                     {
-                        if (!partition) { __PRINT(" %08x BLOCK:%5d EraseCount:%5d DATA\n", entrydata, blockindex, erasecount); isvalid_erasecount = 1; }
-                        else            { __PRINT(" %08x BLOCK:%5d EraseCount:%5d DATA (ADMIN)\n", entrydata, blockindex, erasecount); }
+                        if (!partition) { __PRINT(KERN_INFO " %08x BLOCK:%5d EraseCount:%5d DATA", entrydata, blockindex, erasecount); isvalid_erasecount = 1; }
+                        else            { __PRINT(KERN_INFO " %08x BLOCK:%5d EraseCount:%5d DATA (ADMIN)", entrydata, blockindex, erasecount); }
                     } break;
 
-                    case BLOCK_TYPE_MAPLOG: { __PRINT(" %08x BLOCK:%5d EraseCount:%5d SYSTEM (M)\n", entrydata, blockindex, erasecount); isvalid_erasecount = 1; } break;
-                    case BLOCK_TYPE_FREE:   { __PRINT(" %08x BLOCK:%5d EraseCount:%5d FREE\n", entrydata, blockindex, erasecount); isvalid_erasecount = 1; } break;
+                    case BLOCK_TYPE_MAPLOG: { __PRINT(KERN_INFO " %08x BLOCK:%5d EraseCount:%5d SYSTEM (M)", entrydata, blockindex, erasecount); isvalid_erasecount = 1; } break;
+                    case BLOCK_TYPE_FREE:   { __PRINT(KERN_INFO " %08x BLOCK:%5d EraseCount:%5d FREE", entrydata, blockindex, erasecount); isvalid_erasecount = 1; } break;
                     case 0xA:
                     {
                         switch (sub_attribute)
                         {
-                            case 0x7:             { __PRINT(" %08x BLOCK:%5d PROHIBIT\n", entrydata, blockindex); } break;
-                            case 0x8:             { __PRINT(" %08x BLOCK:%5d CONFIG\n", entrydata, blockindex); } break;
-                            case 0x9:             { __PRINT(" %08x BLOCK:%5d SYSTEM (RETRY)\n", entrydata, blockindex); } break;
-                            case BLOCK_TYPE_IBAD: { __PRINT(" %08x BLOCK:%5d BAD (Initial)\n", entrydata, blockindex); badblock_count++; } break;
-                            case BLOCK_TYPE_FBAD: { __PRINT(" %08x BLOCK:%5d BAD (Factory)\n", entrydata, blockindex); badblock_count++; } break;
-                            case BLOCK_TYPE_RBAD: { __PRINT(" %08x BLOCK:%5d BAD (Runtime)\n", entrydata, blockindex); badblock_count++; } break;
-                            case BLOCK_TYPE_ROOT: { __PRINT(" %08x BLOCK:%5d SYSTEM (ROOT)\n", entrydata, blockindex); } break;
-                            case BLOCK_TYPE_ENED: { __PRINT(" %08x BLOCK:%5d SYSTEM (ENED)\n", entrydata, blockindex); } break;
-                            case BLOCK_TYPE_FIRM: { __PRINT(" %08x BLOCK:%5d SYSTEM (FW)\n", entrydata, blockindex); } break;
-                            default:              { __PRINT(" %08x BLOCK %5d SYSTEM (0x%x)\n", entrydata, blockindex, sub_attribute); } break;
+                            case 0x7:             { __PRINT(KERN_INFO " %08x BLOCK:%5d PROHIBIT", entrydata, blockindex); } break;
+                            case 0x8:             { __PRINT(KERN_INFO " %08x BLOCK:%5d CONFIG", entrydata, blockindex); } break;
+                            case 0x9:             { __PRINT(KERN_INFO " %08x BLOCK:%5d SYSTEM (RETRY)", entrydata, blockindex); } break;
+                            case BLOCK_TYPE_IBAD: { __PRINT(KERN_INFO " %08x BLOCK:%5d BAD (Initial)", entrydata, blockindex); badblock_count++; } break;
+                            case BLOCK_TYPE_FBAD: { __PRINT(KERN_INFO " %08x BLOCK:%5d BAD (Factory)", entrydata, blockindex); badblock_count++; } break;
+                            case BLOCK_TYPE_RBAD: { __PRINT(KERN_INFO " %08x BLOCK:%5d BAD (Runtime)", entrydata, blockindex); badblock_count++; } break;
+                            case BLOCK_TYPE_ROOT: { __PRINT(KERN_INFO " %08x BLOCK:%5d SYSTEM (ROOT)", entrydata, blockindex); } break;
+                            case BLOCK_TYPE_ENED: { __PRINT(KERN_INFO " %08x BLOCK:%5d SYSTEM (ENED)", entrydata, blockindex); } break;
+                            case BLOCK_TYPE_FIRM: { __PRINT(KERN_INFO " %08x BLOCK:%5d SYSTEM (FW)", entrydata, blockindex); } break;
+                            default:              { __PRINT(KERN_INFO " %08x BLOCK %5d SYSTEM (0x%x)", entrydata, blockindex, sub_attribute); } break;
                         }
                     } break;
-                    default:  { __PRINT( " %08x BLOCK %5d, unknown (0x%02x)\n", entrydata, blockindex, attribute); } break;
+                    default:  { __PRINT(KERN_INFO " %08x BLOCK %5d, unknown (0x%02x)", entrydata, blockindex, attribute); } break;
                 }
 
                 // erasecount: max/min/average
@@ -522,13 +451,13 @@ int miosys_print_wearleveldata(void)
                 average_erasecount[1] = ((sum_erasecount % validnum_erasecount) * 100) / validnum_erasecount;
             }
 
-            __PRINT( "bad blocks %d\n", badblock_count);
-            __PRINT( "max erasecount %5d\n", max_erasecount);
-            __PRINT( "min erasecount %5d\n", min_erasecount);
-            __PRINT( "average erasecount %d.%02d\n", average_erasecount[0], average_erasecount[1]);
+            __PRINT(KERN_INFO "bad blocks %d", badblock_count);
+            __PRINT(KERN_INFO "max erasecount %5d", max_erasecount);
+            __PRINT(KERN_INFO "min erasecount %5d", min_erasecount);
+            __PRINT(KERN_INFO "average erasecount %d.%02d", average_erasecount[0], average_erasecount[1]);
         }
     }
-    __PRINT( " \n");
+    __PRINT(KERN_INFO " \n");
 
     // destory buffer
     vfree(buff);
@@ -545,39 +474,10 @@ int miosys_print_readretrytable(void)
     return 0;
 }
 
-#ifdef __MIO_UNIT_TEST_RANDOMIZER__
-extern void NFC_PHY_RAND_Test(int cnt);
-int miosys_run_randomizer(int cnt)
-{
-	NFC_PHY_RAND_Test(cnt);
-
-    return 0;
-}
-
-extern void NFC_PHY_RAND_Print(void);
-int miosys_prt_randomizer(void)
-{
-	NFC_PHY_RAND_Print();
-
-    return 0;
-}
-
-void NFC_PHY_RAND_Clear(void);
-int miosys_clr_randomizer(void)
-{
-	NFC_PHY_RAND_Clear();
-
-	return 0;
-}
-#endif /* __MIO_UNIT_TEST_RANDOMIZER__ */
-
-
 int miosys_print_elapsed_t(void)
 {
-#if defined (__COMPILE_MODE_ELAPSE_T__)
     unsigned char sz[32];
 
-    unsigned int sum_roundup = Exchange.debug.elapse_t.sum_roundup;
     unsigned long long * sum = Exchange.debug.elapse_t.sum;
     unsigned long long * avg = Exchange.debug.elapse_t.avg;
     unsigned long long * min = Exchange.debug.elapse_t.min;
@@ -609,126 +509,55 @@ int miosys_print_elapsed_t(void)
     avg[ELAPSE_T_IO_FTL_W]  = avg[ELAPSE_T_IO_MEDIA_W]  - avg_nfc_w;
     min[ELAPSE_T_IO_FTL_W]  = min[ELAPSE_T_IO_MEDIA_W]  - min_nfc_w;
     max[ELAPSE_T_IO_FTL_W]  = max[ELAPSE_T_IO_MEDIA_W]  - max_nfc_w;
-                                                                                                            __PRINT("\n");
-                                                                                                            __PRINT(" Measured On Transaction Thread (Measured Unit is nano second)\n");
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-                                                                                                            __PRINT(" |                       |     %10d x Sum |             Avg |             Min |             Max |     Ratio |\n", sum_roundup);
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-    Exchange.sys.fn.ratio(sz, gt_sum, sum[ELAPSE_T_TRANSACTION_THREAD_BACKGROUND]);                         __PRINT(" | BackGround            | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_TRANSACTION_THREAD_BACKGROUND], avg[ELAPSE_T_TRANSACTION_THREAD_BACKGROUND], min[ELAPSE_T_TRANSACTION_THREAD_BACKGROUND], max[ELAPSE_T_TRANSACTION_THREAD_BACKGROUND], sz);
-    Exchange.sys.fn.ratio(sz, gt_sum, sum[ELAPSE_T_TRANSACTION_THREAD_SCHEDULED ]);                         __PRINT(" | Scheduled             | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_TRANSACTION_THREAD_SCHEDULED ], avg[ELAPSE_T_TRANSACTION_THREAD_SCHEDULED ], min[ELAPSE_T_TRANSACTION_THREAD_SCHEDULED ], max[ELAPSE_T_TRANSACTION_THREAD_SCHEDULED ], sz);
-    Exchange.sys.fn.ratio(sz, gt_sum, sum[ELAPSE_T_TRANSACTION_THREAD_IO        ]);                         __PRINT(" | Transaction           | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_TRANSACTION_THREAD_IO        ], avg[ELAPSE_T_TRANSACTION_THREAD_IO        ], min[ELAPSE_T_TRANSACTION_THREAD_IO        ], max[ELAPSE_T_TRANSACTION_THREAD_IO        ], sz);
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-                                                                                                            __PRINT("\n");
-                                                                                                            __PRINT(" Measured On Transaction (Measured Unit is nano second)\n");
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-                                                                                                            __PRINT(" |                       |     %10d x Sum |             Avg |             Min |             Max |     Ratio |\n", sum_roundup);
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_TRANSACTION_THREAD_IO], sum[ELAPSE_T_TRANSACTION_THREAD_IO]);    __PRINT(" | Transaction           | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_TRANSACTION_THREAD_IO], avg[ELAPSE_T_TRANSACTION_THREAD_IO], min[ELAPSE_T_TRANSACTION_THREAD_IO], max[ELAPSE_T_TRANSACTION_THREAD_IO], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_TRANSACTION_THREAD_IO], sum[ELAPSE_T_IO_MEDIA_DISCARD     ]);    __PRINT(" | - Media Discard       | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_MEDIA_DISCARD     ], avg[ELAPSE_T_IO_MEDIA_DISCARD     ], min[ELAPSE_T_IO_MEDIA_DISCARD     ], max[ELAPSE_T_IO_MEDIA_DISCARD     ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_TRANSACTION_THREAD_IO], sum[ELAPSE_T_IO_MEDIA_FLUSH       ]);    __PRINT(" | - Media Flush         | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_MEDIA_FLUSH       ], avg[ELAPSE_T_IO_MEDIA_FLUSH       ], min[ELAPSE_T_IO_MEDIA_FLUSH       ], max[ELAPSE_T_IO_MEDIA_FLUSH       ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_TRANSACTION_THREAD_IO], sum[ELAPSE_T_IO_MEDIA_RW          ]);    __PRINT(" | - Media I/O           | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_MEDIA_RW          ], avg[ELAPSE_T_IO_MEDIA_RW          ], min[ELAPSE_T_IO_MEDIA_RW          ], max[ELAPSE_T_IO_MEDIA_RW          ], sz);
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-                                                                                                            __PRINT("\n\n");
-                                                                                                            __PRINT(" Measured On Media I/O (Measured Unit is nano second)\n");
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-                                                                                                            __PRINT(" |                       |     %10d x Sum |             Avg |             Min |             Max |     Ratio |\n", sum_roundup);
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEDIA_RW          ]);    __PRINT(" | Media I/O         R/W | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_MEDIA_RW          ], avg[ELAPSE_T_IO_MEDIA_RW          ], min[ELAPSE_T_IO_MEDIA_RW          ], max[ELAPSE_T_IO_MEDIA_RW          ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_RW            ]);    __PRINT(" | - FTL             R/W | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_FTL_RW            ], avg[ELAPSE_T_IO_FTL_RW            ], min[ELAPSE_T_IO_FTL_RW            ], max[ELAPSE_T_IO_FTL_RW            ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum_nfc_rw                         );    __PRINT(" | - NFC             R/W | %20lld | %15lld | %15lld | %15lld | %s |\n", sum_nfc_rw                         , avg_nfc_rw                         , min_nfc_rw                         , max_nfc_rw                         , sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_RANDOMIZER_RW ]);    __PRINT(" | - NFC Randomizer  R/W | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_NFC_RANDOMIZER_RW ], avg[ELAPSE_T_IO_NFC_RANDOMIZER_RW ], min[ELAPSE_T_IO_NFC_RANDOMIZER_RW ], max[ELAPSE_T_IO_NFC_RANDOMIZER_RW ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_DELAY_RW      ]);    __PRINT(" | - NFC Delay       R/W | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_NFC_DELAY_RW      ], avg[ELAPSE_T_IO_NFC_DELAY_RW      ], min[ELAPSE_T_IO_NFC_DELAY_RW      ], max[ELAPSE_T_IO_NFC_DELAY_RW      ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEMIO_RW          ]);    __PRINT(" | - Memory I/O      R/W | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_MEMIO_RW          ], avg[ELAPSE_T_IO_MEMIO_RW          ], min[ELAPSE_T_IO_MEMIO_RW          ], max[ELAPSE_T_IO_MEMIO_RW          ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_MAP_SEARCH_RW ]);    __PRINT(" | - Ftl Map Search  R/W | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_FTL_MAP_SEARCH_RW ], avg[ELAPSE_T_IO_FTL_MAP_SEARCH_RW ], min[ELAPSE_T_IO_FTL_MAP_SEARCH_RW ], max[ELAPSE_T_IO_FTL_MAP_SEARCH_RW ], sz);
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEDIA_R           ]);    __PRINT(" | Media I/O         RD  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_MEDIA_R           ], avg[ELAPSE_T_IO_MEDIA_R           ], min[ELAPSE_T_IO_MEDIA_R           ], max[ELAPSE_T_IO_MEDIA_R           ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_R             ]);    __PRINT(" | - FTL             RD  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_FTL_R             ], avg[ELAPSE_T_IO_FTL_R             ], min[ELAPSE_T_IO_FTL_R             ], max[ELAPSE_T_IO_FTL_R             ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum_nfc_r                          );    __PRINT(" | - NFC             RD  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum_nfc_r                          , avg_nfc_r                          , min_nfc_r                          , max_nfc_r                          , sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_RANDOMIZER_R  ]);    __PRINT(" | - NFC Randomizer  RD  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_NFC_RANDOMIZER_R  ], avg[ELAPSE_T_IO_NFC_RANDOMIZER_R  ], min[ELAPSE_T_IO_NFC_RANDOMIZER_R  ], max[ELAPSE_T_IO_NFC_RANDOMIZER_R  ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_DELAY_R       ]);    __PRINT(" | - NFC Delay       RD  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_NFC_DELAY_R       ], avg[ELAPSE_T_IO_NFC_DELAY_R       ], min[ELAPSE_T_IO_NFC_DELAY_R       ], max[ELAPSE_T_IO_NFC_DELAY_R       ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEMIO_R           ]);    __PRINT(" | - Memory I/O      RD  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_MEMIO_R           ], avg[ELAPSE_T_IO_MEMIO_R           ], min[ELAPSE_T_IO_MEMIO_R           ], max[ELAPSE_T_IO_MEMIO_R           ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_MAP_SEARCH_R  ]);    __PRINT(" | - Ftl Map Search  RD  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_FTL_MAP_SEARCH_R  ], avg[ELAPSE_T_IO_FTL_MAP_SEARCH_R  ], min[ELAPSE_T_IO_FTL_MAP_SEARCH_R  ], max[ELAPSE_T_IO_FTL_MAP_SEARCH_R  ], sz);
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEDIA_W           ]);    __PRINT(" | Media I/O         WR  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_MEDIA_W           ], avg[ELAPSE_T_IO_MEDIA_W           ], min[ELAPSE_T_IO_MEDIA_W           ], max[ELAPSE_T_IO_MEDIA_W           ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_W             ]);    __PRINT(" | - FTL             WR  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_FTL_W             ], avg[ELAPSE_T_IO_FTL_W             ], min[ELAPSE_T_IO_FTL_W             ], max[ELAPSE_T_IO_FTL_W             ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum_nfc_w                          );    __PRINT(" | - NFC             WR  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum_nfc_w                          , avg_nfc_w                          , min_nfc_w                          , max_nfc_w                          , sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_RANDOMIZER_W  ]);    __PRINT(" | - NFC Randomizer  WR  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_NFC_RANDOMIZER_W  ], avg[ELAPSE_T_IO_NFC_RANDOMIZER_W  ], min[ELAPSE_T_IO_NFC_RANDOMIZER_W  ], max[ELAPSE_T_IO_NFC_RANDOMIZER_W  ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_DELAY_W       ]);    __PRINT(" | - NFC Delay       WR  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_NFC_DELAY_W       ], avg[ELAPSE_T_IO_NFC_DELAY_W       ], min[ELAPSE_T_IO_NFC_DELAY_W       ], max[ELAPSE_T_IO_NFC_DELAY_W       ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEMIO_W           ]);    __PRINT(" | - Memory I/O      WR  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_MEMIO_W           ], avg[ELAPSE_T_IO_MEMIO_W           ], min[ELAPSE_T_IO_MEMIO_W           ], max[ELAPSE_T_IO_MEMIO_W           ], sz);
-    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_MAP_SEARCH_W  ]);    __PRINT(" | - Ftl Map Search  WR  | %20lld | %15lld | %15lld | %15lld | %s |\n", sum[ELAPSE_T_IO_FTL_MAP_SEARCH_W  ], avg[ELAPSE_T_IO_FTL_MAP_SEARCH_W  ], min[ELAPSE_T_IO_FTL_MAP_SEARCH_W  ], max[ELAPSE_T_IO_FTL_MAP_SEARCH_W  ], sz);
-                                                                                                            __PRINT(" +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+\n");
-                                                                                                            __PRINT("\n");
-#endif
-
-    return 0;
-}
-
-/******************************************************************************
- * 
- ******************************************************************************/
-int miosys_print_elapsed_media(void)
-{
-    ELAPSED_MEDIA_IO *media_io = 0;
-
-    __PRINT("Media Read/Write Elapsed time\n");
-
-    media_io = &(elapsed_mio_media_info.max_read);
-    __PRINT("\n Max Elapsed Time\n");
-    __PRINT(" - READ     : %5lld ms (%11lldns LBA:0x%08x Seccnt:0x%04x)\n", div_u64(media_io->elapsed_ns,1000000), media_io->elapsed_ns, media_io->lba, media_io->seccnt);
-    media_io = &(elapsed_mio_media_info.max_write);
-    __PRINT(" - WRITE    : %5lld ms (%11lldns LBA:0x%08x Seccnt:0x%04x)\n", div_u64(media_io->elapsed_ns,1000000), media_io->elapsed_ns, media_io->lba, media_io->seccnt);
-    media_io = &(elapsed_mio_media_info.max_flush);
-    __PRINT(" - FLUSH    : %5lld ms (%11lldns)\n", div_u64(media_io->elapsed_ns,1000000), media_io->elapsed_ns);
-    media_io = &(elapsed_mio_media_info.max_trim);
-    __PRINT(" - TRIM     : %5lld ms (%11lldns)\n", div_u64(media_io->elapsed_ns,1000000), media_io->elapsed_ns);
-    media_io = &(elapsed_mio_media_info.max_standby);
-    __PRINT(" - STANDBY  : %5lld ms (%11lldns)\n", div_u64(media_io->elapsed_ns,1000000), media_io->elapsed_ns);
-    media_io = &(elapsed_mio_media_info.max_powerdown);
-    __PRINT(" - POWERDOWN: %5lld ms (%11lldns)\n", div_u64(media_io->elapsed_ns,1000000), media_io->elapsed_ns);
-    __PRINT("\n");
-
-    return 0;
-}
-
-/******************************************************************************
- * 
- ******************************************************************************/
-static int miosys_print_threadstatus(void)
-{
-    struct mio_state * io_state = mio_dev.io_state;
-
-    __PRINT("MIO THREAD Information\n\n");
-    __PRINT(" - miosys_dev.ioctl_mutex lock: %d\n", mutex_is_locked(miosys_dev.ioctl_mutex));
-    __PRINT(" - mio_dev.io_state->transaction.status(%d): ", mio_dev.io_state->transaction.status);
-    switch (io_state->transaction.status)
-    {
-        case MIO_IDLE:       { __PRINT("MIO_IDLE"); } break;
-        case MIO_SCHEDULED:  { __PRINT("MIO_SCHEDULED"); } break;
-        case MIO_BACKGROUND: { __PRINT("MIO_BACKGROUND"); } break;
-        case MIO_SUPER:      { __PRINT("MIO_SUPER"); } break;
-        case MIO_REQ_BUSY:   { __PRINT("MIO_REQ_BUSY"); } break;
-        default: {} break;
-    }
-    __PRINT("\n\n");
-
-    return 0;
-}
-
-/******************************************************************************
- * 
- ******************************************************************************/
-static int miosys_print_ftlinfo(const char * text, unsigned int len)
-{
-    if (Exchange.ftl.fnPrintInfo)
-    {
-        unsigned int headlen = strlen("ftl_");
-        
-        if (len > headlen)
-        {
-            Exchange.ftl.fnPrintInfo(text+headlen, len-headlen);
-        }
-    }
-
+                                                                                                            __PRINT(KERN_INFO "\n");
+                                                                                                            __PRINT(KERN_INFO " Measured On Transaction Thread (Measured Unit is nano second)");
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+                                                                                                            __PRINT(KERN_INFO " |                       |                  Sum |             Avg |             Min |             Max |     Ratio |");
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+    Exchange.sys.fn.ratio(sz, gt_sum, sum[ELAPSE_T_TRANSACTION_THREAD_BACKGROUND]);                         __PRINT(KERN_INFO " | BackGround            | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_TRANSACTION_THREAD_BACKGROUND], avg[ELAPSE_T_TRANSACTION_THREAD_BACKGROUND], min[ELAPSE_T_TRANSACTION_THREAD_BACKGROUND], max[ELAPSE_T_TRANSACTION_THREAD_BACKGROUND], sz);
+    Exchange.sys.fn.ratio(sz, gt_sum, sum[ELAPSE_T_TRANSACTION_THREAD_SCHEDULED ]);                         __PRINT(KERN_INFO " | Scheduled             | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_TRANSACTION_THREAD_SCHEDULED ], avg[ELAPSE_T_TRANSACTION_THREAD_SCHEDULED ], min[ELAPSE_T_TRANSACTION_THREAD_SCHEDULED ], max[ELAPSE_T_TRANSACTION_THREAD_SCHEDULED ], sz);
+    Exchange.sys.fn.ratio(sz, gt_sum, sum[ELAPSE_T_TRANSACTION_THREAD_IO        ]);                         __PRINT(KERN_INFO " | Transaction           | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_TRANSACTION_THREAD_IO        ], avg[ELAPSE_T_TRANSACTION_THREAD_IO        ], min[ELAPSE_T_TRANSACTION_THREAD_IO        ], max[ELAPSE_T_TRANSACTION_THREAD_IO        ], sz);
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+                                                                                                            __PRINT(KERN_INFO "\n");
+                                                                                                            __PRINT(KERN_INFO " Measured On Transaction (Measured Unit is nano second)");
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+                                                                                                            __PRINT(KERN_INFO " |                       |                  Sum |             Avg |             Min |             Max |     Ratio |");
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_TRANSACTION_THREAD_IO], sum[ELAPSE_T_TRANSACTION_THREAD_IO]);    __PRINT(KERN_INFO " | Transaction           | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_TRANSACTION_THREAD_IO], avg[ELAPSE_T_TRANSACTION_THREAD_IO], min[ELAPSE_T_TRANSACTION_THREAD_IO], max[ELAPSE_T_TRANSACTION_THREAD_IO], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_TRANSACTION_THREAD_IO], sum[ELAPSE_T_IO_MEDIA_DISCARD     ]);    __PRINT(KERN_INFO " | - Media Discard       | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_MEDIA_DISCARD     ], avg[ELAPSE_T_IO_MEDIA_DISCARD     ], min[ELAPSE_T_IO_MEDIA_DISCARD     ], max[ELAPSE_T_IO_MEDIA_DISCARD     ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_TRANSACTION_THREAD_IO], sum[ELAPSE_T_IO_MEDIA_FLUSH       ]);    __PRINT(KERN_INFO " | - Media Flush         | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_MEDIA_FLUSH       ], avg[ELAPSE_T_IO_MEDIA_FLUSH       ], min[ELAPSE_T_IO_MEDIA_FLUSH       ], max[ELAPSE_T_IO_MEDIA_FLUSH       ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_TRANSACTION_THREAD_IO], sum[ELAPSE_T_IO_MEDIA_RW          ]);    __PRINT(KERN_INFO " | - Media I/O           | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_MEDIA_RW          ], avg[ELAPSE_T_IO_MEDIA_RW          ], min[ELAPSE_T_IO_MEDIA_RW          ], max[ELAPSE_T_IO_MEDIA_RW          ], sz);
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+                                                                                                            __PRINT(KERN_INFO "\n");
+                                                                                                            __PRINT(KERN_INFO " Measured On Media I/O (Measured Unit is nano second)");
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+                                                                                                            __PRINT(KERN_INFO " |                       |                  Sum |             Avg |             Min |             Max |     Ratio |");
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEDIA_RW          ]);    __PRINT(KERN_INFO " | Media I/O         R/W | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_MEDIA_RW          ], avg[ELAPSE_T_IO_MEDIA_RW          ], min[ELAPSE_T_IO_MEDIA_RW          ], max[ELAPSE_T_IO_MEDIA_RW          ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_RW            ]);    __PRINT(KERN_INFO " | - FTL             R/W | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_FTL_RW            ], avg[ELAPSE_T_IO_FTL_RW            ], min[ELAPSE_T_IO_FTL_RW            ], max[ELAPSE_T_IO_FTL_RW            ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum_nfc_rw                         );    __PRINT(KERN_INFO " | - NFC             R/W | %20lld | %15lld | %15lld | %15lld | %s |", sum_nfc_rw                         , avg_nfc_rw                         , min_nfc_rw                         , max_nfc_rw                         , sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_RANDOMIZER_RW ]);    __PRINT(KERN_INFO " | - NFC Randomizer  R/W | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_NFC_RANDOMIZER_RW ], avg[ELAPSE_T_IO_NFC_RANDOMIZER_RW ], min[ELAPSE_T_IO_NFC_RANDOMIZER_RW ], max[ELAPSE_T_IO_NFC_RANDOMIZER_RW ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_DELAY_RW      ]);    __PRINT(KERN_INFO " | - NFC Delay       R/W | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_NFC_DELAY_RW      ], avg[ELAPSE_T_IO_NFC_DELAY_RW      ], min[ELAPSE_T_IO_NFC_DELAY_RW      ], max[ELAPSE_T_IO_NFC_DELAY_RW      ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEMIO_RW          ]);    __PRINT(KERN_INFO " | - Memory I/O      R/W | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_MEMIO_RW          ], avg[ELAPSE_T_IO_MEMIO_RW          ], min[ELAPSE_T_IO_MEMIO_RW          ], max[ELAPSE_T_IO_MEMIO_RW          ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_MAP_SEARCH_RW ]);    __PRINT(KERN_INFO " | - Ftl Map Search  R/W | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_FTL_MAP_SEARCH_RW ], avg[ELAPSE_T_IO_FTL_MAP_SEARCH_RW ], min[ELAPSE_T_IO_FTL_MAP_SEARCH_RW ], max[ELAPSE_T_IO_FTL_MAP_SEARCH_RW ], sz);
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEDIA_R           ]);    __PRINT(KERN_INFO " | Media I/O         RD  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_MEDIA_R           ], avg[ELAPSE_T_IO_MEDIA_R           ], min[ELAPSE_T_IO_MEDIA_R           ], max[ELAPSE_T_IO_MEDIA_R           ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_R             ]);    __PRINT(KERN_INFO " | - FTL             RD  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_FTL_R             ], avg[ELAPSE_T_IO_FTL_R             ], min[ELAPSE_T_IO_FTL_R             ], max[ELAPSE_T_IO_FTL_R             ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum_nfc_r                          );    __PRINT(KERN_INFO " | - NFC             RD  | %20lld | %15lld | %15lld | %15lld | %s |", sum_nfc_r                          , avg_nfc_r                          , min_nfc_r                          , max_nfc_r                          , sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_RANDOMIZER_R  ]);    __PRINT(KERN_INFO " | - NFC Randomizer  RD  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_NFC_RANDOMIZER_R  ], avg[ELAPSE_T_IO_NFC_RANDOMIZER_R  ], min[ELAPSE_T_IO_NFC_RANDOMIZER_R  ], max[ELAPSE_T_IO_NFC_RANDOMIZER_R  ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_DELAY_R       ]);    __PRINT(KERN_INFO " | - NFC Delay       RD  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_NFC_DELAY_R       ], avg[ELAPSE_T_IO_NFC_DELAY_R       ], min[ELAPSE_T_IO_NFC_DELAY_R       ], max[ELAPSE_T_IO_NFC_DELAY_R       ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEMIO_R           ]);    __PRINT(KERN_INFO " | - Memory I/O      RD  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_MEMIO_R           ], avg[ELAPSE_T_IO_MEMIO_R           ], min[ELAPSE_T_IO_MEMIO_R           ], max[ELAPSE_T_IO_MEMIO_R           ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_MAP_SEARCH_R  ]);    __PRINT(KERN_INFO " | - Ftl Map Search  RD  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_FTL_MAP_SEARCH_R  ], avg[ELAPSE_T_IO_FTL_MAP_SEARCH_R  ], min[ELAPSE_T_IO_FTL_MAP_SEARCH_R  ], max[ELAPSE_T_IO_FTL_MAP_SEARCH_R  ], sz);
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEDIA_W           ]);    __PRINT(KERN_INFO " | Media I/O         WR  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_MEDIA_W           ], avg[ELAPSE_T_IO_MEDIA_W           ], min[ELAPSE_T_IO_MEDIA_W           ], max[ELAPSE_T_IO_MEDIA_W           ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_W             ]);    __PRINT(KERN_INFO " | - FTL             WR  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_FTL_W             ], avg[ELAPSE_T_IO_FTL_W             ], min[ELAPSE_T_IO_FTL_W             ], max[ELAPSE_T_IO_FTL_W             ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum_nfc_w                          );    __PRINT(KERN_INFO " | - NFC             WR  | %20lld | %15lld | %15lld | %15lld | %s |", sum_nfc_w                          , avg_nfc_w                          , min_nfc_w                          , max_nfc_w                          , sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_RANDOMIZER_W  ]);    __PRINT(KERN_INFO " | - NFC Randomizer  WR  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_NFC_RANDOMIZER_W  ], avg[ELAPSE_T_IO_NFC_RANDOMIZER_W  ], min[ELAPSE_T_IO_NFC_RANDOMIZER_W  ], max[ELAPSE_T_IO_NFC_RANDOMIZER_W  ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_NFC_DELAY_W       ]);    __PRINT(KERN_INFO " | - NFC Delay       WR  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_NFC_DELAY_W       ], avg[ELAPSE_T_IO_NFC_DELAY_W       ], min[ELAPSE_T_IO_NFC_DELAY_W       ], max[ELAPSE_T_IO_NFC_DELAY_W       ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_MEMIO_W           ]);    __PRINT(KERN_INFO " | - Memory I/O      WR  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_MEMIO_W           ], avg[ELAPSE_T_IO_MEMIO_W           ], min[ELAPSE_T_IO_MEMIO_W           ], max[ELAPSE_T_IO_MEMIO_W           ], sz);
+    Exchange.sys.fn.ratio(sz, sum[ELAPSE_T_IO_MEDIA_RW          ], sum[ELAPSE_T_IO_FTL_MAP_SEARCH_W  ]);    __PRINT(KERN_INFO " | - Ftl Map Search  WR  | %20lld | %15lld | %15lld | %15lld | %s |", sum[ELAPSE_T_IO_FTL_MAP_SEARCH_W  ], avg[ELAPSE_T_IO_FTL_MAP_SEARCH_W  ], min[ELAPSE_T_IO_FTL_MAP_SEARCH_W  ], max[ELAPSE_T_IO_FTL_MAP_SEARCH_W  ], sz);
+                                                                                                            __PRINT(KERN_INFO " +-----------------------+----------------------+-----------------+-----------------+-----------------+-----------+");
+                                                                                                            __PRINT(KERN_INFO "\n");
     return 0;
 }
 

@@ -77,27 +77,3 @@ MIO_MEDIA_EXT void media_standby(void * _io_state);
 MIO_MEDIA_EXT void media_powerdown(void * _io_state);
 MIO_MEDIA_EXT int media_is_idle(void * _io_state);
 
-/******************************************************************************
- *
- ******************************************************************************/
-typedef struct __ELAPSED_MEDIA_IO__
-{
-	unsigned int lba;
-	unsigned int seccnt;
-	s64 elapsed_ns;
-	
-} ELAPSED_MEDIA_IO;
-
-typedef struct __ELAPSED_MIO_MEDIA__
-{
-    ELAPSED_MEDIA_IO max_read;
-    ELAPSED_MEDIA_IO max_write;
-    ELAPSED_MEDIA_IO max_flush;
-    ELAPSED_MEDIA_IO max_trim;
-    ELAPSED_MEDIA_IO max_standby;
-    ELAPSED_MEDIA_IO max_powerdown;
-
-} ELAPSED_MIO_MEDIA;
-
-MIO_MEDIA_EXT ELAPSED_MIO_MEDIA elapsed_mio_media_info;
-

@@ -44,14 +44,17 @@ void nxp_set_bus_config(void)
 	u32 i_slot;
 
 	/* ------------- DREX QoS -------------- */
+	#if (CFG_BUS_RECONFIG_DREXQOS == 1)
 	for (i_slot = 0; i_slot < 2; i_slot++)
 	{
 		val = readl(NX_VA_BASE_REG_DREX + NX_DREX_QOS_OFFSET + (i_slot<<3));
 		if (val != g_DrexQoS[i_slot])
 			writel( g_DrexQoS[i_slot], (NX_VA_BASE_REG_DREX + NX_DREX_QOS_OFFSET + (i_slot<<3)) );
 	}
+	#endif /* (CFG_BUS_RECONFIG_DREXQOS == 1) */
 
 	/* ------------- Bottom BUS ------------ */
+	#if (CFG_BUS_RECONFIG_BOTTOMBUSSI == 1)
 	num_si = readl(NX_VA_BASE_REG_PL301_BOTT + 0xFC0);
 	num_mi = readl(NX_VA_BASE_REG_PL301_BOTT + 0xFC4);
 
@@ -101,8 +104,10 @@ void nxp_set_bus_config(void)
 		if (val != g_BottomBusSI[i_slot])
 			writel( (i_slot << SLOT_NUM_POS) | (g_BottomBusSI[i_slot] << SI_IF_NUM_POS),  (NX_BASE_REG_PL301_BOTT_AW + 0x20) );
 	}
+	#endif /* (CFG_BUS_RECONFIG_BOTTOMBUSSI == 1) */
 
 	/* ------------- Top BUS ------------ */
+	#if (CFG_BUS_RECONFIG_TOPBUSSI == 1)
 	num_si = readl(NX_VA_BASE_REG_PL301_TOP + 0xFC0);
 	num_mi = readl(NX_VA_BASE_REG_PL301_TOP + 0xFC4);
 
@@ -143,8 +148,10 @@ void nxp_set_bus_config(void)
 		if (val != g_TopBusSI[i_slot])
 			writel( (i_slot << SLOT_NUM_POS) | (g_TopBusSI[i_slot] << SI_IF_NUM_POS),  (NX_BASE_REG_PL301_TOP_AW + 0x20) );
 	}
+	#endif /* (CFG_BUS_RECONFIG_TOPBUSSI == 1) */
 
 	/* ------------- Display BUS ----------- */
+	#if (CFG_BUS_RECONFIG_DISPBUSSI == 1)
 	num_si = readl(NX_VA_BASE_REG_PL301_DISP + 0xFC0);
 	num_mi = readl(NX_VA_BASE_REG_PL301_DISP + 0xFC4);
 
@@ -167,6 +174,7 @@ void nxp_set_bus_config(void)
 		if (val != g_DispBusSI[i_slot])
 			writel( (i_slot << SLOT_NUM_POS) | (g_DispBusSI[i_slot] << SI_IF_NUM_POS),  NX_BASE_REG_PL301_DISP_AW );
 	}
+	#endif /* (CFG_BUS_RECONFIG_DISPBUSSI == 1) */
 
 	return;
 }
@@ -174,30 +182,31 @@ void nxp_set_bus_config(void)
 
 static void cpu_base_init(void)
 {
+	U32 tie_reg, val;
 	int i = 0;
 
 	NX_RSTCON_Initialize();
-	NX_RSTCON_SetBaseAddress((void*)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
+	NX_RSTCON_SetBaseAddress((U32)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
 
 	NX_TIEOFF_Initialize();
-	NX_TIEOFF_SetBaseAddress((void*)IO_ADDRESS(NX_TIEOFF_GetPhysicalAddress()));
+	NX_TIEOFF_SetBaseAddress((U32)IO_ADDRESS(NX_TIEOFF_GetPhysicalAddress()));
 
 	NX_GPIO_Initialize();
 	for (i = 0; NX_GPIO_GetNumberOfModule() > i; i++) {
-		NX_GPIO_SetBaseAddress(i, (void*)IO_ADDRESS(NX_GPIO_GetPhysicalAddress(i)));
+		NX_GPIO_SetBaseAddress(i, (U32)IO_ADDRESS(NX_GPIO_GetPhysicalAddress(i)));
 		NX_GPIO_OpenModule(i);
 	}
 
 	NX_ALIVE_Initialize();
-	NX_ALIVE_SetBaseAddress((void*)IO_ADDRESS(NX_ALIVE_GetPhysicalAddress()));
+	NX_ALIVE_SetBaseAddress((U32)IO_ADDRESS(NX_ALIVE_GetPhysicalAddress()));
 	NX_ALIVE_OpenModule();
 
 	NX_CLKPWR_Initialize();
-	NX_CLKPWR_SetBaseAddress((void*)IO_ADDRESS(NX_CLKPWR_GetPhysicalAddress()));
+	NX_CLKPWR_SetBaseAddress((U32)IO_ADDRESS(NX_CLKPWR_GetPhysicalAddress()));
 	NX_CLKPWR_OpenModule();
 
 	NX_ECID_Initialize();
-	NX_ECID_SetBaseAddress((void*)IO_ADDRESS(NX_ECID_GetPhysicalAddress()));
+	NX_ECID_SetBaseAddress((U32)IO_ADDRESS(NX_ECID_GetPhysicalAddress()));
 
 	/*
 	 * NOTE> ALIVE Power Gate must enable for RTC register access.
@@ -214,7 +223,7 @@ static void cpu_bus_init(void)
 {
 	/* MCUS for Static Memory. */
 	NX_MCUS_Initialize();
-	NX_MCUS_SetBaseAddress((void*)IO_ADDRESS(NX_MCUS_GetPhysicalAddress()));
+	NX_MCUS_SetBaseAddress((U32)IO_ADDRESS(NX_MCUS_GetPhysicalAddress()));
 	NX_MCUS_OpenModule();
 
 	/*
@@ -284,13 +293,8 @@ void nxp_cpu_reset(char str, const char *cmd)
 	if (cmd && !strcmp(cmd, "recovery")) {
 		__raw_writel(RECOVERY_SIGNATURE, SCR_RESET_SIG_SET);
 		__raw_readl (SCR_RESET_SIG_READ);	/* verify */
+		printk("recovery sign [0x%x:0x%x] \n", SCR_RESET_SIG_READ, readl(SCR_RESET_SIG_READ));
 	}
-
-	if (cmd && !strcmp(cmd, "usbboot")) {
-		__raw_writel(USBBOOT_SIGNATURE, SCR_RESET_SIG_SET);
-		__raw_readl (SCR_RESET_SIG_READ);	/* verify */
-	}
-	printk("recovery sign [0x%x:0x%x] \n", SCR_RESET_SIG_READ, readl(SCR_RESET_SIG_READ));
 
 	NX_ALIVE_SetWriteEnable(CFALSE);	/* close alive gate */
 	NX_CLKPWR_SetSoftwareResetEnable(CTRUE);
@@ -533,7 +537,7 @@ void nxp_cpu_arch_init(void)
 #endif
 
 #if (CFG_BUS_RECONFIG_ENB == 1)
-//	nxp_set_bus_config();
+	nxp_set_bus_config();
 #endif
 
 	/* Check version */

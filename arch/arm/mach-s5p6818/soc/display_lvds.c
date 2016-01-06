@@ -301,13 +301,13 @@ static void lvds_initialize(void)
 	int i;
 
 	/* BASE : CLKGEN, LVDS */
-	NX_DISPTOP_CLKGEN_SetBaseAddress(clkid, (void*)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(clkid)));
+	NX_DISPTOP_CLKGEN_SetBaseAddress(clkid, (U32)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(clkid)));
 	NX_DISPTOP_CLKGEN_SetClockPClkMode(clkid, NX_PCLKMODE_ALWAYS);
 
 	/* BASE : LVDS */
 	NX_LVDS_Initialize();
 	for (i = 0; NX_LVDS_GetNumberOfModule() > i; i++)
-		NX_LVDS_SetBaseAddress(i, (void*)IO_ADDRESS(NX_LVDS_GetPhysicalAddress(i)));
+		NX_LVDS_SetBaseAddress(i, (U32)IO_ADDRESS(NX_LVDS_GetPhysicalAddress(i)));
 }
 
 static int lvds_probe(struct platform_device *pdev)

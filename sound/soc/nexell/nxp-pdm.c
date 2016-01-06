@@ -413,7 +413,7 @@ static __devinit int nxp_pdm_probe(struct platform_device *pdev)
     }
 
 	NX_PDM_Initialize();
-	NX_PDM_SetBaseAddress(0, (void*)IO_ADDRESS(NX_PDM_GetPhysicalAddress(0)));
+	NX_PDM_SetBaseAddress(0, (U32)IO_ADDRESS(NX_PDM_GetPhysicalAddress(0)));
 
 #if defined(PDM_IRQ_COUNT)
 	ret = request_irq(IRQ_PHY_PDM,

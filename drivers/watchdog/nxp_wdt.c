@@ -39,9 +39,6 @@
 #include <linux/io.h>
 #include <linux/slab.h>
 #include <linux/err.h>
-#ifdef CONFIG_WDT_TASK
-#include <linux/workqueue.h>
-#endif
 
 #include <mach/platform.h>
 #include <mach/devices.h>
@@ -108,21 +105,6 @@ static struct clk	*wdt_clock;
 static unsigned int	 wdt_count;
 static DEFINE_SPINLOCK(wdt_lock);
 
-#ifdef CONFIG_WDT_TASK
-static struct workqueue_struct *wdt_wqueue;
-static struct delayed_work wdt_task_work;
-
-static void nxp_wdt_task_work(struct work_struct *work)
-{
-	spin_lock(&wdt_lock);
-    writel(0, NXP_WTCLRINT);
-	writel(wdt_count, NXP_WTCNT);
-	spin_unlock(&wdt_lock);
-
-    queue_delayed_work(wdt_wqueue, &wdt_task_work, msecs_to_jiffies(CONFIG_DEFAULT_WDT_TASK_TIMEOUT-1)*1000);
-}
-#endif
-
 #ifdef CONFIG_WDT_SYSFS
 static ssize_t wdt_show(struct device *dev,
 		            struct device_attribute *attr, char *buf)
@@ -171,7 +153,7 @@ do {							\
 static int nxp_wdt_keepalive(struct watchdog_device *wdd)
 {
 	spin_lock(&wdt_lock);
-    writel(0, NXP_WTCLRINT);
+        writel(0, NXP_WTCLRINT);
 	writel(wdt_count, NXP_WTCNT);
 	spin_unlock(&wdt_lock);
 
@@ -185,7 +167,7 @@ static void __nxp_wdt_stop(void)
 	wtcon = readl(NXP_WTCON);
 	wtcon &= ~(NXP_WTCON_ENABLE | NXP_WTCON_RSTEN);
 	writel(wtcon, NXP_WTCON);
-    writel(0, NXP_WTCLRINT);
+        writel(0, NXP_WTCLRINT);
 }
 
 static int nxp_wdt_stop(struct watchdog_device *wdd)
@@ -451,11 +433,7 @@ static int __devinit nxp_wdt_probe(struct platform_device *pdev)
 
 	if (nxp_wdt_set_heartbeat(&nxp_wdd, tmr_margin)) {
 		started = nxp_wdt_set_heartbeat(&nxp_wdd,
-#ifdef CONFIG_WDT_TASK
-					CONFIG_DEFAULT_WDT_TASK_TIMEOUT);
-#else
 					CONFIG_NXP_WATCHDOG_DEFAULT_TIME);
-#endif
 
 		if (started == 0)
 			dev_info(dev,
@@ -502,13 +480,6 @@ static int __devinit nxp_wdt_probe(struct platform_device *pdev)
 		 (wtcon & NXP_WTCON_ENABLE) ?  "" : "in",
 		 (wtcon & NXP_WTCON_RSTEN) ? "en" : "dis",
 		 (wtcon & NXP_WTCON_INTEN) ? "en" : "dis");
-
-#ifdef CONFIG_WDT_TASK
-	wdt_wqueue = create_singlethread_workqueue("nxp_wdt_task_wqueue");
-	INIT_DELAYED_WORK_DEFERRABLE(&wdt_task_work, nxp_wdt_task_work);
-	nxp_wdt_start(&nxp_wdd);
-    queue_delayed_work(wdt_wqueue, &wdt_task_work, msecs_to_jiffies(CONFIG_DEFAULT_WDT_TASK_TIMEOUT-1)*1000);
-#endif
 
 	return 0;
 
@@ -559,10 +530,6 @@ static unsigned long wtdat_save;
 
 static int nxp_wdt_suspend(struct platform_device *dev, pm_message_t state)
 {
-#ifdef CONFIG_WDT_TASK
-	cancel_delayed_work(&wdt_task_work);
-#endif
-
 	/* Save watchdog state, and turn it off. */
 	wtcon_save = readl(NXP_WTCON);
 
@@ -595,10 +562,6 @@ static int nxp_wdt_resume(struct platform_device *dev)
 
 	pr_info("watchdog %sabled\n",
 		(wtcon_save & NXP_WTCON_ENABLE) ? "en" : "dis");
-
-#ifdef CONFIG_WDT_TASK
-    queue_delayed_work(wdt_wqueue, &wdt_task_work, msecs_to_jiffies(CONFIG_DEFAULT_WDT_TASK_TIMEOUT-1)*1000);
-#endif
 
 	return 0;
 }

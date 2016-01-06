@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------------
 //  includes
 //------------------------------------------------------------------------------
-#include "../base/nx_prototype.h"
+#include "nx_prototype.h"
 
 #ifdef	__cplusplus
 extern "C"
@@ -111,8 +111,8 @@ U32		NX_AC97_GetPhysicalAddress( U32 ModuleIndex );
 U32		NX_AC97_GetResetNumber( U32 ModuleIndex );
 U32		NX_AC97_GetNumberOfReset( void );
 U32		NX_AC97_GetSizeOfRegisterSet( void );
-void	NX_AC97_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*	NX_AC97_GetBaseAddress( U32 ModuleIndex );
+void	NX_AC97_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32		NX_AC97_GetBaseAddress( U32 ModuleIndex );
 CBOOL	NX_AC97_OpenModule( U32 ModuleIndex );
 CBOOL	NX_AC97_CloseModule( U32 ModuleIndex );
 CBOOL	NX_AC97_CheckBusy( U32 ModuleIndex );

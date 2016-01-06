@@ -10,7 +10,7 @@ config ARCH_CPU_SLSI
 
 config ARCH_S5P6818_REV
 	bool "s5p6818 revision"
-	default y
+	default n
 
 choice
 	prompt "Prototype build mode"

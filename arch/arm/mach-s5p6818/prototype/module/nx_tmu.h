@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 //  includes
 //------------------------------------------------------------------------------
-#include "../base/nx_prototype.h"
+#include "nx_prototype.h"
 
 #ifdef	__cplusplus
 extern "C"
@@ -100,15 +100,14 @@ typedef enum
     NX_TMU_INT_FALLING1 = 20,
     NX_TMU_INT_FALLING2 = 24,
 
-} NX_TMU_INT_MASK;
+} NX_TMU_INT;
 
 typedef enum
 {
-    NX_TMU_TRIP_ONLYCURTEMP = 0,
-    NX_TMU_TRIP_TEMP3_0     = 4,
-    NX_TMU_TRIP_TEMP7_4     = 5,
-    NX_TMU_TRIP_TEMP11_8    = 6,
-    NX_TMU_TRIP_TEMP15_12   = 7
+    NX_TMU_TRIP_TEMP3_0   = 0,
+    NX_TMU_TRIP_TEMP7_4   = 1,
+    NX_TMU_TRIP_TEMP11_8  = 2,
+    NX_TMU_TRIP_TEMP15_12 = 3
     
 } NX_TMU_TRIPMODE ;
     
@@ -135,8 +134,8 @@ U32		NX_TMU_GetPhysicalAddress( U32 ModuleIndex );
 //U32		NX_TMU_GetResetNumber( U32 ModuleIndex, U32 ChannelIndex );
 U32		NX_TMU_GetNumberOfReset( void );
 U32		NX_TMU_GetSizeOfRegisterSet( void );
-void	NX_TMU_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*	NX_TMU_GetBaseAddress( U32 ModuleIndex );
+void	NX_TMU_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32		NX_TMU_GetBaseAddress( U32 ModuleIndex );
 CBOOL	NX_TMU_OpenModule( U32 ModuleIndex );
 CBOOL	NX_TMU_CloseModule( U32 ModuleIndex );
 CBOOL	NX_TMU_CheckBusy( U32 ModuleIndex );
@@ -148,11 +147,10 @@ CBOOL	NX_TMU_CanPowerDown( U32 ModuleIndex );
 ///	@name	Interrupt Interface
 //@{
 U32		NX_TMU_GetInterruptNumber( U32 ModuleIndex );
-void	NX_TMU_SetInterruptEnable		( U32 ModuleIndex, NX_TMU_INT_MASK IntNum, CBOOL Enable );
+//void  	NX_TMU_SetInterruptEnable( U32 ModuleIndex, U32 IntNum, CBOOL Enable );
 //CBOOL 	NX_TMU_GetInterruptEnable( U32 ModuleIndex, U32 IntNum );
-CBOOL   NX_TMU_GetInterruptPending( U32 ModuleIndex, NX_TMU_INT_MASK IntNum );
-void    NX_TMU_ClearInterruptPending( U32 ModuleIndex, NX_TMU_INT_MASK IntNum );
-
+CBOOL   NX_TMU_GetInterruptPending( U32 ModuleIndex, NX_TMU_INT IntNum );
+//void  	NX_TMU_ClearInterruptPending( U32 ModuleIndex, U32 IntNum );
 void  	NX_TMU_SetInterruptEnableAll( U32 ModuleIndex, CBOOL Enable );
 CBOOL 	NX_TMU_GetInterruptEnableAll( U32 ModuleIndex );
 CBOOL 	NX_TMU_GetInterruptPendingAll( U32 ModuleIndex );
@@ -193,19 +191,10 @@ U32     NX_TMU_GetThresholdLevelFalling3	( U32 ModuleIndex );
 void	NX_TMU_SetTmuTripMode	( U32 ModuleIndex, NX_TMU_TRIPMODE TripMode );	// TMU_CONTROL[15:13]
 void	NX_TMU_SetTmuTripEn		( U32 ModuleIndex, U32 value );	// TMU_CONTROL[12]
 
-void	NX_TMU_SetBufSlopeSel		( U32 ModuleIndex, U32 value );
-U32     NX_TMU_GetBufSlopeSel	    ( U32 ModuleIndex )	;
-
-void	NX_TMU_SetVRefVBESel		( U32 ModuleIndex, U32 value );
-U32     NX_TMU_GetVRefVBESel	    ( U32 ModuleIndex );
-
-
-
 void	NX_TMU_SetTmuStart		( U32 ModuleIndex, CBOOL value );	// TMU_CONTROL[0]
 
 void	NX_TMU_SetTmuEmulEn		( U32 ModuleIndex, CBOOL value );	// EMUL_CON[0]
 U32	    NX_TMU_GetTmuEmulEn		( U32 ModuleIndex );
-
 
 void	NX_TMU_SetTmuNextTime	( U32 ModuleIndex, U16 value );	// EMUL_CON[31:16]
 void	NX_TMU_SetTmuNextData	( U32 ModuleIndex, U32 value );	// EMUL_CON[15:8]

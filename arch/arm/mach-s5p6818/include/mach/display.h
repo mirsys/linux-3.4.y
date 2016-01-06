@@ -346,6 +346,17 @@ struct disp_mipi_param {
 	void *private_data;
 };
 
+struct data_val{
+	u8 data[48];
+};
+
+struct mipi_reg_val{
+	u32 cmd;
+	u32 addr;
+	u32 cnt;
+	struct data_val data;
+};
+
 // HDMI
 struct disp_hdmi_param {
     int preset;         	/* 0 = 1280 * 720p, 1=1920 * 1080p */

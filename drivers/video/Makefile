@@ -148,7 +148,7 @@ obj-$(CONFIG_FB_MSM)              += msm/
 obj-$(CONFIG_FB_NUC900)           += nuc900fb.o
 obj-$(CONFIG_FB_JZ4740)		  += jz4740_fb.o
 obj-$(CONFIG_FB_PUV3_UNIGFX)      += fb-puv3.o
-obj-$(CONFIG_FB_NXP)			  += nxp-fb.o nxp-fb-sys.o
+obj-$(CONFIG_FB_NXP)			  += nxp-fb.o
 
 # Platform or fallback drivers go here
 obj-$(CONFIG_FB_UVESA)            += uvesafb.o
@@ -173,9 +173,5 @@ obj-$(CONFIG_VIDEO_OUTPUT_CONTROL) += output.o
 
 ifeq ($(CONFIG_MALI_T6XX),y)
     EXTRA_CFLAGS += -Idrivers/gpu/arm/t6xx
-endif
-
-ifeq ($(CONFIG_MALI400),y)
-    EXTRA_CFLAGS += -Idrivers/gpu/arm/m400
 endif
 

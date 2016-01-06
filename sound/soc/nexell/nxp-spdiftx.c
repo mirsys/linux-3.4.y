@@ -636,3 +636,7 @@ module_exit(nxp_spdif_exit);
 MODULE_AUTHOR("jhkim <jhkim@nexell.co.kr>");
 MODULE_DESCRIPTION("Sound S/PDIF tx driver for the SLSI");
 MODULE_LICENSE("GPL");
+
+
+
+

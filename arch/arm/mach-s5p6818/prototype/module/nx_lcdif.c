@@ -27,11 +27,27 @@ static	NX_LCDINTERFACE_RegisterSet *__g_pRegister[NUMBER_OF_LCDINTERFACE_MODULE]
 
 
 
+//------------------------------------------------------------------------------
+//
+// Basic Interface
+//
+//------------------------------------------------------------------------------
 
+U32   NX_LCDINTERFACE_GetNumberOfModule( void );
+U32   NX_LCDINTERFACE_GetSizeOfRegisterSet( void );
+void  NX_LCDINTERFACE_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_LCDINTERFACE_GetBaseAddress( U32 ModuleIndex );
+U32   NX_LCDINTERFACE_GetPhysicalAddress ( U32 ModuleIndex );
+CBOOL NX_LCDINTERFACE_OpenModule( U32 ModuleIndex );
+CBOOL NX_LCDINTERFACE_CloseModule( U32 ModuleIndex );
+CBOOL NX_LCDINTERFACE_CheckBusy( U32 ModuleIndex );
+//@}
+
+//------------------------------------------------------------------------------
 /**
  *	@brief	Initialize of prototype enviroment & local variables.
- *	@return CTRUE	indicate that Initialize is successed.\n
- *			CFALSE	indicate that Initialize is failed.
+ *	@return \b CTRUE	indicate that Initialize is successed.\n
+ *			\b CFALSE	indicate that Initialize is failed.
  *	@see	NX_LCDINTERFACE_GetNumberOfModule
  */
 CBOOL NX_LCDINTERFACE_Initialize( void )
@@ -55,6 +71,7 @@ CBOOL NX_LCDINTERFACE_Initialize( void )
  *	@brief		Get number of modules in the chip.
  *	@return		Module's number. \n
  *				It is equal to NUMBER_OF_LCDINTERFACE_MODULE in <nx_chip.h>.
+ *	@see		NX_LCDINTERFACE_Initialize
  */
 U32		NX_LCDINTERFACE_GetNumberOfModule( void )
 {
@@ -65,6 +82,10 @@ U32		NX_LCDINTERFACE_GetNumberOfModule( void )
 /**
  *	@brief		Get a size, in byte, of register set.
  *	@return		Size of module's register set.
+ *	@see		NX_LCDINTERFACE_GetPhysicalAddress,
+ *				NX_LCDINTERFACE_SetBaseAddress,			NX_LCDINTERFACE_GetBaseAddress,
+ *				NX_LCDINTERFACE_OpenModule,				NX_LCDINTERFACE_CloseModule,
+ *				NX_LCDINTERFACE_CheckBusy,
  */
 U32		NX_LCDINTERFACE_GetSizeOfRegisterSet( void )
 {
@@ -76,8 +97,12 @@ U32		NX_LCDINTERFACE_GetSizeOfRegisterSet( void )
  *	@brief		Set a base address of register set.
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
+ *	@see		NX_LCDINTERFACE_GetPhysicalAddress,		NX_LCDINTERFACE_GetSizeOfRegisterSet,
+ *				NX_LCDINTERFACE_GetBaseAddress,
+ *				NX_LCDINTERFACE_OpenModule,				NX_LCDINTERFACE_CloseModule,
+ *				NX_LCDINTERFACE_CheckBusy,
  */
-void	NX_LCDINTERFACE_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
+void	NX_LCDINTERFACE_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
 
@@ -90,19 +115,28 @@ void	NX_LCDINTERFACE_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
 /**
  *	@brief		Get a base address of register set
  *	@return		Module's base address.
+ *	@see		NX_LCDINTERFACE_GetPhysicalAddress,		NX_LCDINTERFACE_GetSizeOfRegisterSet,
+ *				NX_LCDINTERFACE_SetBaseAddress,
+ *				NX_LCDINTERFACE_OpenModule,				NX_LCDINTERFACE_CloseModule,
+ *				NX_LCDINTERFACE_CheckBusy,
  */
-void*	NX_LCDINTERFACE_GetBaseAddress( U32 ModuleIndex )
+U32		NX_LCDINTERFACE_GetBaseAddress( U32 ModuleIndex )
 {
-	NX_ASSERT( NUMBER_OF_LCDINTERFACE_MODULE > ModuleIndex );
-	return (void*)__g_pRegister[ModuleIndex];
+
+    NX_ASSERT( NUMBER_OF_LCDINTERFACE_MODULE > ModuleIndex );
+	return (U32)__g_pRegister[ModuleIndex];
 }
 
 
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's physical address.
- *	@return		Module's physical address. 
+ *	@return		Module's physical address. \n
  *				It is equal to PHY_BASEADDR_DISPLAYTOP?_MODULE in <nx_chip.h>.
+ *	@see		NX_LCDINTERFACE_GetSizeOfRegisterSet,
+ *				NX_LCDINTERFACE_SetBaseAddress,			NX_LCDINTERFACE_GetBaseAddress,
+ *				NX_LCDINTERFACE_OpenModule,				NX_LCDINTERFACE_CloseModule,
+ *				NX_LCDINTERFACE_CheckBusy,
  */
 U32		NX_LCDINTERFACE_GetPhysicalAddress( U32 ModuleIndex )
 {
@@ -120,8 +154,12 @@ U32		NX_LCDINTERFACE_GetPhysicalAddress( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize selected modules with default value.
- *	@return		CTRUE	indicate that Initialize is successed. 
- *				CFALSE	indicate that Initialize is failed.
+ *	@return		\b CTRUE	indicate that Initialize is successed. \n
+ *				\b CFALSE	indicate that Initialize is failed.
+ *	@see		NX_LCDINTERFACE_GetPhysicalAddress,		NX_LCDINTERFACE_GetSizeOfRegisterSet,
+ *				NX_LCDINTERFACE_SetBaseAddress,			NX_LCDINTERFACE_GetBaseAddress,
+ *				NX_LCDINTERFACE_CloseModule,
+ *				NX_LCDINTERFACE_CheckBusy,
  */
 CBOOL	NX_LCDINTERFACE_OpenModule( U32 ModuleIndex )
 {
@@ -135,8 +173,12 @@ CBOOL	NX_LCDINTERFACE_OpenModule( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Deinitialize selected module to the proper stage.
- *	@return		CTRUE	indicate that Deinitialize is successed. 
- *				CFALSE	indicate that Deinitialize is failed.
+ *	@return		\b CTRUE	indicate that Deinitialize is successed. \n
+ *				\b CFALSE	indicate that Deinitialize is failed.
+ *	@see		NX_LCDINTERFACE_GetPhysicalAddress,		NX_LCDINTERFACE_GetSizeOfRegisterSet,
+ *				NX_LCDINTERFACE_SetBaseAddress,			NX_LCDINTERFACE_GetBaseAddress,
+ *				NX_LCDINTERFACE_OpenModule,
+ *				NX_LCDINTERFACE_CheckBusy,
  */
 CBOOL	NX_LCDINTERFACE_CloseModule( U32 ModuleIndex )
 {
@@ -150,8 +192,11 @@ CBOOL	NX_LCDINTERFACE_CloseModule( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether the selected modules is busy or not.
- *	@return		CTRUE	indicate that Module is Busy. 
- *				CFALSE	indicate that Module is NOT Busy.
+ *	@return		\b CTRUE	indicate that Module is Busy. \n
+ *				\b CFALSE	indicate that Module is NOT Busy.
+ *	@see		NX_LCDINTERFACE_GetPhysicalAddress,		NX_LCDINTERFACE_GetSizeOfRegisterSet,
+ *				NX_LCDINTERFACE_SetBaseAddress,			NX_LCDINTERFACE_GetBaseAddress,
+ *				NX_LCDINTERFACE_OpenModule,				NX_LCDINTERFACE_CloseModule,
  */
 
 // 이 함수는 SYNCENB를 검사하지 않는다.
@@ -174,8 +219,11 @@ CBOOL	NX_LCDINTERFACE_CheckBusy( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's reset index.
- *	@return		Module's reset index.
+ *	@return		Module's reset index.\n
  *				It is equal to RESETINDEX_OF_DISPLAYTOP?_MODULE_i_nRST in <nx_chip.h>.
+ *	@see		NX_RSTCON_Enter,
+ *				NX_RSTCON_Leave,
+ *				NX_RSTCON_GetStatus
  */
 
 U32 NX_LCDINTERFACE_GetResetNumber ( U32 ModuleIndex )
@@ -561,11 +609,11 @@ CBOOL	NX_LCDINTERFACE_GetLCDIFEnable( U32 ModuleIndex )
  *	@param[in]	DelayVS_FRAM	Specifies the delay value for VSYNC/FRAM signal, 0 ~ 63.
  *	@param[in]	DelayDE_CP2		Specifies the delay value for DE/CP2 signal, 0 ~ 63.
  *	@return		None.
- *	@remarks	Set delay value for TFT LCD's data and sync signal.
- *				TFT LCD 
+ *	@remarks	Set delay value for TFT LCD's data and sync signal.\n
+ *				\b TFT \b LCD \n
  *				The delay valus for data is generally '0' for normal operation.
  *				but the delay values for sync signals depend on the output format.
- *				The unit is VCLK2.
+ *				The unit is VCLK2.\n
  *				The setting values for normal operation is as follows,
  *	@code
  *		+-----------------------+-----------+-------------------------------+
@@ -580,6 +628,7 @@ CBOOL	NX_LCDINTERFACE_GetLCDIFEnable( U32 ModuleIndex )
  *		| ITU-R BT.656 / 601B	|	0		|				12				|
  *		+-----------------------+-----------+-------------------------------+
  *	@endcode
+ *	@see		NX_DPC_GetDelay
  */
 void	NX_LCDINTERFACE_SetDelay( U32 ModuleIndex, U32 DelayHS, U32 DelayVS, U32 DelayDE )
 {
@@ -871,7 +920,7 @@ Mask	| 1| 1| 1| 1| 0| 0| 0| 0| 0| 0| 0| 0| 1| 1| 1| 1| 0| 0| 0| 0| 0| 0| 0| 0|
 					( 1<< 17 ) | ( 1<< 16 ) | ( 1<< 15 ) | ( 1<< 14 ) | ( 1<< 13 ) | ( 1<< 12 ) |
 					( 0<< 11 ) | ( 0<< 10 ) | ( 0<<  9 ) | ( 0<<  8 ) | ( 1<<  7 ) | ( 1<<  6 ) |
 					( 1<<  5 ) | ( 1<<  4 ) | ( 1<<  3 ) | ( 1<<  2 ) | ( 1<<  1 ) | ( 1<<  0 ) ;
-		NX_CONSOLE_Printf("[DEBUG] NX_LCDINTERFACE_FORMAT_MRGB565 Mask Value = %x", regvalue);
+		NX_CONSOLE_Printf("\n[DEBUG] NX_LCDINTERFACE_FORMAT_MRGB565 Mask Value = %x\n", regvalue);
 		WriteIO32(&pRegister->DISPRGBMASK, regvalue);
 
 		// Serial Format Setting
@@ -1185,6 +1234,10 @@ CBOOL	NX_LCDINTERFACE_GetDirtyFlagClear( U32 ModuleIndex)
 // i80 Interface
 //*********************************************************************************************
 
+
+
+
+
 //@added choiyk 2012-10-30 오후 3:41:26
 void NX_LCDINTERFACE_SetCmdBufferClear( U32 ModuleIndex)
 {
@@ -1285,6 +1338,7 @@ void	NX_LCDINTERFACE_SetTFTPolarity( U32 ModuleIndex, CBOOL PHS, CBOOL PVS, CBOO
 	U32 regvalue;
 
 	register NX_LCDINTERFACE_RegisterSet*	pRegister;
+
 
     NX_ASSERT( NUMBER_OF_LCDINTERFACE_MODULE > ModuleIndex );
 	NX_ASSERT( CNULL != __g_pRegister[ModuleIndex] );
@@ -1411,6 +1465,22 @@ void NX_LCDINTERFACE_SetOutputClock( U32 ModuleIndex, U32 SourceSel )
 
 	WriteIO32(&pRegister->DISPCNTL0, regvalue);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //*********************************************************************************************
@@ -1548,7 +1618,7 @@ void NX_LCDINTERFACE_SetOutputClock( U32 ModuleIndex, U32 SourceSel )
 // *	@param[in]	ModuleIndex		An index of module ( 0 ~ 1 ).
 // *	@param[in]	Index	Select clock generator( 0 : clock generator 0 );
 // *	@param[in]	ClkSrc	Select clock source of clock generator ( 0: PLL0, 1:PLL1 ).
-// *	@remarks	CLKGEN have one clock generator. so  Index must set to 0.
+// *	@remarks	CLKGEN have one clock generator. so \e Index must set to 0.
 // *	@return		None.
 // *	@see		NX_LCDINTERFACE_SetClockPClkMode,		NX_LCDINTERFACE_GetClockPClkMode,
 // *				NX_LCDINTERFACE_GetClockSource,
@@ -1585,7 +1655,7 @@ void NX_LCDINTERFACE_SetOutputClock( U32 ModuleIndex, U32 SourceSel )
 // *	@param[in]	ModuleIndex		An index of module ( 0 ~ 1 ).
 // *	@param[in]	Index	Select clock generator( 0 : clock generator 0 );
 // *	@return		Clock source of clock generator ( 0:PLL0, 1:PLL1 ).
-// *	@remarks	CLKGEN have one clock generator. so  Index must set to 0.
+// *	@remarks	CLKGEN have one clock generator. so \e Index must set to 0.
 // *	@see		NX_LCDINTERFACE_SetClockPClkMode,		NX_LCDINTERFACE_GetClockPClkMode,
 // *				NX_LCDINTERFACE_SetClockSource,			NX_LCDINTERFACE_GetClockSource,
 // *				NX_LCDINTERFACE_SetClockDivisor,		NX_LCDINTERFACE_GetClockDivisor,
@@ -1614,7 +1684,7 @@ void NX_LCDINTERFACE_SetOutputClock( U32 ModuleIndex, U32 SourceSel )
 // *	@param[in]	Index		Select clock generator( 0 : clock generator 0 )
 // *	@param[in]	Divisor		Clock divisor ( 1 ~ 256 ).
 // *	@return		None.
-// *	@remarks	CLKGEN have one clock generator. so  Index must set to 0.
+// *	@remarks	CLKGEN have one clock generator. so \e Index must set to 0.
 // *	@see		NX_LCDINTERFACE_SetClockPClkMode,		NX_LCDINTERFACE_GetClockPClkMode,
 // *				NX_LCDINTERFACE_SetClockSource,			NX_LCDINTERFACE_GetClockSource,
 // *				NX_LCDINTERFACE_GetClockDivisor,
@@ -1649,7 +1719,7 @@ void NX_LCDINTERFACE_SetOutputClock( U32 ModuleIndex, U32 SourceSel )
 // *	@param[in]	ModuleIndex		An index of module ( 0 ~ 1 ).
 // *	@param[in]	Index		Select clock generator( 0 : clock generator 0	);
 // *	@return		Clock divisor ( 1 ~ 256 ).
-// *	@remarks	CLKGEN have one clock generator. so  Index must set to 0.
+// *	@remarks	CLKGEN have one clock generator. so \e Index must set to 0.
 // *	@see		NX_LCDINTERFACE_SetClockPClkMode,		NX_LCDINTERFACE_GetClockPClkMode,
 // *				NX_LCDINTERFACE_SetClockSource,			NX_LCDINTERFACE_GetClockSource,
 // *				NX_LCDINTERFACE_SetClockDivisor,
@@ -1675,8 +1745,8 @@ void NX_LCDINTERFACE_SetOutputClock( U32 ModuleIndex, U32 SourceSel )
 ///**
 // *	@brief		Set clock generator's operation
 // *	@param[in]	ModuleIndex		An index of module ( 0 ~ 1 ).
-// *	@param[in]	Enable	CTRUE	indicates that Enable of clock generator. 
-// *						CFALSE	indicates that Disable of clock generator.
+// *	@param[in]	Enable	\b CTRUE	indicates that Enable of clock generator. \n
+// *						\b CFALSE	indicates that Disable of clock generator.
 // *	@return		None.
 // *	@see		NX_LCDINTERFACE_SetClockPClkMode,		NX_LCDINTERFACE_GetClockPClkMode,
 // *				NX_LCDINTERFACE_SetClockSource,			NX_LCDINTERFACE_GetClockSource,
@@ -1711,8 +1781,8 @@ void NX_LCDINTERFACE_SetOutputClock( U32 ModuleIndex, U32 SourceSel )
 ///**
 // *	@brief		Get status of clock generator's operation
 // *	@param[in]	ModuleIndex		An index of module ( 0 ~ 1 ).
-// *	@return		CTRUE	indicates that Clock generator is enabled. 
-// *				CFALSE	indicates that Clock generator is disabled.
+// *	@return		\b CTRUE	indicates that Clock generator is enabled. \n
+// *				\b CFALSE	indicates that Clock generator is disabled.
 // *	@see		NX_LCDINTERFACE_SetClockPClkMode,		NX_LCDINTERFACE_GetClockPClkMode,
 // *				NX_LCDINTERFACE_SetClockSource,			NX_LCDINTERFACE_GetClockSource,
 // *				NX_LCDINTERFACE_SetClockDivisor,		NX_LCDINTERFACE_GetClockDivisor,

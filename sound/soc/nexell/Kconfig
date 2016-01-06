@@ -11,30 +11,6 @@ config SND_NXP_SOC
 	  Say Y or M if you want to add support for codecs attached to
 	  the AC97 and I2S interface.
 
-config SND_NXP_DFS
-	bool "DFS featrue for I2S(default PLL2)"
-	depends on SND_NXP_SOC
-	help
-	  Say Y if you want to add DFS feature support for I2S and interface.
-
-choice
-    prompt "Select SND PLL device"
-    depends on SND_NXP_DFS
-    default SND_NXP_PLL_2
-
-config SND_NXP_PLL_2
-    bool "PLL 2"
-
-config SND_NXP_PLL_3
-    bool "PLL 3"
-
-endchoice
-
-config SND_NXP_PLLDEV
-    int 
-    default 2 if SND_NXP_PLL_2
-    default 3 if SND_NXP_PLL_3
-										
 config SND_NXP_I2S
 	tristate
 

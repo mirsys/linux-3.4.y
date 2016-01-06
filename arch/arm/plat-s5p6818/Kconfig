@@ -20,6 +20,11 @@ choice
 		help
    	 		Support for the drone board.
 
+	config PLAT_S5P6818_DRONEL
+		bool "DRONEL: Android dronel board"
+		help
+   	 		Support for the drone board.
+
    	config PLAT_S5P6818_FDONE
 		bool "FDONE: Android FDONE board"
 		help
@@ -30,8 +35,8 @@ choice
 		help
    	 		Support for the SVT board.
 
-   	config PLAT_S5P6818_ASB
-		bool "ASB: Android ASB board"
+	config PLAT_S5P6818_X6818
+		bool "X6818: 9tripod's s5p6818 board"
 		help
    	 		Support for the ASB board.
 	config PLAT_S5P6818_NANOPI3
@@ -39,6 +44,7 @@ choice
 		help
 			Support for the NanoPi 3 board.
 
+   	 		Support for the x6818 board.
 
 endchoice
 

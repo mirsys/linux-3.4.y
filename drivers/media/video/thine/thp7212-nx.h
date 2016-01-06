@@ -6,8 +6,6 @@
 
 #define CONFIG_VIDEO_THP7212_V_1_1 //many add
 
-#include <mach/soc.h>
-
 struct thp7212_platform_data {
 	unsigned int default_width;
 	unsigned int default_height;

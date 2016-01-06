@@ -295,14 +295,6 @@ extern "C"
         NX_SDMMC_CLOCK_SHIFT_270        = 3
     } NX_SDMMC_CLKSHIFT;
 
-	typedef enum
-	{
-		NX_SDMMC_CLOCK_SOURCE_0			= 0,
-		NX_SDMMC_CLOCK_SOURCE_1			= 1,
-		NX_SDMMC_CLOCK_SOURCE_2			= 2,
-		NX_SDMMC_CLOCK_SOURCE_3			= 3,
-	} NX_SDMMC_CLOCK_SOURCE;
-
 //------------------------------------------------------------------------------
 /// @brief  SDMMC Module's MACRO
 //------------------------------------------------------------------------------
@@ -331,8 +323,8 @@ U32     NX_SDMMC_GetNumberOfModule( void );
 U32     NX_SDMMC_GetPhysicalAddress( U32 ModuleIndex );
 U32     NX_SDMMC_GetSizeOfRegisterSet( void );
 
-void    NX_SDMMC_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*    NX_SDMMC_GetBaseAddress( U32 ModuleIndex );
+void    NX_SDMMC_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32     NX_SDMMC_GetBaseAddress( U32 ModuleIndex );
 
 CBOOL   NX_SDMMC_OpenModule( U32 ModuleIndex );
 CBOOL   NX_SDMMC_CloseModule( U32 ModuleIndex );
@@ -396,8 +388,6 @@ CBOOL   NX_SDMMC_IsResetFIFO( U32 ModuleIndex );
 void    NX_SDMMC_ResetController( U32 ModuleIndex );
 CBOOL   NX_SDMMC_IsResetController( U32 ModuleIndex );
 
-void    NX_SDMMC_SetClockSource( U32 ModuleIndex, NX_SDMMC_CLOCK_SOURCE ClkSrc );
-NX_SDMMC_CLOCK_SOURCE    NX_SDMMC_GetClockSource( U32 ModuleIndex );
 void    NX_SDMMC_SetOutputClockDivider( U32 ModuleIndex, U32 divider );
 U32     NX_SDMMC_GetOutputClockDivider( U32 ModuleIndex );
 void    NX_SDMMC_SetLowPowerClockMode( U32 ModuleIndex, CBOOL Enable );

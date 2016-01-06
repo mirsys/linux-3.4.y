@@ -38,20 +38,6 @@
 #include <asm/irq.h>
 #include <asm/uaccess.h>
 
-#include <mach/platform.h>
-#include <mach/devices.h>
-#include <mach/soc.h>
-
-//#define __TRACE__
-#ifdef __TRACE__
-#define __trace(args, ...)	\
-	do { \
-		printk("  [%s %d] " args, __func__, __LINE__, ##__VA_ARGS__);\
-	} while(0)
-#else
-#define __trace(args, ...)	do { } while (0)
-#endif
-
 /**
  * phy_print_status - Convenience function to print out the current phy status
  * @phydev: the phy_device struct
@@ -68,54 +54,6 @@ void phy_print_status(struct phy_device *phydev)
 	printk(KERN_CONT "\n");
 }
 EXPORT_SYMBOL(phy_print_status);
-
-#ifdef CFG_ETHER_LOOPBACK_MODE
-/**
- * @speed: 0: disable, 1: 10M, 2: 100M, 3: 1000M
- */
-static int
-nxpmac_set_phy_loopback(struct phy_device *phydev, int speed)
-{
-	//unsigned long flags;
-
-	if (phydev == NULL)
-		return -1;
-
-	if (speed <= 0 || speed > 3)
-		return -1;
-
-	//spin_lock_irqsave(&priv->lock, flags);
-
-	/* disable PCS loopback */
-	phy_write(phydev, 31, 0);
-	phy_write(phydev, 0, 0x1140);
-	msleep(200);
-
-	/* enable PCS loopback */
-	phy_write(phydev, 31, 0);
-	phy_write(phydev, 0, 0x8000);
-	msleep(200);
-	switch (speed) {
-	case 1:	/* 10M */
-		phy_write(phydev, 0, 0x4100);
-		break;
-	case 2: /* 100M */
-		phy_write(phydev, 0, 0x6100);
-		break;
-	case 3: /* 1000M */
-		phy_write(phydev, 0, 0x4140);
-		break;
-	default:
-		break;
-	}
-	msleep(200);
-	//phy_write(phydev, 0, 0x8000);
-
-	//spin_unlock_irqrestore(&priv->lock, flags);
-
-	return 0;
-}
-#endif /* CFG_ETHER_LOOPBACK_MODE */
 
 
 /**
@@ -657,7 +595,6 @@ int phy_start_interrupts(struct phy_device *phydev)
 
 	atomic_set(&phydev->irq_disable, 0);
 	if (request_irq(phydev->irq, phy_interrupt,
-				//IRQF_TRIGGER_LOW | IRQF_SHARED,
 				IRQF_SHARED,
 				"phy_interrupt",
 				phydev) < 0) {
@@ -805,37 +742,21 @@ out_unlock:
  */
 void phy_start(struct phy_device *phydev)
 {
-	bool do_resume = false;
-	int err = 0;
-
-	__trace("phy start...\n");
-
 	mutex_lock(&phydev->lock);
 
 	switch (phydev->state) {
-	case PHY_STARTING:
-		phydev->state = PHY_PENDING;
-		break;
-	case PHY_READY:
-		phydev->state = PHY_UP;
-		break;
-	case PHY_HALTED:
-		/* make sure interrupts are re-enabled for the PHY */
-		err = phy_enable_interrupts(phydev);
-		if (err < 0)
+		case PHY_STARTING:
+			phydev->state = PHY_PENDING;
 			break;
-
-		phydev->state = PHY_RESUMING;
-		do_resume = true;
-		break;
-	default:
-		break;
+		case PHY_READY:
+			phydev->state = PHY_UP;
+			break;
+		case PHY_HALTED:
+			phydev->state = PHY_RESUMING;
+		default:
+			break;
 	}
 	mutex_unlock(&phydev->lock);
-
-	/* if phy was suspended, bring the physical link up again */
-	if (do_resume)
-		phy_resume(phydev);
 }
 EXPORT_SYMBOL(phy_stop);
 EXPORT_SYMBOL(phy_start);
@@ -849,7 +770,7 @@ void phy_state_machine(struct work_struct *work)
 	struct delayed_work *dwork = to_delayed_work(work);
 	struct phy_device *phydev =
 			container_of(dwork, struct phy_device, state_queue);
-	bool needs_aneg = false, do_suspend = false;
+	int needs_aneg = 0;
 	int err = 0;
 
 	mutex_lock(&phydev->lock);
@@ -865,13 +786,11 @@ void phy_state_machine(struct work_struct *work)
 			break;
 		case PHY_UP:
 			needs_aneg = 1;
+
 			phydev->link_timeout = PHY_AN_TIMEOUT;
 
 			break;
 		case PHY_AN:
-#ifdef CFG_ETHER_LOOPBACK_MODE
-			nxpmac_set_phy_loopback(phydev, CFG_ETHER_LOOPBACK_MODE);
-#endif
 			err = phy_read_status(phydev);
 
 			if (err < 0)
@@ -897,9 +816,6 @@ void phy_state_machine(struct work_struct *work)
 				phydev->state = PHY_RUNNING;
 				netif_carrier_on(phydev->attached_dev);
 				phydev->adjust_link(phydev->attached_dev);
-#ifdef CFG_ETHER_LOOPBACK_MODE
-				return ;
-#endif
 
 			} else if (0 == phydev->link_timeout--) {
 				int idx;
@@ -989,7 +905,6 @@ void phy_state_machine(struct work_struct *work)
 				phydev->link = 0;
 				netif_carrier_off(phydev->attached_dev);
 				phydev->adjust_link(phydev->attached_dev);
-				do_suspend = true;
 			}
 			break;
 		case PHY_RESUMING:
@@ -1047,8 +962,6 @@ void phy_state_machine(struct work_struct *work)
 
 	if (needs_aneg)
 		err = phy_start_aneg(phydev);
-	else if (do_suspend)
-		phy_suspend(phydev);
 
 	if (err < 0)
 		phy_error(phydev);

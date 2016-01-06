@@ -22,6 +22,7 @@ static struct NX_RSTCON_RegisterSet *__g_pRegister;
 CBOOL	NX_RSTCON_Initialize( void )
 {
 	static CBOOL bInit = CFALSE;
+	U32 i;
 
 	if( CFALSE == bInit )
 	{
@@ -45,22 +46,16 @@ U32	 NX_RSTCON_GetSizeOfRegisterSet( void )
 	return sizeof(struct NX_RSTCON_RegisterSet);
 }
 
-
-void NX_RSTCON_SetBaseAddress( void* BaseAddress )
-
+void NX_RSTCON_SetBaseAddress( U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
 
 	__g_pRegister = (struct NX_RSTCON_RegisterSet *)BaseAddress;
 }
 
-
-void* NX_RSTCON_GetBaseAddress( void )
-
+U32	 NX_RSTCON_GetBaseAddress( void )
 {
-
-	return (void*)__g_pRegister;
-
+	return (U32)__g_pRegister;
 }
 
 void	NX_RSTCON_SetRST(U32 RSTIndex, RSTCON STATUS)

@@ -18,10 +18,4 @@ config TURNAROUND_VIP_RESET
     ---help---
       Say y here to apply turnaround vip reset code
 
-config LOOPBACK_SENSOR_DRIVER
-    bool "Loopback Capture Sensor Driver for Testing"
-    default n
-    ---help---
-      Say y here to add loopback test sensor
-
 endif

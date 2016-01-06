@@ -104,8 +104,8 @@ U32		NX_DEINTERLACE_GetNumberOfModule( void );
 //@{
 U32		NX_DEINTERLACE_GetPhysicalAddress( void );
 U32		NX_DEINTERLACE_GetSizeOfRegisterSet( void );
-void	NX_DEINTERLACE_SetBaseAddress( void* BaseAddress );
-void*	NX_DEINTERLACE_GetBaseAddress( void );
+void	NX_DEINTERLACE_SetBaseAddress( U32 BaseAddress );
+U32		NX_DEINTERLACE_GetBaseAddress( void );
 CBOOL	NX_DEINTERLACE_OpenModule( void );
 CBOOL	NX_DEINTERLACE_CloseModule( void );
 CBOOL	NX_DEINTERLACE_CheckBusy( void );

@@ -18,7 +18,6 @@
 #include "../../../mio.definition.h"
 
 #include "nfc.phy.h"
-#include "nfc.phy.scan.h"
 #include "nfc.phy.readretry.h"
 #include "nfc.phy.rand.h"
 

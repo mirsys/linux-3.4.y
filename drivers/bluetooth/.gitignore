@@ -1,0 +1,9 @@
+#
+# Normal rules
+#
+*.ko
+*~
+
+#
+# Top-level generic files
+#

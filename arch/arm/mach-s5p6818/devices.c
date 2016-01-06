@@ -46,193 +46,9 @@
 /*------------------------------------------------------------------------------
  * Serial platform device
  */
-#if defined(CONFIG_SERIAL_AMBA_PL011)
-
-#define NX_UART_CH_INIT(ch) do { \
-	struct clk *clk;									\
-	char name[16];										\
-	sprintf(name, "nxp-uart.%d", ch);					\
-	clk = clk_get(NULL, name);							\
-	if (!nxp_soc_peri_reset_status(RESET_ID_UART## ch)) {		\
-		NX_TIEOFF_Set(TIEOFF_UART## ch ##_USERSMC , 0);	\
-		NX_TIEOFF_Set(TIEOFF_UART## ch ##_SMCTXENB, 0);	\
-		NX_TIEOFF_Set(TIEOFF_UART## ch ##_SMCRXENB, 0);	\
-		nxp_soc_peri_reset_set(RESET_ID_UART## ch);			\
-	}													\
-	clk_set_rate(clk, CFG_UART_CLKGEN_CLOCK_HZ);		\
-	clk_enable(clk);								\
-	} while (0)
-
-#if defined(CONFIG_SERIAL_NXP_UART0)
-static void __pl011_uart0_prepare(void)
-{
-	NX_UART_CH_INIT(0);
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_D), 14, NX_GPIO_PADFUNC_1);	// RX
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_D), 18, NX_GPIO_PADFUNC_1);	// TX
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_D), 14, CFALSE);
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_D), 18, CTRUE);
-}
-
-static void __pl011_uart0_wake_peer(void *uport) { }
-static void __pl011_uart0_exit(void) { }
-
-void pl011_uart0_prepare(void)			__attribute__((weak, alias("__pl011_uart0_prepare")));
-void pl011_uart0_wake_peer(void *uport)	__attribute__((weak, alias("__pl011_uart0_wake_peer")));
-void pl011_uart0_exit(void)				__attribute__((weak, alias("__pl011_uart0_exit")));
-
-static struct amba_pl011_data  pl011_data_ch0 = {
-#if defined(CONFIG_SERIAL_NXP_UART0_DMA)
-	.dma_filter = pl08x_filter_id,
-	.dma_rx_param = (void *) DMA_PERIPHERAL_NAME_UART0_RX,
-	.dma_tx_param = (void *) DMA_PERIPHERAL_NAME_UART0_TX,
-#endif
-	.init = pl011_uart0_prepare,
-	.exit = pl011_uart0_exit,
-	.wake_peer = pl011_uart0_wake_peer,
-};
-static AMBA_AHB_DEVICE(uart0, "uart-pl011.0", 0, PHY_BASEADDR_UART0, {IRQ_PHY_UART0}, &pl011_data_ch0);
-#endif
-
-#if defined(CONFIG_SERIAL_NXP_UART1)
-static void __pl011_uart1_prepare(void)
-{
-	NX_UART_CH_INIT(1);
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_D), 15, NX_GPIO_PADFUNC_1);	// RX
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_D), 19, NX_GPIO_PADFUNC_1);	// TX
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_D), 15, CFALSE);
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_D), 19, CTRUE);
-}
-
-static void __pl011_uart1_wake_peer(void *uport) { }
-static void __pl011_uart1_exit(void) { }
-
-void pl011_uart1_prepare(void)			__attribute__((weak, alias("__pl011_uart1_prepare")));
-void pl011_uart1_wake_peer(void *uport)	__attribute__((weak, alias("__pl011_uart1_wake_peer")));
-void pl011_uart1_exit(void)				__attribute__((weak, alias("__pl011_uart1_exit")));
-
-static struct amba_pl011_data  pl011_data_ch1 = {
-#if defined(CONFIG_SERIAL_NXP_UART1_DMA)
-	.dma_filter = pl08x_filter_id,
-	.dma_rx_param = (void *) DMA_PERIPHERAL_NAME_UART1_RX,
-	.dma_tx_param = (void *) DMA_PERIPHERAL_NAME_UART1_TX,
-#endif
-	.init = pl011_uart1_prepare,
-	.exit = pl011_uart1_exit,
-	.wake_peer = pl011_uart1_wake_peer,
-};
-static AMBA_AHB_DEVICE(uart1, "uart-pl011.1", 0, PHY_BASEADDR_UART1, {IRQ_PHY_UART1}, &pl011_data_ch1);
-#endif
-
-#if defined(CONFIG_SERIAL_NXP_UART2)
-static void __pl011_uart2_prepare(void)
-{
-	NX_UART_CH_INIT(2);
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_D), 16, NX_GPIO_PADFUNC_1);	// RX
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_D), 20, NX_GPIO_PADFUNC_1);	// TX
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_D), 16, CFALSE);
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_D), 20, CTRUE);
-}
-
-static void __pl011_uart2_wake_peer(void *uport) { }
-static void __pl011_uart2_exit(void) { }
-
-void pl011_uart2_prepare(void)			__attribute__((weak, alias("__pl011_uart2_prepare")));
-void pl011_uart2_wake_peer(void *uport)	__attribute__((weak, alias("__pl011_uart2_wake_peer")));
-void pl011_uart2_exit(void)				__attribute__((weak, alias("__pl011_uart2_exit")));
-
-static struct amba_pl011_data  pl011_data_ch2 = {
-#if defined(CONFIG_SERIAL_NXP_UART2_DMA)
-	.dma_filter = pl08x_filter_id,
-	.dma_rx_param = (void *) DMA_PERIPHERAL_NAME_UART2_RX,
-	.dma_tx_param = (void *) DMA_PERIPHERAL_NAME_UART2_TX,
-#endif
-	.init = pl011_uart2_prepare,
-	.exit = pl011_uart2_exit,
-	.wake_peer = pl011_uart2_wake_peer,
-};
-static AMBA_AHB_DEVICE(uart2, "uart-pl011.2", 0, PHY_BASEADDR_UART2, {IRQ_PHY_UART2}, &pl011_data_ch2);
-#endif
-
-#if defined(CONFIG_SERIAL_NXP_UART3)
-static void __pl011_uart3_prepare(void)
-{
-	NX_UART_CH_INIT(3);
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_D), 17, NX_GPIO_PADFUNC_1);	// RX
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_D), 21, NX_GPIO_PADFUNC_1);	// TX
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_D), 17, CFALSE);
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_D), 21, CTRUE);
-}
-
-static void __pl011_uart3_wake_peer(void *uport) { }
-static void __pl011_uart3_exit(void) { }
-
-void pl011_uart3_prepare(void)			__attribute__((weak, alias("__pl011_uart3_prepare")));
-void pl011_uart3_wake_peer(void *uport)	__attribute__((weak, alias("__pl011_uart3_wake_peer")));
-void pl011_uart3_exit(void)				__attribute__((weak, alias("__pl011_uart3_exit")));
-
-static struct amba_pl011_data  pl011_data_ch3 = {
-	.init = pl011_uart3_prepare,
-	.exit = pl011_uart3_exit,
-	.wake_peer = pl011_uart3_wake_peer,
-};
-
-static AMBA_AHB_DEVICE(uart3, "uart-pl011.3", 0, PHY_BASEADDR_UART3, {IRQ_PHY_UART3}, &pl011_data_ch3);
-#endif
-
-#if defined(CONFIG_SERIAL_NXP_UART4)
-static void __pl011_uart4_prepare(void)
-{
-	NX_UART_CH_INIT(4);
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_B), 28, NX_GPIO_PADFUNC_3);	// RX
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_B), 29, NX_GPIO_PADFUNC_3);	// TX
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_B), 28, CFALSE);
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_B), 29, CTRUE);
-}
-
-static void __pl011_uart4_wake_peer(void *uport) { }
-static void __pl011_uart4_exit(void) { }
-
-void pl011_uart4_prepare(void)			__attribute__((weak, alias("__pl011_uart4_prepare")));
-void pl011_uart4_wake_peer(void *uport)	__attribute__((weak, alias("__pl011_uart4_wake_peer")));
-void pl011_uart4_exit(void)				__attribute__((weak, alias("__pl011_uart4_exit")));
-
-static struct amba_pl011_data  pl011_data_ch4 = {
-	.init = pl011_uart4_prepare,
-	.exit = pl011_uart4_exit,
-	.wake_peer = pl011_uart4_wake_peer,
-};
-
-static AMBA_AHB_DEVICE(uart4, "uart-pl011.4", 0, PHY_BASEADDR_UART4, {IRQ_PHY_UART4}, &pl011_data_ch4);
-#endif
-
-#if defined(CONFIG_SERIAL_NXP_UART5)
-static void __pl011_uart5_prepare(void)
-{
-	NX_UART_CH_INIT(5);
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_B), 30, NX_GPIO_PADFUNC_3);	// RX
-	NX_GPIO_SetPadFunction (PAD_GET_GROUP(PAD_GPIO_B), 31, NX_GPIO_PADFUNC_3);	// TX
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_B), 30, CFALSE);
-	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(PAD_GPIO_B), 31, CTRUE);
-}
-
-static void __pl011_uart5_wake_peer(void *uport) { }
-static void __pl011_uart5_exit(void) { }
-
-void pl011_uart5_prepare(void)			__attribute__((weak, alias("__pl011_uart5_prepare")));
-void pl011_uart5_wake_peer(void *uport)	__attribute__((weak, alias("__pl011_uart5_wake_peer")));
-void pl011_uart5_exit(void)				__attribute__((weak, alias("__pl011_uart5_exit")));
-
-static struct amba_pl011_data  pl011_data_ch5 = {
-	.init = pl011_uart5_prepare,
-	.exit = pl011_uart5_exit,
-	.wake_peer = pl011_uart5_wake_peer,
-};
-
-static AMBA_AHB_DEVICE(uart5, "uart-pl011.5", 0, PHY_BASEADDR_UART5, {IRQ_PHY_UART5}, &pl011_data_ch5);
-#endif
-
-#endif /* CONFIG_SERIAL_AMBA_PL011 */
-
+#if defined(CONFIG_SERIAL_NXP_S3C)
+#include "dev-uart.c"
+#endif /* CONFIG_SERIAL_NXP_S3C */
 
 /*------------------------------------------------------------------------------
  * I2C Bus platform device
@@ -274,43 +90,6 @@ static AMBA_AHB_DEVICE(uart5, "uart-pl011.5", 0, PHY_BASEADDR_UART5, {IRQ_PHY_UA
 #define	I2C2_SDA	NXP_I2C2_MOD_SDA
 #endif
 
-#ifdef CFG_I2C0_RETRY_CNT
-#define I2C0_RETRY_CNT CFG_I2C0_RETRY_CNT
-#else
-#define I2C0_RETRY_CNT 3
-#endif
-
-#ifdef CFG_I2C0_RETRY_DELAY
-#define I2C0_RETRY_DELAY CFG_I2C0_RETRY_DELAY
-#else
-#define I2C0_RETRY_DELAY 100
-#endif
-
-#ifdef CFG_I2C1_RETRY_CNT
-#define I2C1_RETRY_CNT CFG_I2C1_RETRY_CNT
-#else
-#define I2C1_RETRY_CNT 3
-#endif
-
-#ifdef CFG_I2C1_RETRY_DELAY
-#define I2C1_RETRY_DELAY CFG_I2C1_RETRY_DELAY
-#else
-#define I2C1_RETRY_DELAY 100
-#endif
-
-#ifdef CFG_I2C2_RETRY_CNT
-#define I2C2_RETRY_CNT CFG_I2C2_RETRY_CNT
-#else
-#define I2C2_RETRY_CNT 3
-#endif
-
-#ifdef CFG_I2C2_RETRY_DELAY
-#define I2C2_RETRY_DELAY CFG_I2C2_RETRY_DELAY
-#else
-#define I2C2_RETRY_DELAY 100
-#endif
-
-
 
 
 #if	defined(CONFIG_I2C_NXP_PORT0)
@@ -341,8 +120,6 @@ struct s3c2410_platform_i2c i2c_data_ch0 = {
     .slave_addr = 0x10,
     .frequency  = CFG_I2C0_CLK,
     .sda_delay  = 100,
-	.retry_cnt  =  I2C0_RETRY_CNT, 
-	.retry_delay=  I2C0_RETRY_DELAY, 
 	.cfg_gpio	= i2c_cfg_gpio0,
 };
 static struct resource s3c_i2c0_resource[] = {
@@ -396,8 +173,6 @@ struct s3c2410_platform_i2c i2c_data_ch1 = {
     .slave_addr = 0x10,
     .frequency  = CFG_I2C1_CLK,
     .sda_delay  = 100,
-	.retry_cnt  =  I2C1_RETRY_CNT, 
-	.retry_delay=  I2C1_RETRY_DELAY, 
 	.cfg_gpio	= i2c_cfg_gpio1,
 };
 static struct resource s3c_i2c1_resource[] = {
@@ -446,8 +221,6 @@ struct s3c2410_platform_i2c i2c_data_ch2 = {
     .slave_addr = 0x10,
     .frequency  = CFG_I2C2_CLK,
     .sda_delay  = 100,
-	.retry_cnt  =  I2C2_RETRY_CNT, 
-	.retry_delay=  I2C2_RETRY_DELAY, 
 	.cfg_gpio	= i2c_cfg_gpio2,
 };
 static struct resource s3c_i2c2_resource[] = {
@@ -900,25 +673,6 @@ static struct platform_device spdif_device_rx = {
 #endif	/* CONFIG_SND_NXP_SPDIF_RX || CONFIG_SND_NXP_SPDIF_RX_MODULE */
 
 /*------------------------------------------------------------------------------
- * Alsa sound platform device (PDM)
- */
-#if defined(CONFIG_SND_NXP_PDM) || defined(CONFIG_SND_NXP_PDM_MODULE)
-static struct nxp_pdm_plat_data pdm_data = {
-	.sample_rate	= CFG_AUDIO_PDM_SAMPLE_RATE,
-	.dma_filter		= pl08x_filter_id,
-	.dma_ch			= DMA_PERIPHERAL_NAME_PDM,
-};
-
-static struct platform_device pdm_device = {
-	.name	= DEV_NAME_PDM,
-	.id		= -1,
-	.dev    = {
-		.platform_data	= &pdm_data
-	},
-};
-#endif	/* CONFIG_SND_NXP_PDM || CONFIG_SND_NXP_PDM_MODULE */
-
-/*------------------------------------------------------------------------------
  * SSP/SPI
  */
 #ifdef CONFIG_SPI_SLSI_PORT0
@@ -964,7 +718,7 @@ int s3c64xx_spi0_cfg_gpio(struct platform_device *dev)
 }
 
 struct s3c64xx_spi_info s3c64xx_spi0_pdata = {
-	.fifo_lvl_mask  = 0x1f,
+	.fifo_lvl_mask  = 0x1ff,
 	.rx_lvl_offset  = 15,
 	//.rx_lvl_offset  = 0x1ff,
 	.high_speed = 1,
@@ -1225,11 +979,7 @@ void otg_phy_init(void)
     // 1-1. VBUS reconfig - Over current Issue
 #if 1
     temp  = readl(SOC_VA_TIEOFF + 0x38) & ~(0x7<<23);
-#if defined(CFG_OTG_OVC_VALUE)
-    temp |= (CFG_OTG_OVC_VALUE << 23);
-#else
     temp |= (0x3<<23);
-#endif
     writel(temp, SOC_VA_TIEOFF + 0x38);
 #endif
 
@@ -1418,16 +1168,18 @@ struct platform_device nxp_device_ion = {
 #endif
 static unsigned long adc_sample_rate = CFG_ADC_SAMPLE_RATE;
 
-static struct resource nxp_adc_resource[] = {
-	[0] = DEFINE_RES_MEM(PHY_BASEADDR_ADC, SZ_1K),
-	[1] = DEFINE_RES_IRQ(IRQ_PHY_ADC),
+static struct resource adc_resource[] = {
+	[0] = {
+		.start	= IRQ_PHY_ADC,
+		.flags	= IORESOURCE_IRQ,
+	},
 };
 
-static struct platform_device nxp_adc_device = {
+static struct platform_device adc_device = {
 	.name			= DEV_NAME_ADC,
 	.id				= -1,
-	.num_resources	= ARRAY_SIZE(nxp_adc_resource),
-	.resource		= nxp_adc_resource,
+	.num_resources	= ARRAY_SIZE(adc_resource),
+	.resource		= adc_resource,
 	.dev  			= {
 		.platform_data	= &adc_sample_rate,
 	},
@@ -1472,6 +1224,102 @@ static struct amba_device *amba_devices[] __initdata = {
 };
 #endif
 
+#if defined(CONFIG_NXP_DISPLAY_MIPI)
+static void mipilcd_dcs_write( unsigned int id, unsigned int data0, unsigned int data1 )
+{
+	U32 index = 0;
+	volatile NX_MIPI_RegisterSet* pmipi = (volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(index));
+
+	pmipi->DSIM_PKTHDR = id | (data0<<8) | (data1<<16);
+}
+
+static void  mipilcd_dcs_long_write(U32 cmd, U32 ByteCount, U8* pByteData )
+{
+	U32 DataCount32 = (ByteCount+3)/4;
+	int i = 0;
+	U32 index = 0;
+	volatile NX_MIPI_RegisterSet* pmipi = (volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(index));
+
+	for( i=0; i<DataCount32; i++ )
+	{
+		pmipi->DSIM_PAYLOAD = (pByteData[3]<<24)|(pByteData[2]<<16)|(pByteData[1]<<8)|pByteData[0];
+		pByteData += 4;
+	}
+	pmipi->DSIM_PKTHDR  = (cmd & 0xff) | (ByteCount<<8);
+}
+
+static int MIPI_LCD_INIT(int width, int height, void *data)
+{
+	struct mipi_reg_val * next = CFG_DISP_MIPI_INIT_DATA;
+	u32 index = 0;
+	u32 value = 0;
+	u8 pByteData[48];
+	u8 bitrate=CFG_DISP_MIPI_BANDCTL;
+
+	volatile NX_MIPI_RegisterSet* pmipi = (volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(index));
+	value = pmipi->DSIM_ESCMODE;
+	pmipi->DSIM_ESCMODE = value|(3 << 6);
+	value = pmipi->DSIM_ESCMODE;
+	printk("DSIM_ESCMODE 1 : 0x%x\n", value);
+	value = pmipi->DSIM_STATUS;
+	printk("DSIM_STATUS : 0x%x\n", value);
+	switch(bitrate)
+	{
+		case 0xF:	printk("MIPI clk: 1000MHz \n");	break;
+		case 0xE:	printk("MIPI clk:  900MHz \n");	break;
+		case 0xD:	printk("MIPI clk:  840MHz \n");	break;
+		case 0xC:	printk("MIPI clk:  760MHz \n");	break;
+		case 0xB:	printk("MIPI clk:  660MHz \n");	break;
+		case 0xA:	printk("MIPI clk:  600MHz \n");	break;
+		case 0x9:	printk("MIPI clk:  540MHz \n");	break;
+		case 0x8:	printk("MIPI clk:  480MHz \n");	break;
+		case 0x7:	printk("MIPI clk:  420MHz \n");	break;
+		case 0x6:	printk("MIPI clk:  330MHz \n");	break;
+		case 0x5:	printk("MIPI clk:  300MHz \n");	break;
+		case 0x4:	printk("MIPI clk:  210MHz \n");	break;
+		case 0x3:	printk("MIPI clk:  180MHz \n");	break;
+		case 0x2:	printk("MIPI clk:  150MHz \n");	break;
+		case 0x1:	printk("MIPI clk:  100MHz \n");	break;
+		case 0x0:	printk("MIPI clk:   80MHz \n");	break;
+		default :	printk("MIPI clk:  unknown \n"); break;
+	}
+
+	mdelay(10);
+
+	while(!((next->cmd == 0x00) && (next->addr == 0x00)))
+	{
+		switch(next->cmd)
+		{
+			case 0x05:
+				mipilcd_dcs_write(next->cmd, next->data.data[0], 0x00);
+				break;
+			case 0x15:
+				mipilcd_dcs_write(next->cmd, next->addr, next->data.data[0]);
+				break;
+			case 0x29:
+ 			case 0x39:
+				pByteData[0] = next->addr;
+				memcpy(&pByteData[1], &(next->data.data[0]), 48);
+				mipilcd_dcs_long_write(next->cmd, next->cnt+1, &pByteData[0]);
+				break;
+			case 0xff:
+				mdelay(next->addr);
+				break;
+		}
+
+		next++;
+	}
+
+	value = pmipi->DSIM_ESCMODE;
+	pmipi->DSIM_ESCMODE = value&(~(3 << 6));
+	value = pmipi->DSIM_ESCMODE;
+	printk("DSIM_ESCMODE 2 : 0x%x\n", value);
+	value = pmipi->DSIM_STATUS;
+	printk("DSIM_STATUS : 0x%x\n", value);
+	return 0;
+}
+#endif
+
 /*------------------------------------------------------------------------------
  * register cpu platform devices
  */
@@ -1491,32 +1339,32 @@ void __init nxp_cpu_devs_register(void)
 	/* default uart hw prepare */
 #if defined(CONFIG_SERIAL_NXP_UART0)
     printk("mach: add device uart0\n");
-	NX_UART_CH_INIT(0);
+	uart_device_register(0);
 #endif
 
 #if defined(CONFIG_SERIAL_NXP_UART1)
 	printk("mach: add device uart1\n");
-	NX_UART_CH_INIT(1);
+	uart_device_register(1);
 #endif
 
 #if defined(CONFIG_SERIAL_NXP_UART2)
 	printk("mach: add device uart2\n");
-	NX_UART_CH_INIT(2);
+	uart_device_register(2);
 #endif
 
 #if defined(CONFIG_SERIAL_NXP_UART3)
 	printk("mach: add device uart3\n");
-	NX_UART_CH_INIT(3);
+	uart_device_register(3);
 #endif
 
 #if defined(CONFIG_SERIAL_NXP_UART4)
 	printk("mach: add device uart4\n");
-	NX_UART_CH_INIT(4);
+	uart_device_register(4);
 #endif
 
 #if defined(CONFIG_SERIAL_NXP_UART5)
 	printk("mach: add device uart5\n");
-	NX_UART_CH_INIT(5);
+	uart_device_register(5);
 #endif
 
 #if defined(CONFIG_NXP_DISPLAY)
@@ -1525,23 +1373,131 @@ void __init nxp_cpu_devs_register(void)
 #endif
 
 #if defined(CONFIG_NXP_DISPLAY_LCD)
+	__lcd_vsync.h_active_len	= CFG_DISP_PRI_RESOL_WIDTH,
+	__lcd_vsync.h_sync_width	= CFG_DISP_PRI_HSYNC_SYNC_WIDTH,
+	__lcd_vsync.h_back_porch	= CFG_DISP_PRI_HSYNC_BACK_PORCH,
+	__lcd_vsync.h_front_porch	= CFG_DISP_PRI_HSYNC_FRONT_PORCH,
+	__lcd_vsync.h_sync_invert	= CFG_DISP_PRI_HSYNC_ACTIVE_HIGH,
+	__lcd_vsync.v_active_len	= CFG_DISP_PRI_RESOL_HEIGHT,
+	__lcd_vsync.v_sync_width	= CFG_DISP_PRI_VSYNC_SYNC_WIDTH,
+	__lcd_vsync.v_back_porch	= CFG_DISP_PRI_VSYNC_BACK_PORCH,
+	__lcd_vsync.v_front_porch	= CFG_DISP_PRI_VSYNC_FRONT_PORCH,
+	__lcd_vsync.v_sync_invert	= CFG_DISP_PRI_VSYNC_ACTIVE_HIGH,
+	__lcd_vsync.pixel_clock_hz = CFG_DISP_PRI_PIXEL_CLOCK,
+	__lcd_vsync.clk_src_lv0	= CFG_DISP_PRI_CLKGEN0_SOURCE,
+	__lcd_vsync.clk_div_lv0	= CFG_DISP_PRI_CLKGEN0_DIV,
+	__lcd_vsync.clk_src_lv1	= CFG_DISP_PRI_CLKGEN1_SOURCE,
+	__lcd_vsync.clk_div_lv1	= CFG_DISP_PRI_CLKGEN1_DIV,
 	printk("mach: add device lcd \n");
 	platform_device_register(&lcd_device);
 #endif
 
 #if defined(CONFIG_NXP_DISPLAY_LVDS)
+	__lvds_vsync.h_active_len	= CFG_DISP_PRI_RESOL_WIDTH,
+	__lvds_vsync.h_sync_width	= CFG_DISP_PRI_HSYNC_SYNC_WIDTH,
+	__lvds_vsync.h_back_porch	= CFG_DISP_PRI_HSYNC_BACK_PORCH,
+	__lvds_vsync.h_front_porch	= CFG_DISP_PRI_HSYNC_FRONT_PORCH,
+	__lvds_vsync.h_sync_invert	= CFG_DISP_PRI_HSYNC_ACTIVE_HIGH,
+	__lvds_vsync.v_active_len	= CFG_DISP_PRI_RESOL_HEIGHT,
+	__lvds_vsync.v_sync_width	= CFG_DISP_PRI_VSYNC_SYNC_WIDTH,
+	__lvds_vsync.v_back_porch	= CFG_DISP_PRI_VSYNC_BACK_PORCH,
+	__lvds_vsync.v_front_porch	= CFG_DISP_PRI_VSYNC_FRONT_PORCH,
+	__lvds_vsync.v_sync_invert	= CFG_DISP_PRI_VSYNC_ACTIVE_HIGH,
+	__lvds_vsync.pixel_clock_hz = CFG_DISP_PRI_PIXEL_CLOCK,
+	__lvds_vsync.clk_src_lv0	= CFG_DISP_PRI_CLKGEN0_SOURCE,
+	__lvds_vsync.clk_div_lv0	= CFG_DISP_PRI_CLKGEN0_DIV,
+	__lvds_vsync.clk_src_lv1	= CFG_DISP_PRI_CLKGEN1_SOURCE,
+	__lvds_vsync.clk_div_lv1	= CFG_DISP_PRI_CLKGEN1_DIV,
+	__lvds_devpar.lcd_format = CFG_DISP_LVDS_LCD_FORMAT,
 	printk("mach: add device lvds \n");
 	platform_device_register(&lvds_device);
 #endif
 
 #if defined(CONFIG_NXP_DISPLAY_MIPI)
+	__mipi_vsync.h_active_len	= CFG_DISP_PRI_RESOL_WIDTH,
+	__mipi_vsync.h_sync_width	= CFG_DISP_PRI_HSYNC_SYNC_WIDTH,
+	__mipi_vsync.h_back_porch	= CFG_DISP_PRI_HSYNC_BACK_PORCH,
+	__mipi_vsync.h_front_porch	= CFG_DISP_PRI_HSYNC_FRONT_PORCH,
+	__mipi_vsync.h_sync_invert	= CFG_DISP_PRI_HSYNC_ACTIVE_HIGH,
+	__mipi_vsync.v_active_len	= CFG_DISP_PRI_RESOL_HEIGHT,
+	__mipi_vsync.v_sync_width	= CFG_DISP_PRI_VSYNC_SYNC_WIDTH,
+	__mipi_vsync.v_back_porch	= CFG_DISP_PRI_VSYNC_BACK_PORCH,
+	__mipi_vsync.v_front_porch	= CFG_DISP_PRI_VSYNC_FRONT_PORCH,
+	__mipi_vsync.v_sync_invert	= CFG_DISP_PRI_VSYNC_ACTIVE_HIGH,
+	__mipi_vsync.pixel_clock_hz = CFG_DISP_PRI_PIXEL_CLOCK,
+	__mipi_vsync.clk_src_lv0	= CFG_DISP_PRI_CLKGEN0_SOURCE,
+	__mipi_vsync.clk_div_lv0	= CFG_DISP_PRI_CLKGEN0_DIV,
+	__mipi_vsync.clk_src_lv1	= CFG_DISP_PRI_CLKGEN1_SOURCE,
+	__mipi_vsync.clk_div_lv1	= CFG_DISP_PRI_CLKGEN1_DIV,
+	__mipi_devpar.pllpms = CFG_DISP_MIPI_PLLPMS;
+	__mipi_devpar.bandctl = CFG_DISP_MIPI_BANDCTL;
+	__mipi_devpar.pllctl = CFG_DISP_MIPI_PLLCTL;
+	__mipi_devpar.phyctl = CFG_DISP_MIPI_DPHYCTL;
+	__mipi_devpar.lcd_init = MIPI_LCD_INIT;
+
+	static struct disp_vsync_info mipi_vsync_param;
+	static struct disp_syncgen_par mipi_syncgen_param ;
+	static struct disp_mipi_param mipi_param;
+	
+	mipi_vsync_param.h_active_len	= CFG_DISP_PRI_RESOL_WIDTH;
+	mipi_vsync_param.h_sync_width	= CFG_DISP_PRI_HSYNC_SYNC_WIDTH;
+	mipi_vsync_param.h_back_porch	= CFG_DISP_PRI_HSYNC_BACK_PORCH;
+	mipi_vsync_param.h_front_porch	= CFG_DISP_PRI_HSYNC_FRONT_PORCH;
+	mipi_vsync_param.h_sync_invert	= CFG_DISP_PRI_HSYNC_ACTIVE_HIGH;
+	mipi_vsync_param.v_active_len	= CFG_DISP_PRI_RESOL_HEIGHT;
+	mipi_vsync_param.v_sync_width	= CFG_DISP_PRI_VSYNC_SYNC_WIDTH;
+	mipi_vsync_param.v_back_porch	= CFG_DISP_PRI_VSYNC_BACK_PORCH;
+	mipi_vsync_param.v_front_porch	= CFG_DISP_PRI_VSYNC_FRONT_PORCH;
+	mipi_vsync_param.v_sync_invert	= CFG_DISP_PRI_VSYNC_ACTIVE_HIGH;
+	mipi_vsync_param.pixel_clock_hz = CFG_DISP_PRI_PIXEL_CLOCK;
+	mipi_vsync_param.clk_src_lv0	= CFG_DISP_PRI_CLKGEN0_SOURCE;
+	mipi_vsync_param.clk_div_lv0	= CFG_DISP_PRI_CLKGEN0_DIV;
+	mipi_vsync_param.clk_src_lv1	= CFG_DISP_PRI_CLKGEN1_SOURCE;
+	mipi_vsync_param.clk_div_lv1	= CFG_DISP_PRI_CLKGEN1_DIV;
+	
+	mipi_syncgen_param.delay_mask = DISP_SYNCGEN_DELAY_RGB_PVD |
+						  DISP_SYNCGEN_DELAY_HSYNC_CP1 |
+						  DISP_SYNCGEN_DELAY_VSYNC_FRAM |
+						  DISP_SYNCGEN_DELAY_DE_CP;
+	mipi_syncgen_param.d_rgb_pvd		= 0;
+	mipi_syncgen_param.d_hsync_cp1		= 0;
+	mipi_syncgen_param.d_vsync_fram		= 0;
+	mipi_syncgen_param.d_de_cp2			= 7;
+	mipi_syncgen_param.vs_start_offset	= CFG_DISP_PRI_HSYNC_FRONT_PORCH +
+						  CFG_DISP_PRI_HSYNC_SYNC_WIDTH +
+						  CFG_DISP_PRI_HSYNC_BACK_PORCH +
+						  CFG_DISP_PRI_RESOL_WIDTH - 1;
+	mipi_syncgen_param.ev_start_offset	= CFG_DISP_PRI_HSYNC_FRONT_PORCH +
+						  CFG_DISP_PRI_HSYNC_SYNC_WIDTH +
+						  CFG_DISP_PRI_HSYNC_BACK_PORCH +
+						  CFG_DISP_PRI_RESOL_WIDTH - 1;
+	mipi_syncgen_param.vs_end_offset		= 0;
+	mipi_syncgen_param.ev_end_offset		= 0;
+	
+	mipi_param.pllpms 	= CFG_DISP_MIPI_PLLPMS;
+	mipi_param.bandctl	= CFG_DISP_MIPI_BANDCTL;
+	mipi_param.pllctl 	= CFG_DISP_MIPI_PLLCTL;
+	mipi_param.phyctl 	= CFG_DISP_MIPI_DPHYCTL;
+	mipi_param.lcd_init	= MIPI_LCD_INIT;
+	nxp_platform_disp_device_data(DISP_DEVICE_MIPI, &mipi_vsync_param, (void*)&mipi_param, &mipi_syncgen_param);
 	printk("mach: add device mipi \n");
 	platform_device_register(&mipi_device);
 #endif
 
 #if defined(CONFIG_NXP_DISPLAY_HDMI)
-	printk("mach: add device hdmi \n");
-	platform_device_register(&hdmi_device);
+	if(CFG_DISP_HDMI_USING != 0)
+	{
+		__hdmi_vsync.h_active_len = CFG_DISP_PRI_RESOL_WIDTH;
+		__hdmi_vsync.v_active_len =  CFG_DISP_PRI_RESOL_HEIGHT;
+		if((CFG_DISP_PRI_RESOL_WIDTH == 1280) && (CFG_DISP_PRI_RESOL_HEIGHT == 720))
+			__hdmi_devpar.preset = 0;
+		else if((CFG_DISP_PRI_RESOL_WIDTH == 1920) && (CFG_DISP_PRI_RESOL_HEIGHT == 1080))
+			__hdmi_devpar.preset = 1;
+		else
+			__hdmi_devpar.preset = 0;
+		printk("mach: add device hdmi \n");
+		platform_device_register(&hdmi_device);
+	}
 #endif
 
 #if defined(CONFIG_NXP_DISPLAY_RESC)
@@ -1593,11 +1549,6 @@ void __init nxp_cpu_devs_register(void)
     platform_device_register(&spdif_device_rx);
 #endif
 
-#if defined(CONFIG_SND_NXP_PDM) || defined(CONFIG_SND_NXP_PDM_MODULE)
-    printk("mach: add device pdm\n");
-    platform_device_register(&pdm_device);
-#endif
-
 #if defined(CONFIG_USB_EHCI_SYNOPSYS)
     printk("mach: add device usb_ehci\n");
     platform_device_register(&nxp_device_ehci);
@@ -1621,7 +1572,7 @@ void __init nxp_cpu_devs_register(void)
 
 #if defined(CONFIG_NXP_ADC)
     printk("mach: add device adc\n");
-    platform_device_register(&nxp_adc_device);
+    platform_device_register(&adc_device);
 #endif
     /* Register the platform devices */
     printk("mach: add graphic device opengl|es\n");

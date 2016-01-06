@@ -89,11 +89,6 @@ static int stmmac_mdio_read(struct mii_bus *bus, int phyaddr, int phyreg)
 	return data;
 }
 
-int sys_mdio_read(struct mii_bus *bus, int phyaddr, int phyreg)
-{
-	return stmmac_mdio_read(bus, phyaddr, phyreg);
-}
-
 /**
  * stmmac_mdio_write
  * @bus: points to the mii_bus structure
@@ -124,15 +119,8 @@ static int stmmac_mdio_write(struct mii_bus *bus, int phyaddr, int phyreg,
 	writel(phydata, priv->ioaddr + mii_data);
 	writel(value, priv->ioaddr + mii_address);
 
-	stmmac_mdio_read(bus, phyaddr, 0);		/* w/a: write command pending problem */
-
 	/* Wait until any existing MII operation is complete */
 	return stmmac_mdio_busy_wait(priv->ioaddr, mii_address);
-}
-
-int sys_mdio_write(struct mii_bus *bus, int phyaddr, int phyreg, u16 phydata)
-{
-	return (int)stmmac_mdio_write(bus, phyaddr, phyreg, phydata);
 }
 
 /**
@@ -140,7 +128,7 @@ int sys_mdio_write(struct mii_bus *bus, int phyaddr, int phyreg, u16 phydata)
  * @bus: points to the mii_bus structure
  * Description: reset the MII bus
  */
-int stmmac_mdio_reset(struct mii_bus *bus)
+static int stmmac_mdio_reset(struct mii_bus *bus)
 {
 #if defined(CONFIG_NXPMAC_PLATFORM)
 	struct net_device *ndev = bus->priv;

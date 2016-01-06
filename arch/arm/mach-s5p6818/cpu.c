@@ -37,7 +37,7 @@
 #include <mach/map_desc.h>
 
 #if (0)
-#define DBGOUT(msg...)		do { printk("cpu  : " msg); } while (0)
+#define DBGOUT(msg...)		do { printk("cpu  s5p6818: " msg); } while (0)
 #else
 #define DBGOUT(msg...)		do {} while (0)
 #endif

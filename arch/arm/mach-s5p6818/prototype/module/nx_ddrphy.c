@@ -26,8 +26,8 @@ static	struct NX_DDRPHY_RegisterSet *__g_pRegister = CNULL;
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize of prototype enviroment & local variables.
- *	@return		 CTRUE	indicates that Initialize is succeeded.
- *				 CFALSE	indicates that Initialize is failed.
+ *	@return		\b CTRUE	indicates that Initialize is succeeded.\n
+ *				\b CFALSE	indicates that Initialize is failed.\n
  */
 CBOOL	NX_DDRPHY_Initialize( void )
 {
@@ -81,8 +81,7 @@ U32		NX_DDRPHY_GetSizeOfRegisterSet( void )
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
  */
-
-void	NX_DDRPHY_SetBaseAddress( void* BaseAddress )
+void	NX_DDRPHY_SetBaseAddress( U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
 
@@ -94,18 +93,16 @@ void	NX_DDRPHY_SetBaseAddress( void* BaseAddress )
  *	@brief		Get a base address of register set
  *	@return		Module's base address.
  */
-
-void*	NX_DDRPHY_GetBaseAddress( void )
+U32		NX_DDRPHY_GetBaseAddress( void )
 {
-
-	return (void*)__g_pRegister;
+	return (U32)__g_pRegister;
 }
 
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize selected modules with default value.
- *	@return		 CTRUE	indicates that Initialize is succeeded. 
- *				 CFALSE	indicates that Initialize is failed.
+ *	@return		\b CTRUE	indicates that Initialize is succeeded. \n
+ *				\b CFALSE	indicates that Initialize is failed.
  */
 CBOOL	NX_DDRPHY_OpenModule( void )
 {
@@ -115,8 +112,8 @@ CBOOL	NX_DDRPHY_OpenModule( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Deinitialize selected module to the proper stage.
- *	@return		 CTRUE	indicates that Deinitialize is succeeded. 
- *				 CFALSE	indicates that Deinitialize is failed.
+ *	@return		\b CTRUE	indicates that Deinitialize is succeeded. \n
+ *				\b CFALSE	indicates that Deinitialize is failed.
  */
 CBOOL	NX_DDRPHY_CloseModule( void )
 {
@@ -126,8 +123,8 @@ CBOOL	NX_DDRPHY_CloseModule( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether the selected modules is busy or not.
- *	@return		 CTRUE	indicates that Module is Busy. 
- *				 CFALSE	indicates that Module is NOT Busy.
+ *	@return		\b CTRUE	indicates that Module is Busy. \n
+ *				\b CFALSE	indicates that Module is NOT Busy.
  */
 CBOOL	NX_DDRPHY_CheckBusy( void )
 {
@@ -137,8 +134,8 @@ CBOOL	NX_DDRPHY_CheckBusy( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicaes whether the selected modules is ready to enter power-down stage
- *	@return		 CTRUE	indicates that Ready to enter power-down stage. 
- *				 CFALSE	indicates that This module can't enter to power-down stage.
+ *	@return		\b CTRUE	indicates that Ready to enter power-down stage. \n
+ *				\b CFALSE	indicates that This module can't enter to power-down stage.
  */
 CBOOL	NX_DDRPHY_CanPowerDown( void )
 {

@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 //  includes
 //------------------------------------------------------------------------------
-#include "../base/nx_prototype.h"
+#include "nx_prototype.h"
 
 #ifdef	__cplusplus
 extern "C"
@@ -176,8 +176,8 @@ U32		NX_UART_GetPhysicalAddress( U32 ModuleIndex );
 //U32		NX_UART_GetResetNumber( U32 ModuleIndex, U32 ChannelIndex );
 U32		NX_UART_GetNumberOfReset( void );
 U32		NX_UART_GetSizeOfRegisterSet( void );
-void	NX_UART_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*	NX_UART_GetBaseAddress( U32 ModuleIndex );
+void	NX_UART_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32		NX_UART_GetBaseAddress( U32 ModuleIndex );
 CBOOL	NX_UART_OpenModule( U32 ModuleIndex );
 CBOOL	NX_UART_CloseModule( U32 ModuleIndex );
 CBOOL	NX_UART_CheckBusy( U32 ModuleIndex );
@@ -251,9 +251,9 @@ void				NX_UART_SetStopBit( U32 ModuleIndex, NX_UART_STOP_BIT StopBit );
 NX_UART_STOP_BIT	NX_UART_GetStopBit( U32 ModuleIndex );
 void				NX_UART_SetDataWidth( U32 ModuleIndex, NX_UART_DATA_BIT DataWidth );
 NX_UART_DATA_BIT	NX_UART_GetDataWidth( U32 ModuleIndex );
-
-void	NX_UART_SetFrameConfiguration( U32 ModuleIndex, NX_UART_PARITY Parity,	NX_UART_DATA_BIT DataWidth,	NX_UART_STOP_BIT StopBit );
-void	NX_UART_GetFrameConfiguration( U32 ModuleIndex, NX_UART_PARITY* pParity, NX_UART_DATA_BIT* pDataWidth, NX_UART_STOP_BIT* pStopBit );
+  
+void	NX_UART_SetFrameConfiguration( U32 ModuleIndex, NX_UART_PARITY Parity,	U32 DataWidth,	U32 StopBit );
+void	NX_UART_GetFrameConfiguration( U32 ModuleIndex, NX_UART_PARITY* pParity, U32* pDataWidth, U32* pStopBit );
 //-------------------------------------------------------------
 
 //Control Register
@@ -290,11 +290,11 @@ CBOOL	NX_UART_GetLoopBackMode( U32 ModuleIndex );
 void	NX_UART_SetSendBreakSignal( U32 ModuleIndex, CBOOL Enable ); 
 CBOOL	NX_UART_GetSendBreakSignal( U32 ModuleIndex );
 //----------------------------------------------------------------------------------------
-void	NX_UART_SetTransmitMode( U32 ModuleIndex, NX_UART_OPMODE mode );
-NX_UART_OPMODE		NX_UART_GetTransmitMode( U32 ModuleIndex );
+void	NX_UART_SetTransmitMode( U32 ModuleIndex, U8 mode );
+U8		NX_UART_GetTransmitMode( U32 ModuleIndex );
 
-void	NX_UART_SetRecieveMode( U32 ModuleIndex, NX_UART_OPMODE mode );
-NX_UART_OPMODE		NX_UART_GetRecieveMode( U32 ModuleIndex );
+void	NX_UART_SetRecieveMode( U32 ModuleIndex, U8 mode );
+U8		NX_UART_GetRecieveMode( U32 ModuleIndex );
 //----------------------------------------------------------------------------------------
 
 // FIFO Control Register

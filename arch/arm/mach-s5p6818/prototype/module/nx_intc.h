@@ -15,8 +15,8 @@
 //	History		:
 //
 // @choyk 2012/07/03 : Vic 용 prototype 32,
-// Vic의 familyName은 똑같이 INTC를 사용하도록 한다.
-//
+// Vic의 familyName은 똑같이 INTC를 사용하도록 한다. 
+// 
 //------------------------------------------------------------------------------
 #ifndef __NX_INTC_H__
 #define __NX_INTC_H__
@@ -40,24 +40,16 @@ extern "C"
 	/// @brief	INTC register set structure.
 	struct NX_INTC_RegisterSet
 	{
-		volatile U32 IRQSTATUS;					// 0x000
-		volatile U32 FIQSTATUS;					// 0x004
-		volatile U32 RAWINTR;					// 0x008
-		volatile U32 INTMODE;					// 0x00C
-		volatile U32 INTENABLE;					// 0x010
-		volatile U32 INTDISABLE;				// 0x014
-		volatile U32 SWINT;						// 0x018
-		volatile U32 SWINTCLEAR;				// 0x01C
-		volatile U32 PROENBALE;					// 0x020 protection enable bit
-		volatile U32 SWPRIMASK;					// 0x024 software priority mask
-		volatile U32 PRIORITY;					// 0x028 protection priority bit
-		volatile U8  _Reserved0[0x100-0x2C];	// 0x028~0x0FF;
-		volatile U32 VECTORADDR[32];			// 0x100~0x17C
-		volatile U8  _Reserved1[0x200-0x180];	// 0x180~0x1FF
-		volatile U32 VECTORPRI[32];				// 0x200~0x27C
-		volatile U8  _Reserved2[0xF00-0x280];	// 0x280~0xEFF
-		volatile U32 CURRENTVECTOR;				// 0xF00
-		volatile U8  _Reserved3[0x1000-0xF04];	// 0xF04~0xFFF
+		volatile U32 IRQSTATUS;// 0x0
+		volatile U32 FIQSTATUS;// 0x4
+		volatile U32 RAWINTR;// 0x8
+		volatile U32 INTMODE;	// select // 0xc
+		volatile U32 INTENABLE;// 0x10
+		volatile U32 INTDISABLE;// 0x14
+		volatile U32 SWINT;
+		volatile U32 SWINTCLEAR;
+		volatile U32 PROENBALE;	// protection enable bit
+		volatile U32 PRIORIT;	// protection enable bit
 	};
 
 	/// @brief	interrupt mode.
@@ -82,8 +74,8 @@ U32		NX_INTC_GetNumberOfModule( void );
 
 U32		NX_INTC_GetPhysicalAddress( void );
 U32		NX_INTC_GetSizeOfRegisterSet( void );
-void	NX_INTC_SetBaseAddress( void* BaseAddress );
-void*	NX_INTC_GetBaseAddress( void );
+void	NX_INTC_SetBaseAddress( U32 BaseAddress );
+U32		NX_INTC_GetBaseAddress( void );
 CBOOL	NX_INTC_OpenModule( void );
 CBOOL	NX_INTC_CloseModule( void );
 CBOOL	NX_INTC_CheckBusy( void );
@@ -120,9 +112,10 @@ void	NX_INTC_SetInterruptMode ( U32 IntNum, NX_INTC_INTMODE IntMode	);
 void	NX_INTC_SetPriorityMode( U32 ArbiterNum, U32 OrderSel );
 //@}
 
-void NX_INTC_SetIntHandler(U32 IntNum, void *Handler);
-void *NX_INTC_GetIntHandler(U32 IntNum);
-void *NX_INTC_GetCurrentIntHandler(void);
+#if defined(__SOC__)
+void	NX_INTC_SOC_OnEnter_IRQHandler ( void );
+void	NX_INTC_SOC_OnLeave_IRQHandler ( void );
+#endif
 
 //@}
 

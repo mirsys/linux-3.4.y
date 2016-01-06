@@ -429,13 +429,13 @@ static int _init_device(struct ts_drv_context *ctx)
     NX_RSTCON_Initialize();
     addr = NX_RSTCON_GetPhysicalAddress();
     printk("NX_RSTCON_GetPhysicalAddress = 0x%08x\n", addr);
-    NX_RSTCON_SetBaseAddress( (void*)IO_ADDRESS(addr) );
-#if defined(CONFIG_ARCH_S5P4418)
+    NX_RSTCON_SetBaseAddress( (u32)IO_ADDRESS(addr) );
+#if defined(CONFIG_MACH_S5P4418)
     NX_RSTCON_SetnRST(RESETINDEX_OF_MPEGTSI_MODULE_i_nRST, RSTCON_DISABLE);
     udelay(100);
     NX_RSTCON_SetnRST(RESETINDEX_OF_MPEGTSI_MODULE_i_nRST, RSTCON_ENABLE);
     udelay(100);
-#elif defined(CONFIG_ARCH_S5P6818)
+#elif defined(CONFIG_MACH_S5P6818)
     NX_RSTCON_SetRST(RESETINDEX_OF_MPEGTSI_MODULE_i_nRST, RSTCON_ASSERT);
     udelay(100);
     NX_RSTCON_SetRST(RESETINDEX_OF_MPEGTSI_MODULE_i_nRST, RSTCON_NEGATE);
@@ -446,7 +446,7 @@ static int _init_device(struct ts_drv_context *ctx)
     NX_MPEGTSI_Initialize();
     addr = NX_MPEGTSI_GetPhysicalAddress();
     printk("NX_MPEGTSI_GetPhysicalAddress = 0x%08x\n", addr);
-    NX_MPEGTSI_SetBaseAddress( (void*)IO_ADDRESS(addr) );
+    NX_MPEGTSI_SetBaseAddress( (u32)IO_ADDRESS(addr) );
 
     return 0;
 }
@@ -1022,7 +1022,7 @@ static ssize_t mpegts_write_buf(u8 ch_num, struct ts_param_descr *param_descr)
 
 static long mpegts_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-    u8 ch_num = 0;
+    u8 ch_num;
     long ret = -1;
 
     switch(cmd)

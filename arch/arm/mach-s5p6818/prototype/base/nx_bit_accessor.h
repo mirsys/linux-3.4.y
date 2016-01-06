@@ -5,7 +5,7 @@
 #ifndef _NX_BIT_ACCESSOR_H_
 #define _NX_BIT_ACCESSOR_H_
 
-#include "nx_type.h"
+#include <nx_type.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,6 +26,6 @@ CBOOL NX_BIT_GetBit16( U16 Value, U32 BitNumber );
 
 #ifdef	__cplusplus
 }
-#endif
+#endif  
 
 #endif  // _NX_BIT_ACCESSOR_H_

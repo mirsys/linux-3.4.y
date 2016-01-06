@@ -17,9 +17,3 @@ mio-y += mio.block.o \
          media/nfc/phy/nfc.phy.readretry.o \
          media/nfc/phy/nfc.phy.lowapi.o \
          media/nfc/phy/nfc.phy.lowapi.rawread.o
-
-ifdef CONFIG_ARM64
-mio-y += media/nfc/phy/nfc.lib64.o
-else
-mio-y += media/nfc/phy/nfc.lib.o
-endif

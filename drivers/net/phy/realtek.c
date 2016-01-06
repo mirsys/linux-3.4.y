@@ -16,10 +16,6 @@
 #include <linux/phy.h>
 #include <linux/module.h>
 
-#include <mach/platform.h>
-#include <mach/devices.h>
-#include <mach/soc.h>
-
 #define RTL821x_PHYSR		0x11
 #define RTL821x_PHYSR_DUPLEX	0x2000
 #define RTL821x_PHYSR_SPEED	0xc000
@@ -158,11 +154,8 @@ static struct phy_driver rtl8211e_driver = {
 	.read_status	= genphy_read_status,
 	.ack_interrupt	= rtl821x_ack_interrupt,
 	.config_intr	= rtl8211e_config_intr,
-#ifdef CFG_ETHER_LOOPBACK_MODE
-#else
 	.suspend	= genphy_suspend,
 	.resume		= genphy_resume,
-#endif
 	.driver		= { .owner = THIS_MODULE,},
 };
 

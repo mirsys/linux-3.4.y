@@ -22,9 +22,9 @@
 #include "nx_displaytop.h"
 #endif
 
-//#ifndef NX_CONSOLE_Printf
-//#define	NX_CONSOLE_Printf printf
-//#endif
+#ifndef NX_CONSOLE_Printf
+#define	NX_CONSOLE_Printf printf
+#endif
 #ifndef pow
 static inline unsigned int pow(int a, int b) // a^b
 {
@@ -111,7 +111,7 @@ U32		NX_LVDS_GetSizeOfRegisterSet( void )
  *				NX_LVDS_OpenModule,				NX_LVDS_CloseModule,
  *				NX_LVDS_CheckBusy,
  */
-void	NX_LVDS_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
+void	NX_LVDS_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
     NX_ASSERT( NUMBER_OF_LVDS_MODULE > ModuleIndex );
@@ -127,10 +127,10 @@ void	NX_LVDS_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
  *				NX_LVDS_OpenModule,				NX_LVDS_CloseModule,
  *				NX_LVDS_CheckBusy,
  */
-void*	NX_LVDS_GetBaseAddress( U32 ModuleIndex )
+U32		NX_LVDS_GetBaseAddress( U32 ModuleIndex )
 {
     NX_ASSERT( NUMBER_OF_LVDS_MODULE > ModuleIndex );
-	return (void*)__g_pRegister[ModuleIndex];
+	return (U32)__g_pRegister[ModuleIndex];
 }
 
 //------------------------------------------------------------------------------
@@ -367,6 +367,12 @@ CBOOL NX_LVDS_InitRegTest( U32 ModuleIndex )
 		fail = 1; //return CFALSE;
 		NX_CONSOLE_Printf("\n[DEBUG] LVDSLOCPOL1 regvalue = %x, Golden ( %x )", regvalue, 7 );
 	}
+
+
+
+
+
+
 
 	if( fail == 1 )
 	{

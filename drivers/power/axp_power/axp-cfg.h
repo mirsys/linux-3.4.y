@@ -16,8 +16,8 @@
 
 #define CHGEN				1
 
-#define STACHGCUR			1500*1000		/* AXP22:300~2550,100/step */ // running charge current
-#define EARCHGCUR			1500*1000		/* AXP22:300~2550,100/step */ // suspend charge current
+#define STACHGCUR			1050*1000		/* AXP22:300~2550,100/step */ // running charge current
+#define EARCHGCUR			1050*1000		/* AXP22:300~2550,100/step */ // suspend charge current
 #define SUSCHGCUR			1500*1000		/* AXP22:300~2550,100/step */ // suspend charge current
 #define CLSCHGCUR			1500*1000		/* AXP22:300~2550,100/step */ // shut down charge current
 

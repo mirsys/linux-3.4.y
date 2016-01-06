@@ -79,9 +79,7 @@ U32		NX_ADC_GetSizeOfRegisterSet( void )
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.				
  */
-
-void	NX_ADC_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
-
+void	NX_ADC_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
     NX_ASSERT( NUMBER_OF_ADC_MODULE > ModuleIndex );
@@ -93,14 +91,10 @@ void	NX_ADC_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
  *	@brief		Get a base address of register set
  *	@return		Module's base address.				
  */
-
-void*	NX_ADC_GetBaseAddress( U32 ModuleIndex )
-
-
+U32		NX_ADC_GetBaseAddress( U32 ModuleIndex )
 {
     NX_ASSERT( NUMBER_OF_ADC_MODULE > ModuleIndex );
-
-	return (void*)__g_ModuleVariables[ModuleIndex].pRegister;	
+	return (U32)__g_ModuleVariables[ModuleIndex].pRegister;	
 }
 
 //------------------------------------------------------------------------------
@@ -684,7 +678,7 @@ void	NX_ADC_SetInputChannel( U32 ModuleIndex, U32 Channel )
 	regvalue	 = ReadIO32(&pRegister->ADCCON);
 
 	regvalue	&= ~ASEL_MASK;
-	regvalue	|= Channel << ASEL_BITPOS;
+	regvalue	 = Channel << ASEL_BITPOS;
 
 	WriteIO32(&pRegister->ADCCON, (U16)regvalue);
 }

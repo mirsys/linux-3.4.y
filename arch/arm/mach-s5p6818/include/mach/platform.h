@@ -44,20 +44,20 @@
  * For low level uart debug (debug-macro.S)
  */
 #if defined(CONFIG_DEBUG_LL) && defined(CONFIG_DEBUG_NXP_UART)
-	#if	 defined (CONFIG_DEBUG_NXP_UART_CH0)
+	#if	  (0 == CFG_UART_DEBUG_CH)
 		#define	PB_UART_PHYS_BASE		PHY_BASEADDR_UART0
-	#elif defined (CONFIG_DEBUG_NXP_UART_CH1)
+	#elif (1 == CFG_UART_DEBUG_CH)
 		#define	PB_UART_PHYS_BASE		PHY_BASEADDR_UART1
-	#elif defined (CONFIG_DEBUG_NXP_UART_CH2)
+	#elif (2 == CFG_UART_DEBUG_CH)
 		#define	PB_UART_PHYS_BASE		PHY_BASEADDR_UART2
-	#elif defined(CONFIG_DEBUG_NXP_UART_CH3)
+	#elif (3 == CFG_UART_DEBUG_CH)
 		#define	PB_UART_PHYS_BASE		PHY_BASEADDR_UART3
-	#elif defined(CONFIG_DEBUG_NXP_UART_CH4)
+	#elif (4 == CFG_UART_DEBUG_CH)
 		#define	PB_UART_PHYS_BASE		PHY_BASEADDR_UART4
-	#elif defined(CONFIG_DEBUG_NXP_UART_CH5)
+	#elif (5 == CFG_UART_DEBUG_CH)
 		#define	PB_UART_PHYS_BASE		PHY_BASEADDR_UART5
 	#else
-		#define	PB_UART_PHYS_BASE		PHY_BASEADDR_UART0
+		#error not support low level debug uart port (0 ~ 5)
 	#endif
 
 	#define	PB_UART_VIRT_BASE			IO_ADDRESS(PB_UART_PHYS_BASE)

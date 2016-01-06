@@ -16,7 +16,8 @@
 #ifndef __NX_ALIVE_H__
 #define __NX_ALIVE_H__
 
-#include "../base/nx_prototype.h"
+
+//#include "../nx_base/nx_prototype.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -179,16 +180,14 @@ U32     NX_ALIVE_GetNumberOfModule( void );
 //------------------------------------------------------------------------------
 /// @name   Basic Interface
 //@{
-
-U32		NX_ALIVE_GetPhysicalAddress( void );
-U32		NX_ALIVE_GetSizeOfRegisterSet( void );
-void	NX_ALIVE_SetBaseAddress( void* BaseAddress );
-void*	NX_ALIVE_GetBaseAddress( void );
-CBOOL	NX_ALIVE_OpenModule( void );
-CBOOL	NX_ALIVE_CloseModule( void );
-CBOOL	NX_ALIVE_CheckBusy( void );
-CBOOL	NX_ALIVE_CanPowerDown( void );
-
+U32     NX_ALIVE_GetPhysicalAddress( void );
+U32     NX_ALIVE_GetSizeOfRegisterSet( void );
+void    NX_ALIVE_SetBaseAddress( U32 BaseAddress );
+U32     NX_ALIVE_GetBaseAddress( void );
+CBOOL   NX_ALIVE_OpenModule( void );
+CBOOL   NX_ALIVE_CloseModule( void );
+CBOOL   NX_ALIVE_CheckBusy( void );
+CBOOL   NX_ALIVE_CanPowerDown( void );
 //@}
 
 //------------------------------------------------------------------------------

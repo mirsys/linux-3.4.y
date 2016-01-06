@@ -74,8 +74,8 @@ CBOOL NX_RESCONV_Initialize( void );
 U32   NX_RESCONV_GetNumberOfModule( void );
 
 U32   NX_RESCONV_GetSizeOfRegisterSet( void );
-void  NX_RESCONV_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void* NX_RESCONV_GetBaseAddress( U32 ModuleIndex );
+void  NX_RESCONV_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_RESCONV_GetBaseAddress( U32 ModuleIndex );
 U32   NX_RESCONV_GetPhysicalAddress ( U32 ModuleIndex );
 CBOOL NX_RESCONV_OpenModule( U32 ModuleIndex );
 CBOOL NX_RESCONV_CloseModule( U32 ModuleIndex );

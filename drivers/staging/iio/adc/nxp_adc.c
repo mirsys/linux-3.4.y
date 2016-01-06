@@ -41,24 +41,36 @@
 #include "../sysfs.h"
 #include "../machine.h"
 
-#include "nxp_adc.h"
+#define _USING_PROTOTYPE_
 
-#ifdef CONFIG_ARCH_S5P4418
-//#define ADC_USING_PROTOTYPE
-#else /* CONFIG_ARCH_S5P6818 */
-//#define ADC_USING_PROTOTYPE
-#endif
+/*
+ * ADC definitions
+ */
+#define	ADC_MAX_SAMPLE_RATE		1*1000*1000	// with 6bit
+#define	ADC_MAX_SAMPLE_BITS		6
+#define	ADC_MAX_PRESCALE		256			// 8bit
+#define	ADC_MIN_PRESCALE		20			// 8bit
+#define	ADC_WAIT_DELAY			1000000		// usec
 
-#ifdef CONFIG_ARCH_S5P4418
-#define ADC_LOCK_INIT(LOCK)			spin_lock_init(LOCK)
-#define ADC_LOCK(LOCK, FLAG)		spin_lock_irqsave(LOCK, FLAG)
-#define ADC_UNLOCK(LOCK, FLAG)		spin_unlock_irqrestore(LOCK, FLAG)
-#else	/* CONFIG_ARCH_S5P6818 */
-#define ADC_LOCK_INIT(LOCK)			do { } while (0)
-#define ADC_LOCK(LOCK, FLAG)		do { } while (0)
-#define ADC_UNLOCK(LOCK, FLAG)		do { } while (0)
-#endif
+/*
+ * ADC register
+ */
+struct adc_register {
+	volatile U32 ADCCON;
+	volatile U32 ADCDAT;
+	volatile U32 ADCINTENB;
+	volatile U32 ADCINTCLR;
+};
 
+#define	APEN_BITP	(14)
+#define	APSV_BITP	(6)
+#define	ASEL_BITP	(3)
+#define	ADCON_STBY	(2)
+#define	ADEN_BITP	(0)
+#define	AIEN_BITP	(0)
+#define	AICL_BITP	(0)
+
+#define	ADC_BASE	((struct adc_register *)IO_ADDRESS(PHY_BASEADDR_ADC))
 
 /*
  * ADC data
@@ -97,12 +109,16 @@ struct nxp_adc_info {
 
 static const char *str_adc_ch[] = {
 	"adc.0", "adc.1", "adc.2", "adc.3",
+#ifdef CONFIG_ARCH_S5P4418
 	"adc.4", "adc.5", "adc.6", "adc.7",
+#endif
 };
 
 static const char *str_adc_label[] = {
 	"ADC0", "ADC1", "ADC2", "ADC3",
+#ifdef CONFIG_ARCH_S5P4418
 	"ADC4", "ADC5", "ADC6", "ADC7",
+#endif
 };
 
 #define ADC_CHANNEL_SPEC(_id) {	\
@@ -117,10 +133,12 @@ static struct iio_chan_spec nxp_adc_iio_channels [] = {
 	ADC_CHANNEL_SPEC(1),
 	ADC_CHANNEL_SPEC(2),
 	ADC_CHANNEL_SPEC(3),
+#ifdef CONFIG_ARCH_S5P4418
 	ADC_CHANNEL_SPEC(4),
 	ADC_CHANNEL_SPEC(5),
 	ADC_CHANNEL_SPEC(6),
 	ADC_CHANNEL_SPEC(7),
+#endif
 };
 
 /*
@@ -157,7 +175,7 @@ extern int iio_map_array_unregister(struct iio_dev *indio_dev, struct iio_map *m
 static irqreturn_t nxp_adc_isr(int irq, void *dev_id)
 {
 	struct nxp_adc_info *adc = (struct nxp_adc_info *)dev_id;
-	struct adc_register *reg = adc->adc_base;
+	struct adc_register *reg = ADC_BASE;
 
 	__raw_writel(1, &reg->ADCINTCLR);
 
@@ -167,116 +185,17 @@ static irqreturn_t nxp_adc_isr(int irq, void *dev_id)
 }
 #endif
 
-/*
- * XXX Do not use in release version XXX
- */
-#ifdef DEBUG
-static void nxp_adc_dump_regs(struct nxp_adc_info *adc)
-{
-	struct adc_register *reg = adc->adc_base;
-	struct adc_register adc_regs;
-
-	adc_regs.ADCCON = reg->ADCCON;
-	adc_regs.ADCDAT = reg->ADCDAT;
-	adc_regs.ADCINTENB = reg->ADCINTENB;
-	adc_regs.ADCINTCLR = reg->ADCINTCLR;
-#ifdef CONFIG_ARCH_S5P6818
-	adc_regs.ADCPRESCON = reg->ADCPRESCON;
-#endif
-
-#ifdef CONFIG_ARCH_S5P4418
-	pr_info("CON:%08X, DAT:%08X, INTENB:%08X, INTCLR:%08x \n",
-		adc_regs.ADCCON, adc_regs.ADCDAT, adc_regs.ADCINTENB, adc_regs.ADCINTCLR);
-#else /* CONFIG_ARCH_S5P6818 */
-	pr_info("CON:%08X, DAT:%08X, INTENB:%08X, INTCLR:%08x, PRESCON:%08x \n",
-		adc_regs.ADCCON, adc_regs.ADCDAT, adc_regs.ADCINTENB, adc_regs.ADCINTCLR, adc_regs.ADCPRESCON);
-#endif
-}
-#else
-static void nxp_adc_dump_regs(struct nxp_adc_info *adc) { }
-#endif
-
-
 #define	ADC_HW_RESET()		do { nxp_soc_peri_reset_set(RESET_ID_ADC); } while (0)
-
-
-static int __turn_around_invalid_first_read(struct nxp_adc_info *adc)
-{
-	unsigned int adcon = 0;
-	struct adc_register *reg = adc->adc_base;
-	volatile int value = 0;
-	unsigned long wait = loops_per_jiffy * (HZ/10);
-
-	adcon  = __raw_readl(&reg->ADCCON) & ~(0x07 << ASEL_BITP) & ~(0x01 << ADEN_BITP);
-	adcon |= 0 << ASEL_BITP;	// channel
-	__raw_writel(adcon, &reg->ADCCON);
-
-	adcon |= 1 << ADEN_BITP;	// start
-	__raw_writel(adcon, &reg->ADCCON);
-
-	__raw_writel(0x1, &reg->ADCINTCLR);
-	__raw_writel(0x1, &reg->ADCINTENB);
-
-	while (wait > 0) {
-		if (__raw_readl(&reg->ADCINTCLR) & (1<<AICL_BITP)) {
-			__raw_writel(0x1, &reg->ADCINTCLR);	/* pending clear */
-			value = __raw_readl(&reg->ADCDAT);	/* get value */
-			break;
-		}
-		wait--;
-	}
-	return 0;
-}
-
-#ifdef ADC_USING_PROTOTYPE
-#else
-static int setup_adc_con(struct nxp_adc_info *adc)
-{
-	struct adc_register *reg = adc->adc_base;
-	unsigned int adcon = 0;
-
-#ifdef CONFIG_ARCH_S5P4418
-	adcon = ((adc->prescale & 0xFF) << APSV_BITP) |
-			(0 << ADCON_STBY);
-	__raw_writel(adcon, &reg->ADCCON);
-
-	adcon |= (1 << APEN_BITP);
-	__raw_writel(adcon, &reg->ADCCON);
-#else	/* CONFIG_ARCH_S5P6818 */
-	unsigned int pres = 0;
-
-	adcon = ((DATA_SEL_VAL & 0xf) << DATA_SEL_BITP) |
-			((CLK_CNT_VAL & 0xf)  << CLK_CNT_BITP) |
-			(0 << ADCON_STBY);
-	__raw_writel(adcon, &reg->ADCCON);
-
-	pres = ((adc->prescale & 0x3FF) << PRES_BITP);
-	__raw_writel(pres, &reg->ADCPRESCON);
-	pres |= (1 << APEN_BITP);
-	__raw_writel(pres, &reg->ADCPRESCON);
-#endif
-
-	/* *****************************************************
-	 * Turn-around invalid value after Power On
-	 * *****************************************************/
-	__turn_around_invalid_first_read(adc);
-
-
-	if (adc->support_interrupt) {
-		__raw_writel(1, &reg->ADCINTCLR);
-		__raw_writel(1, &reg->ADCINTENB);
-		init_completion(&adc->completion);
-	}
-
-	return 0;
-}
-#endif
-
 
 static int nxp_adc_setup(struct nxp_adc_info *adc, struct platform_device *pdev)
 {
 	struct clk *clk = NULL;
 	ulong sample_rate, clk_rate, min_rate;
+#ifdef _USING_PROTOTYPE_
+#else
+	struct adc_register *reg = ADC_BASE;
+	unsigned int adcon = 0;
+#endif
 	int irq = 0, interrupt = 0, prescale = 0;
 	int ret = 0;
 
@@ -316,35 +235,31 @@ static int nxp_adc_setup(struct nxp_adc_info *adc, struct platform_device *pdev)
 	adc->max_sampele_rate = ADC_MAX_SAMPLE_RATE;
 	adc->min_sampele_rate = min_rate;
 	adc->prescale = prescale;
-	ADC_LOCK_INIT(&adc->lock);
+	spin_lock_init(&adc->lock);
 
-#ifdef ADC_USING_PROTOTYPE
-	ADC_HW_RESET();
-
-	NX_ADC_Initialize();
-	NX_ADC_SetBaseAddress(0, (void*)IO_ADDRESS(NX_ADC_GetPhysicalAddress(0)));
+#ifdef _USING_PROTOTYPE_
+	NX_ADC_SetBaseAddress(0, (U32)IO_ADDRESS(NX_ADC_GetPhysicalAddress(0)));
  	NX_ADC_OpenModule(0);
 
-	NX_ADC_SetInputChannel(0, 0);
-	NX_ADC_SetStandbyMode(0, CFALSE);
-	NX_ADC_SetPrescalerValue(0, adc->prescale);
-	NX_ADC_ClearInterruptPendingAll(0);
-	NX_ADC_SetPrescalerEnable(0, CTRUE);
+	ADC_HW_RESET();
 	NX_ADC_SetInterruptEnableAll(0, CTRUE);
-	#ifdef CONFIG_ARCH_S5P6818
-	NX_ADC_SetADCDataDelay(0, DATA_SEL_VAL);
-	NX_ADC_SetSOCDelay(0, CLK_CNT_VAL);
-	#endif
-
-    pr_debug(" [Standy Mode            ] : %12s 			  \r\n", NX_ADC_GetStandbyMode( 0 ) ? "ADC Power Off(Stand By)" : "ADC Power On" ); 
-    pr_debug(" [Prescaler Divide Value ] : %8d  			  \r\n", NX_ADC_GetPrescalerValue( 0 ) ); 
-    pr_debug(" [Prescaler Divide Enable] : %8s  			  \r\n", NX_ADC_GetPrescalerEnable( 0 ) ? "ENABLE" : "DISABLE" );    
-    pr_debug(" [Interrup Enable Bit    ] : %8s  			  \r\n", NX_ADC_GetInterruptEnable( 0, 0 ) ? "ENABLE" : "DISABLE" );
+	//	NX_ADC_SetInputChannel(0, ch);
+	NX_ADC_SetPrescalerValue(0, adc->prescale) ;
+	NX_ADC_SetPrescalerEnable(0, CTRUE);
+	NX_ADC_SetStandbyMode(0, CFALSE);
 
 #else
 	ADC_HW_RESET();
+	adcon = ((prescale & 0xFF) << APSV_BITP) |
+			(1 << APEN_BITP) |
+			(0 << ADCON_STBY) ;
+	__raw_writel(adcon, &reg->ADCCON);
 
-	setup_adc_con(adc);
+	if (interrupt) {
+		__raw_writel(1, &reg->ADCINTCLR);
+		__raw_writel(1, &reg->ADCINTENB);
+		init_completion(&adc->completion);
+	}
 #endif
 
 	pr_info("ADC: CHs %d, %ld(%ld ~ %ld) sample rate, %s mode, scale=%d(bit %d)\n",
@@ -368,20 +283,17 @@ static int nxp_read_raw(struct iio_dev *indio_dev,
 				long mask)
 {
 	struct nxp_adc_info *adc = iio_priv(indio_dev);
-	struct adc_register *reg = adc->adc_base;
+	struct adc_register *reg = ADC_BASE;
 	int ch = chan->channel;
-	unsigned long wait = loops_per_jiffy * (HZ/10);
-	volatile unsigned int adcon = 0;
-	volatile int value = 0;
-	unsigned long flags = flags;
+	volatile int wait = ADC_WAIT_DELAY;
+	unsigned int adcon = 0;
+	unsigned long flags;
 
 	if (adc->support_interrupt) {
 		mutex_lock(&indio_dev->mlock);
 
 		adcon  = __raw_readl(&reg->ADCCON) & ~(0x07 << ASEL_BITP);
 		adcon |= ch << ASEL_BITP;	// channel
-		__raw_writel(adcon, &reg->ADCCON);
-
 		adcon |=  1 << ADEN_BITP;	// start
 		__raw_writel(adcon, &reg->ADCCON);
 
@@ -390,77 +302,55 @@ static int nxp_read_raw(struct iio_dev *indio_dev,
 
 		mutex_unlock(&indio_dev->mlock);
 	} else {
-#ifdef ADC_USING_PROTOTYPE
+#ifdef _USING_PROTOTYPE_
+		int value = 0;
 
-		ADC_LOCK(&adc->lock, flags);
+		spin_lock_irqsave(&adc->lock, flags);
+
+		wait = ADC_WAIT_DELAY;
 
 		NX_ADC_SetInputChannel(0, ch);
 		NX_ADC_ClearInterruptPendingAll(0);
 		NX_ADC_Start(0);
 
-		while (wait > 0) {
+		do {
 			if (NX_ADC_GetInterruptPendingAll(0)) {
 				value = NX_ADC_GetConvertedData(0);
 				NX_ADC_ClearInterruptPendingAll(0);
+
 				break;
 			}
-			wait--;
-		}
-
-		nxp_adc_dump_regs(adc);
-
-		if (0 >= wait) {
-			ADC_UNLOCK(&adc->lock, flags);
+		} while (wait-- > 0);
+		if (0 > wait) {
+			spin_unlock_irqrestore(&adc->lock, flags);
 			return -EINVAL;
 		}
 
 		*val = value;
-		ADC_UNLOCK(&adc->lock, flags);
-
+		spin_unlock_irqrestore(&adc->lock, flags);
 #else
-		ADC_LOCK(&adc->lock, flags);
+		spin_lock_irqsave(&adc->lock, flags);
 
-		adcon  = __raw_readl(&reg->ADCCON) & ~(0x07 << ASEL_BITP) & ~(0x01 << ADEN_BITP);
+		adcon  = __raw_readl(&reg->ADCCON) & ~(0x07 << ASEL_BITP);
 		adcon |= ch << ASEL_BITP;	// channel
-		__raw_writel(adcon, &reg->ADCCON);
-		dmb();
 		adcon |=  1 << ADEN_BITP;	// start
 		__raw_writel(adcon, &reg->ADCCON);
-		
-		__raw_writel(0x1, &reg->ADCINTCLR);
-		__raw_writel(0x1, &reg->ADCINTENB);
 
-		/* *****************************************************
-		 * Set register values direct for test.
-		 * *****************************************************/
-		//#ifdef CONFIG_ARCH_S5P6818
-		//__raw_writel(0x80F9, &reg->ADCPRESCON);
-		//#endif
-		//__raw_writel(0x8180, &reg->ADCCON);
-		dmb();
-		while (wait > 0) {
-			if (__raw_readl(&reg->ADCINTCLR) & (1<<AICL_BITP)) {
-				__raw_writel(0x1, &reg->ADCINTCLR);	/* pending clear */
-				value = __raw_readl(&reg->ADCDAT);	/* get value */
+		while (wait-- > 0) {
+			if (! (__raw_readl(&reg->ADCCON) & (1<<ADEN_BITP))) {
+				*val = __raw_readl(&reg->ADCDAT);	/* get */
 				break;
 			}
-			wait--;
 		}
-
-		nxp_adc_dump_regs(adc);
-
-		*val = value;
-
-
-		if (0 >= wait) {
-			ADC_UNLOCK(&adc->lock, flags);
+		if (0 > wait) {
+			spin_unlock_irqrestore(&adc->lock, flags);
 			return -EINVAL;
 		}
-		ADC_UNLOCK(&adc->lock, flags);
+		spin_unlock_irqrestore(&adc->lock, flags);
 #endif
 	}
 
-	//usleep_range (1, 10);
+	usleep_range (1, 10);
 	pr_debug("%s, ch=%d, val=0x%x\n", __func__, ch, *val);
 
 	return IIO_VAL_INT;
@@ -480,26 +370,34 @@ static int nxp_adc_resume(struct platform_device *pdev)
 {
 	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
 	struct nxp_adc_info *adc = iio_priv(indio_dev);
+#ifdef _USING_PROTOTYPE_
+#else
+	struct adc_register *reg = ADC_BASE;
+	unsigned int adcon = 0;
+#endif
 
-#ifdef ADC_USING_PROTOTYPE
-	NX_ADC_SetBaseAddress(0, (void*)IO_ADDRESS(NX_ADC_GetPhysicalAddress(0)));
+#ifdef _USING_PROTOTYPE_
+	NX_ADC_SetBaseAddress(0, (U32)IO_ADDRESS(NX_ADC_GetPhysicalAddress(0)));
  	NX_ADC_OpenModule(0);
 
 	ADC_HW_RESET();
-	//NX_ADC_SetInputChannel(0, ch);
-	NX_ADC_SetStandbyMode(0, CFALSE);
-	NX_ADC_SetPrescalerValue(0, adc->prescale) ;
-	NX_ADC_ClearInterruptPendingAll(0);
-	NX_ADC_SetPrescalerEnable(0, CTRUE);
 	NX_ADC_SetInterruptEnableAll(0, CTRUE);
-	#ifdef CONFIG_ARCH_S5P6818
-	NX_ADC_SetADCDataDelay(0, DATA_SEL_VAL);
-	NX_ADC_SetSOCDelay(0, CLK_CNT_VAL);
-	#endif
+	//	NX_ADC_SetInputChannel(0, ch);
+	NX_ADC_SetPrescalerValue(0, adc->prescale) ;
+	NX_ADC_SetPrescalerEnable(0, CTRUE);
+	NX_ADC_SetStandbyMode(0, CFALSE);
 #else
 	ADC_HW_RESET();
+	adcon = ((adc->prescale & 0xFF) << APSV_BITP) |
+			(1 << APEN_BITP) |
+			(0 << ADCON_STBY) ;
+	__raw_writel(adcon, &reg->ADCCON);
 
-	setup_adc_con(adc);
+	if (adc->support_interrupt) {
+		__raw_writel(1, &reg->ADCINTCLR);
+		__raw_writel(1, &reg->ADCINTENB);
+		init_completion(&adc->completion);
+	}
 #endif
 	return 0;
 }
@@ -669,7 +567,6 @@ static int __devinit nxp_adc_probe(struct platform_device *pdev)
 	struct iio_dev *iio = NULL;
 	struct nxp_adc_info *adc = NULL;
 	struct iio_chan_spec *spec;
-	struct resource	*mem;
 	struct iio_map *map;
 	int i = 0, ret = -ENODEV;
 
@@ -680,14 +577,6 @@ static int __devinit nxp_adc_probe(struct platform_device *pdev)
 	}
 
 	adc = iio_priv(iio);
-
-	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	adc->adc_base = devm_request_and_ioremap(&pdev->dev, mem);
-	if (!adc->adc_base) {
-		ret = -ENOMEM;
-		goto err_iio_free;
-	}
-
 	ret = nxp_adc_setup(adc, pdev);
 	if (0 > ret) {
 		pr_err("Fail: setup iio ADC device\n");

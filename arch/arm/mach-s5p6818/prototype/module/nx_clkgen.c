@@ -23,6 +23,9 @@ struct NX_CLKGEN_RegisterSet* __g_ModuleVariables[NUMBER_OF_CLKGEN_MODULE] = { C
 
 CBOOL	NX_CLKGEN_Initialize( void )
 {
+	//	@modified Gamza static variable(__g_ModuleVariables) is automatically filled by '0'
+	//					만약 초기화 과정에 전역변수를 0으로 초기화 하는 작업 이외의 일을
+	//					해야한다면 bInit 값을 CFALSE로 수정해야한다.
 	static CBOOL bInit = CFALSE;
 	U32 i;
 
@@ -44,11 +47,15 @@ U32			NX_CLKGEN_GetNumberOfModule( void )
 
 U32 		NX_CLKGEN_GetPhysicalAddress( U32 ModuleIndex )
 {
-    static const U32 PhysicalAddr[] = { PHY_BASEADDR_LIST( CLKGEN ) }; // PHY_BASEADDR_CLKGEN_MODULE
-    NX_CASSERT( NUMBER_OF_CLKGEN_MODULE == (sizeof(PhysicalAddr)/sizeof(PhysicalAddr[0])) );
-    NX_ASSERT( NUMBER_OF_CLKGEN_MODULE > ModuleIndex );
+	static const U32 PhysicalAddr[] = { PHY_BASEADDR_LIST( CLKGEN ) }; // PHY_BASEADDR_CLKGEN_MODULE
+	NX_CASSERT( NUMBER_OF_CLKGEN_MODULE == (sizeof(PhysicalAddr)/sizeof(PhysicalAddr[0])) );
+	NX_ASSERT( NUMBER_OF_CLKGEN_MODULE > ModuleIndex );
+	//NX_ASSERT( PHY_BASEADDR_CLKGEN0_MODULE == PhysicalAddr[0] );
+	//NX_ASSERT( PHY_BASEADDR_CLKGEN1_MODULE == PhysicalAddr[1] );
+	//NX_ASSERT( PHY_BASEADDR_CLKGEN2_MODULE == PhysicalAddr[2] );
+	// ...
 
-    return (U32)PhysicalAddr[ModuleIndex];
+	return (U32)PhysicalAddr[ModuleIndex];
 }
 
 U32			NX_CLKGEN_GetSizeOfRegisterSet( void )
@@ -56,19 +63,19 @@ U32			NX_CLKGEN_GetSizeOfRegisterSet( void )
 	return sizeof(struct NX_CLKGEN_RegisterSet);
 }
 
-void		NX_CLKGEN_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
+void		NX_CLKGEN_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
-    NX_ASSERT( NUMBER_OF_CLKGEN_MODULE > ModuleIndex );
+	NX_ASSERT( NUMBER_OF_CLKGEN_MODULE > ModuleIndex );
 	NX_ASSERT( CNULL != BaseAddress );
 
 	__g_ModuleVariables[ModuleIndex] = (struct NX_CLKGEN_RegisterSet *)BaseAddress;
 }
 
-void*		NX_CLKGEN_GetBaseAddress( U32 ModuleIndex )
+U32			NX_CLKGEN_GetBaseAddress( U32 ModuleIndex )
 {
     NX_ASSERT( NUMBER_OF_CLKGEN_MODULE > ModuleIndex );
 
-	return (void*)__g_ModuleVariables[ModuleIndex];
+	return (U32)__g_ModuleVariables[ModuleIndex];
 }
 
 
@@ -85,10 +92,10 @@ void	NX_CLKGEN_SetClockBClkMode( U32 ModuleIndex, NX_BCLKMODE mode )
 
 	switch(mode)
 	{
-		case NX_BCLKMODE_DISABLE:	clkmode = 0;
-		case NX_BCLKMODE_DYNAMIC:	clkmode = 2;		break;
-		case NX_BCLKMODE_ALWAYS:	clkmode = 3;		break;
-		default: NX_ASSERT( CFALSE );
+	case NX_BCLKMODE_DISABLE:	clkmode = 0;
+	case NX_BCLKMODE_DYNAMIC:	clkmode = 2;		break;
+	case NX_BCLKMODE_ALWAYS:	clkmode = 3;		break;
+	default: NX_ASSERT( CFALSE );
 	}
 
 	regvalue = ReadIO32(&__g_pRegister->CLKENB);
@@ -113,10 +120,10 @@ NX_BCLKMODE	NX_CLKGEN_GetClockBClkMode( U32 ModuleIndex )
 	mode = ( ReadIO32(&__g_pRegister->CLKENB) & 3UL );
 	switch(mode)
 	{
-		case 0: return NX_BCLKMODE_DISABLE;
-		case 2: return NX_BCLKMODE_DYNAMIC;
-		case 3: return NX_BCLKMODE_ALWAYS ;
-		default: NX_ASSERT( CFALSE );
+	case 0: return NX_BCLKMODE_DISABLE;
+	case 2: return NX_BCLKMODE_DYNAMIC;
+	case 3: return NX_BCLKMODE_ALWAYS ;
+	default: NX_ASSERT( CFALSE );
 	}
 	return	NX_BCLKMODE_DISABLE;
 }
@@ -135,9 +142,9 @@ void	NX_CLKGEN_SetClockPClkMode( U32 ModuleIndex, NX_PCLKMODE mode )
 
 	switch(mode)
 	{
-		case NX_PCLKMODE_DYNAMIC:	clkmode = 0;		break;
-		case NX_PCLKMODE_ALWAYS:	clkmode = 1;		break;
-		default: NX_ASSERT( CFALSE );
+	case NX_PCLKMODE_DYNAMIC:	clkmode = 0;		break;
+	case NX_PCLKMODE_ALWAYS:	clkmode = 1;		break;
+	default: NX_ASSERT( CFALSE );
 	}
 
 	regvalue = ReadIO32(&__g_pRegister->CLKENB);

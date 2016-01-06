@@ -16,7 +16,7 @@
 #ifndef __NX_ECID_H__
 #define __NX_ECID_H__
 
-#include "../base/nx_prototype.h"
+#include "nx_prototype.h"
 
 #ifdef  __cplusplus
 extern "C"
@@ -33,12 +33,12 @@ extern "C"
     {
         volatile U32 ECID[4];           ///< 0x00 ~ 0x0C    : 128bit ECID Register
         volatile U8  CHIPNAME[48];      ///< 0x10 ~ 0x3C    : Chip Name Register
-        volatile U32 RESERVED;          ///< 0x40           : Reserved Region
-        volatile U32 GUID0;             ///< 0x44           : GUID 0 Register
-        volatile U16 GUID1;             ///< 0x48           : GUID 1 Register
-        volatile U16 GUID2;             ///< 0x4A           : GUID 2 Register
-        volatile U8  GUID3[8];          ///< 0x4C ~ 0x50    : GUID 3-0 ~ 3-7 Register
-        volatile U32 EC[3];             ///< 0x54 ~ 0x5C    : EC 0 ~ 3 Register
+        volatile U32 RESERVED;          ///< 0x40           	: Reserved Region
+        volatile U32 GUID0;             ///< 0x44          	: GUID 0 Register
+        volatile U16 GUID1;             ///< 0x48          	: GUID 1 Register
+        volatile U16 GUID2;             ///< 0x4A          	: GUID 2 Register
+        volatile U8  GUID3[8];          ///< 0x4C ~ 0x50     : GUID 3-0 ~ 3-7 Register
+        volatile U32 EC[3];             ///< 0x54 ~ 0x5C     : EC 0 ~ 3 Register
     };
 
     /// @brief ECID Module's GUID Format
@@ -83,8 +83,8 @@ U32     NX_ECID_GetNumberOfModule( void );
 //@{
 U32     NX_ECID_GetPhysicalAddress( void );
 U32     NX_ECID_GetSizeOfRegisterSet( void );
-void    NX_ECID_SetBaseAddress( void* BaseAddress );
-void*    NX_ECID_GetBaseAddress( void );
+void    NX_ECID_SetBaseAddress( U32 BaseAddress );
+U32     NX_ECID_GetBaseAddress( void );
 CBOOL   NX_ECID_OpenModule( void );
 CBOOL   NX_ECID_CloseModule( void );
 CBOOL   NX_ECID_CheckBusy( void );
@@ -100,12 +100,11 @@ U32     NX_ECID_GetResetNumber( void );
 /// @name   Module Interface
 //@{
 
-//void  NX_ECID_GetECID(U32 (&ECID)[4]);
 void    NX_ECID_GetECID( U32 ECID[4] );
-//void  NX_ECID_GetChipName(U8 (&ChipName)[64]);
+
 void    NX_ECID_GetChipName(U8 ChipName[64]);
-//void  NX_ECID_GetGUID(NX_GUID& guid);
-void    NX_ECID_GetGUID (NX_GUID *guid);
+
+void    NX_ECID_GetGUID (NX_GUID *GUID);
 
 
 void    NX_ECID_SetA( U32 Addr );
@@ -118,7 +117,6 @@ void    NX_ECID_SetFSET( CBOOL Enable );
 CBOOL   NX_ECID_GetFSET( void );
 void    NX_ECID_SetPRCHG( CBOOL Enable );
 CBOOL   NX_ECID_GetPRCHG( void );
-U32     NX_ECID_GetBondingID( void );
 
 void    NX_ECID_SetPROG( CBOOL Enable );
 CBOOL   NX_ECID_GetPROG( void );

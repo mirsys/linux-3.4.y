@@ -8,7 +8,7 @@
 //  may only be made to the extent permitted by a licensing agreement from Nexell Co.
 //
 //  Module     	: I2C
-//  File		: nx_i2c.c
+//  File		  	: nx_i2c.c
 //  Description	:
 //  Author     	: Firmware Team
 //  History    	: 2014.10.01	Revision Comment & Function Define. (Deoks)
@@ -75,9 +75,8 @@ U32     NX_I2C_GetNumberOfModule( void );
 //@{
 U32     NX_I2C_GetPhysicalAddress( U32 ModuleIndex );
 U32     NX_I2C_GetSizeOfRegisterSet( void );
-
-void    NX_I2C_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*    NX_I2C_GetBaseAddress( U32 ModuleIndex );
+void    NX_I2C_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32     NX_I2C_GetBaseAddress( U32 ModuleIndex );
 CBOOL   NX_I2C_OpenModule( U32 ModuleIndex );
 CBOOL   NX_I2C_CloseModule( U32 ModuleIndex );
 CBOOL   NX_I2C_CheckBusy( U32 ModuleIndex );
@@ -121,8 +120,6 @@ U32     NX_I2C_GetResetNumber( U32 ModuleIndex );
 void    NX_I2C_SetClockPrescaler( U32 ModuleIndex, U32 PclkDivider, U32 Prescaler );
 void    NX_I2C_GetClockPrescaler( U32 ModuleIndex, U32* pPclkDivider, U32* pPrescaler );
 void    NX_I2C_SetSlaveAddress( U32 ModuleIndex, U8 Address);
- U32    NX_I2C_GetSlaveAddress( U32 ModuleIndex );
-
 //@}
 
 //------------------------------------------------------------------------------
@@ -133,8 +130,6 @@ void    NX_I2C_SetAckGenerationEnable( U32 ModuleIndex, CBOOL bAckGen );
 CBOOL   NX_I2C_GetAckGenerationEnable( U32 ModuleIndex );
 
 void    NX_I2C_ControlMode ( U32 ModuleIndex, NX_I2C_TXRXMODE TxRxMode, NX_I2C_SIGNAL Signal );
-void    NX_I2C_SetTXRXEnable( U32 ModuleIndex, NX_I2C_TXRXMODE TxRxMode );
-
 
 void		NX_I2C_SetFilterEnable( U32 ModuleIndex, CBOOL bEnable );
 CBOOL       NX_I2C_GetFilterEnable( U32 ModuleIndex );

@@ -23,8 +23,6 @@
 #include "thp7212-nx.h"
 #include <linux/videodev2_exynos_camera.h>
 
-#define CONFIG_VIDEO_THP7212_V_1_1
-
 /* psw0523 add for test patron preset table */
 #define USE_PRESET
 #ifdef USE_PRESET
@@ -37,6 +35,7 @@
 #include <linux/workqueue.h>
 #endif
 
+#define CONFIG_VIDEO_THP7212_V_1_1
 
 #define DEFAULT_SENSOR_WIDTH		640
 #define DEFAULT_SENSOR_HEIGHT		480
@@ -76,7 +75,6 @@
 
 #define FIRST_SETTING_FOCUS_MODE_DELAY_MS	100
 #define SECOND_SETTING_FOCUS_MODE_DELAY_MS	200
-
 
 #ifdef CONFIG_VIDEO_THP7212_DEBUG
 enum {
@@ -645,53 +643,8 @@ static const struct v4l2_fmtdesc capture_fmts[] = {
 	},
 };
 
-
-//added by keun 2015.05.07
-static bool camera_initialized = false;
-
-
 static int thp7212_s_mbus_fmt(struct v4l2_subdev *sd, struct v4l2_mbus_framefmt *fmt);
 
-
-int thp7212_i2c_read_data(struct i2c_client *client, unsigned int _addr, unsigned char *_data, unsigned int _size)
-{
-	struct i2c_adapter *adap = client->adapter;
-	int	cnt;
-	unsigned char _reg[2]={0};
-
-	struct i2c_msg msgs[] ={
-	{
-		.addr = client->addr,
-		.flags = 0,
-		.len = 2,
-		.buf = _reg,
-	},
-	{
-		.addr = client->addr,
-		.flags = I2C_M_RD,
-		.len = _size,
-		.buf = _data,
-	}};
-
-	_reg[0] = (unsigned char)(_addr>>8);
-	_reg[1] = (unsigned char)_addr;
-
-	for (cnt = 0; cnt < 10; cnt++) 
-	{
-		if (i2c_transfer(adap, msgs, 2) == 2)
-			break;
-
-		mdelay(10);
-	}
-
-	if (cnt == 10) 
-	{
-		printk(KERN_ERR "soc_i2c_read retry\n");
-		return -1;
-	}
-
-	return	0;
-}
 
 static int thp7212_i2c_read_byte(struct i2c_client *client, u8 addr, u8 *data)
 {
@@ -2394,26 +2347,7 @@ static int thp7212_init(struct v4l2_subdev *sd, u32 val)
 	struct sec_cam_parm *stored_parms = (struct sec_cam_parm *)&state->stored_parm.parm.raw_data;
 	int ret = 0;
 
-#if 0
-	u8 crc_val[4];
-	int i=0;
-	u8 read_value = 0;
-#endif
-
 	dev_err(&client->dev, "%s: start\n", __func__);
-
-#if 1
-	unsigned int reset_en=0;
-
-	// device reset
-	reset_en = CFG_IO_CAMERA_BACK_RESET;
-	nxp_soc_gpio_set_io_dir(reset_en, 1);
-	nxp_soc_gpio_set_io_func(reset_en, nxp_soc_gpio_get_altnum(reset_en));
-	nxp_soc_gpio_set_out_value(reset_en, 0);
-	mdelay(1);
-	nxp_soc_gpio_set_out_value(reset_en, 1);
-	mdelay(2);	
-#endif
 
 	// Start C0 00 00 ram_7210.elf.s19.1 Stop 
 	ret = thp7212_i2c_write_block(sd, ram_7210_elf_s19_1, sizeof(ram_7210_elf_s19_1));
@@ -2439,7 +2373,6 @@ static int thp7212_init(struct v4l2_subdev *sd, u32 val)
 	}
 	// Start C0 FF 08 10 01 00 Stop 
 	{
-		mdelay(100);
 		u8 buf[] = { 0xFF, 0x08, 0x10, 0x01, 0x00 };
 		ret = thp7212_i2c_write_block(sd, buf, sizeof(buf));
 		if(ret < 0) {
@@ -2454,39 +2387,6 @@ static int thp7212_init(struct v4l2_subdev *sd, u32 val)
 		dev_err(&client->dev, "\e[31m%s(ram_7210_elf_s19_3) i2c error\e[0m, ret = %d\n", __func__, ret);
 		return ret;
 	}
-
-//CRC CHECK
-#if 0
-	// Start C0 FF 38 00 01 21 AC Stop 
-	{
-		u8 buf[] = { 0xFF, 0x38, 0x00, 0x01, 0x21, 0xAC };
-		ret = thp7212_i2c_write_block(sd, buf, sizeof(buf));
-		if(ret < 0) {
-			dev_err(&client->dev, "\e[31m%s(Start C0 FF 38 00 01 22 F4 Stop) i2c error\e[0m, ret = %d\n", __func__, ret);
-			return ret;
-		}
-	}
-
-	// Start C0 FF 3C 01 Stop 
-	{
-		u8 buf[] = { 0xFF, 0x3C, 0x01 };
-		ret = thp7212_i2c_write_block(sd, buf, sizeof(buf));
-		if(ret < 0) {
-			dev_err(&client->dev, "\e[31m%s(Start C0 FF 3C 01 Stop) i2c error\e[0m, ret = %d\n", __func__, ret);
-			return ret;
-		}
-	}
-
-	read_value = -1;
-	if(thp7212_i2c_read_data(client, 0xFF30, crc_val, 4) != 0)
-		pr_info("[%s] : Read CRC Error!!!!\n", __func__);
-	else
-	{
-		for(i=0; i<4; i++)		
-			pr_info("%s : Read CRC Value[%d]  : 0x %02X\n", __func__, i, crc_val[i] );
-	}
-
-#endif
 	// Start C0 FF 00 01 Stop 
 	{
 		u8 buf[] = { 0xFF, 0x00, 0x01 };
@@ -2520,7 +2420,6 @@ static int thp7212_init(struct v4l2_subdev *sd, u32 val)
 			return ret;
 		}
 	}
-
 #if 0//defined(RESOLUTION_HD)
 		mdelay(200);
 		// Start C0 F0 16 0A Stop 
@@ -2533,128 +2432,6 @@ static int thp7212_init(struct v4l2_subdev *sd, u32 val)
 			}
 		}
 #endif
-
-//firmware verification
-#if 0
-	if(thp7212_i2c_read_data(client, 0xF001, &read_value, 1) != 0)
-		pr_info("[%s] :  Keun Revision Error!!!!\n", __func__);
-	else
-		pr_info("%s : Keun Revision : 0x %02X\n", __func__, read_value);
-
-	read_value = 0;
-
-	if(thp7212_i2c_read_data(client, 0xF016, &read_value, 1) != 0)
-		pr_info("[%s] :  Keun Frame Size Error!!!!\n", __func__);
-	else
-		pr_info("%s : Keun Frame Size : 0x %02X\n", __func__, read_value);
-
-	if(thp7212_i2c_read_data(client, 0xF01C, &read_value, 1) != 0)
-		pr_info("[%s] :  Keun Frame Rate  Error!!!!\n", __func__);
-	else
-		pr_info("%s : Keun Frame Rate : 0x %02X\n", __func__, read_value);
-
-	//AWB
-	read_value = -1;
-	if(thp7212_i2c_read_data(client, 0xF011, &read_value, 1) != 0)
-		pr_info("[%s] :  AWB Auto Enable Error!!!!\n", __func__);
-	else
-		pr_info("%s : AWB Auto Enable : 0x %02X\n", __func__, read_value);
-
-	//AE
-	read_value = -1;
-	if(thp7212_i2c_read_data(client, 0xF00F, &read_value, 1) != 0)
-		pr_info("[%s] :  AE Auto Enable Error!!!!\n", __func__);
-	else
-		pr_info("%s : AE Auto Enable : 0x %02X\n", __func__, read_value);
-
-	//Lens Shading
-	read_value = -1;
-	if(thp7212_i2c_read_data(client, 0xF034, &read_value, 1) != 0)
-		pr_info("[%s] : Lens Shading  Auto Enable Error!!!!\n", __func__);
-	else
-		pr_info("%s : Lens Auto Enable : 0x %02X\n", __func__, read_value);
-
-	//Defect Pixel Corection
-	read_value = -1;
-	if(thp7212_i2c_read_data(client, 0xF00E, &read_value, 1) != 0)
-		pr_info("[%s] : Defect Pixel Corection Auto Enable Error!!!!\n", __func__);
-	else
-		pr_info("%s : Defect Pixel Corection Auto Enable : 0x %02X\n", __func__, read_value);
-
-	//Dark Area Compendation
-	read_value = -1;
-	if(thp7212_i2c_read_data(client, 0xF013, &read_value, 1) != 0)
-		pr_info("[%s] : Dark Area Compendation Auto Enable Error!!!!\n", __func__);
-	else
-		pr_info("%s : Dark Area Compendation Auto Enable : 0x %02X\n", __func__, read_value);
-
-	//Output
-	read_value = -1;
-	if(thp7212_i2c_read_data(client, 0xF00B, &read_value, 1) != 0)
-		pr_info("[%s] : Output Auto Enable Error!!!!\n", __func__);
-	else
-		pr_info("%s : Output Auto Enable : 0x %02X\n", __func__, read_value);
-
-	//Custom AE Program
-	read_value = -1;
-	if(thp7212_i2c_read_data(client, 0xF020, &read_value, 1) != 0)
-		pr_info("[%s] : Custom AE Program Auto Enable Error!!!!\n", __func__);
-	else
-		pr_info("%s : Custom AE Program Auto Enable : 0x %02X\n", __func__, read_value);
-
-	//thp7212_i2c_write_word(client, 0x002E, 0x01A6);
-	//thp7212_i2c_read_word(client, 0x0F16, &read_value);
-	//thp7212_i2c_read_addr16_byte(client, 0xF001, &read_value);
-//	pr_info("%s : Keun Revision : 0x %02X\n", __func__, read_value);
-#endif
-
-	return 0;
-}
-
-static int thp7212_restart(struct v4l2_subdev *sd)
-{
-	struct i2c_client *client = v4l2_get_subdevdata(sd);
-	struct thp7212_state *state = container_of(sd, struct thp7212_state, sd);
-
-	int ret = 0;
-
-	dev_err(&client->dev, "%s: start\n", __func__);
-
-	// Start C0 FF 00 01 Stop 
-	{
-		u8 buf[] = { 0xFF, 0x00, 0x01 };
-		ret = thp7212_i2c_write_block(sd, buf, sizeof(buf));
-		if(ret < 0) {
-			dev_err(&client->dev, "\e[31m%s(Start C0 FF 00 01 Stop) i2c error\e[0m, ret = %d\n", __func__, ret);
-			return ret;
-		}
-	}
-
-#if 1//def CONFIG_BB_SDK_FRAME_RATE_CONTROL
-	mdelay(100);
-	// Start C0 F0 1C 0x Stop 
-	{
-		u8 buf[] = { 0xF0, 0x1C, 0x00 }; //Frame rate select 0x00-0x02 (0x00:30fps, 0x01:25fps, 0x02:20fps)
-		ret = thp7212_i2c_write_block(sd, buf, sizeof(buf));
-		if(ret < 0) {
-			dev_err(&client->dev, "\e[31m%s(Start C0 F0 1C 0x Stop) i2c error\e[0m, ret = %d\n", __func__, ret);
-			return ret;
-		}
-	}	
-#endif
-
-	mdelay(100);
-	// Start C0 F0 0B 01 Stop 
-	{
-		u8 buf[] = { 0xF0, 0x0B, 0x01 }; //	Output ON/OFF 0x00-0x01 (0x00:OFF, 0x01:ON)
-		ret = thp7212_i2c_write_block(sd, buf, sizeof(buf));
-		if(ret < 0) {
-			dev_err(&client->dev, "\e[31m%s(Start C0 F0 0B 01 Stop) i2c error\e[0m, ret = %d\n", __func__, ret);
-			return ret;
-		}
-	}
-
-	dev_err(&client->dev, "%s: end\n", __func__);
 
 	return 0;
 }
@@ -3319,7 +3096,6 @@ static int thp7212_enum_fmt(struct v4l2_subdev *sd,
 {
 	struct i2c_client *client = v4l2_get_subdevdata(sd);
 	pr_debug("%s: index = %d\n", __func__, fmtdesc->index);
-
 	dev_err(&client->dev, "%s: \n", __func__);
 	if (fmtdesc->index >= ARRAY_SIZE(capture_fmts))
 		return -EINVAL;
@@ -3515,18 +3291,7 @@ static int thp7212_s_stream(struct v4l2_subdev *sd, int enable)
 				break;
 		}
 #else
-		//added by keun 2015.05.07
-		if( !camera_initialized )
-		{
-			printk(KERN_INFO "Camera FW Initialization....!!!\n");
-			thp7212_init(sd, enable);
-			camera_initialized = true;
-		}
-		else
-		{
-			printk(KERN_INFO "Camera FW is already initialized....!!!\n");
-			thp7212_restart(sd);
-		}
+		thp7212_init(sd, enable);
 #endif
 		state->runmode = THP7212_RUNMODE_RUNNING;
 	} 
@@ -3920,3 +3685,4 @@ module_exit(thp7212_mod_exit);
 MODULE_DESCRIPTION("THP7212 camera driver");
 MODULE_AUTHOR("   <    @nexell.co.kr>");
 MODULE_LICENSE("GPL");
+

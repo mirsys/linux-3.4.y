@@ -179,7 +179,7 @@ static int _hw_init(struct nxp_scaler *me)
     NX_SCALER_Initialize();
     vmsg("%s: SCALER REGISTER PHY 0x%x, VIR 0x%x\n", __func__, NX_SCALER_GetPhysicalAddress(0),
             (U32)IO_ADDRESS(NX_SCALER_GetPhysicalAddress(0)));
-    NX_SCALER_SetBaseAddress(0, (void*)IO_ADDRESS(NX_SCALER_GetPhysicalAddress(0)));
+    NX_SCALER_SetBaseAddress(0, IO_ADDRESS(NX_SCALER_GetPhysicalAddress(0)));
 
     /* NX_SCALER_OpenModule(0); */
 
@@ -188,7 +188,7 @@ static int _hw_init(struct nxp_scaler *me)
     me->irq += 32;
 #endif
 
-    NX_CLKGEN_SetBaseAddress(NX_SCALER_GetClockNumber(0), (void*)IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(NX_SCALER_GetClockNumber(0))));
+    NX_CLKGEN_SetBaseAddress(NX_SCALER_GetClockNumber(0), IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(NX_SCALER_GetClockNumber(0))));
     NX_CLKGEN_SetClockBClkMode(NX_SCALER_GetClockNumber(0), NX_BCLKMODE_ALWAYS);
 
     #if defined(CONFIG_ARCH_S5P4418)
@@ -214,10 +214,7 @@ static void _hw_cleanup(struct nxp_scaler *me)
 #ifdef SIMULATION_SCALER
     del_timer_sync(&me->timer);
 #else
-    if (me->irq_alive) {
-        me->irq_alive = false;
-        free_irq(me->irq, me);
-    }
+    free_irq(me->irq, me);
 
     NX_SCALER_Stop(0);
     NX_SCALER_SetInterruptEnableAll(0, CFALSE);
@@ -974,7 +971,6 @@ static int nxp_scaler_s_power(struct v4l2_subdev *sd, int on)
             pr_err("%s: failed to request_irq()\n", __func__);
             return ret;
         }
-        me->irq_alive = true;
 #endif
         _hw_set_filter_table(me, &_default_filter_table);
     } else {
@@ -1638,7 +1634,6 @@ static int nxp_scaler_misc_open(struct inode *inode, struct file *file)
         pr_err("%s: failed to request_irq()\n", __func__);
         return ret;
     }
-    me->irq_alive = true;
     NXP_ATOMIC_INC(&me->open_count);
     vmsg("%s: exit\n", __func__);
     return 0;

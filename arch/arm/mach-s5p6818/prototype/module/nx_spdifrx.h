@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------------
 //  includes
 //------------------------------------------------------------------------------
-#include "../base/nx_prototype.h"
+#include "nx_prototype.h"
 
 #ifdef	__cplusplus
 extern "C"
@@ -63,34 +63,17 @@ struct NX_SPDIFRX_RegisterSet
 //------------------------------------------------------------------------------
 /// enum
 //------------------------------------------------------------------------------
-
-typedef enum
-{
-	NX_SPDIFRX_SAMPLEOFFSET_8 = 0,
-	NX_SPDIFRX_SAMPLEOFFSET_7 = 1,
-	NX_SPDIFRX_SAMPLEOFFSET_6 = 2,
-	NX_SPDIFRX_SAMPLEOFFSET_5 = 3,
-	NX_SPDIFRX_SAMPLEOFFSET_4 = 4,
-	NX_SPDIFRX_SAMPLEOFFSET_3 = 5,
-	NX_SPDIFRX_SAMPLEOFFSET_2 = 6,
-	NX_SPDIFRX_SAMPLEOFFSET_1 = 7,
-	NX_SPDIFRX_SAMPLEOFFSET_0 = 8,
-
-} NX_SPDIFRX_SAMPLEOFFSET;
-
 enum
 {
-	NX_SPDIFRX_CTRL_DECODE_ENB		= 0,
-	NX_SPDIFRX_CTRL_DMA_SWAP		= 1,
-	NX_SPDIFRX_CTRL_DMA_DATAONLY	= 2,
-	NX_SPDIFRX_CTRL_ENBCAPUSERSTAT	= 3,
-	NX_SPDIFRX_CTRL_SAMPLE_OFFSET	= 4,	// 4bit
-	NX_SPDIFRX_CTRL_ENBPHASEDET	= 8,
-	NX_SPDIFRX_CTRL_CLR_FIFO		= 9,
-	NX_SPDIFRX_CTRL_LOCK			= 10,
-	NX_SPDIFRX_CTRL_FILLREGUSERINV = 11,
-	NX_SPDIFRX_CTRL_DECRATE		= 12,
-	NX_SPDIFRX_CTRL_CPUHEADER		= 16
+	SPDIFRX_CTRL_DECODE_ENB		= 0,
+	SPDIFRX_CTRL_DMA_Swap		= 1,
+	SPDIFRX_CTRL_DMA_DataOnly	= 2,
+	SPDIFRX_CTRL_EnbCapUserStat	= 3,
+	SPDIFRX_CTRL_Sample_OFFSET	= 4,	// 4bit
+	SPDIFRX_CTRL_EnbPhaseDet	= 8,
+	SPDIFRX_CTRL_Clr_FIFO		= 9,
+	SPDIFRX_CTRL_lock			= 10,
+	FillRegUserInv				= 11
 };
 
 enum
@@ -130,8 +113,8 @@ U32		NX_SPDIFRX_GetPhysicalAddress( U32 ModuleIndex );
 U32		NX_SPDIFRX_GetResetNumber( U32 ModuleIndex, U32 ChannelIndex );
 U32		NX_SPDIFRX_GetNumberOfReset( void );
 U32		NX_SPDIFRX_GetSizeOfRegisterSet( void );
-void	NX_SPDIFRX_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*	NX_SPDIFRX_GetBaseAddress( U32 ModuleIndex );
+void	NX_SPDIFRX_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32		NX_SPDIFRX_GetBaseAddress( U32 ModuleIndex );
 CBOOL	NX_SPDIFRX_OpenModule( U32 ModuleIndex );
 CBOOL	NX_SPDIFRX_CloseModule( U32 ModuleIndex );
 CBOOL	NX_SPDIFRX_CheckBusy( U32 ModuleIndex );
@@ -162,41 +145,6 @@ U32		NX_SPDIFRX_GetInterruptPendingNumber( U32 ModuleIndex );	// -1 if None
 U32		NX_SPDIFRX_GetDMAIndex( U32 ModuleIndex );
 U32		NX_SPDIFRX_GetDMABusWidth( U32 ModuleIndex );
 //@}
-
-//--------------------------------------------------------------------------
-/// @name	Configuration operations
-//--------------------------------------------------------------------------
-
-void	NX_SPDIFRX_SetCPUHeader( U32 ModuleIndex, CBOOL Enable );
-CBOOL	NX_SPDIFRX_GetCPUHeader( U32 ModuleIndex );
-void	NX_SPDIFRX_SetDecreseRate( U32 ModuleIndex, U8 Rate );
-U8		NX_SPDIFRX_GetDecreseRate( U32 ModuleIndex );
-void	NX_SPDIFRX_SetUserDataFill( U32 ModuleIndex, CBOOL Enable );
-CBOOL	NX_SPDIFRX_GetUserDataFill( U32 ModuleIndex );
-
-
-void	NX_SPDIFRX_SetCaptureUserData( U32 ModuleIndex, CBOOL Enable );
-CBOOL	NX_SPDIFRX_GetCaptureUserData( U32 ModuleIndex );
-void	NX_SPDIFRX_SetPhaseDetect( U32 ModuleIndex, CBOOL Enable );
-CBOOL	NX_SPDIFRX_GetPhaseDetect( U32 ModuleIndex );
-void	NX_SPDIFRX_SetDecodeEnable( U32 ModuleIndex, CBOOL Enable );
-CBOOL	NX_SPDIFRX_GetDecodeEnable( U32 ModuleIndex );
-
-void						NX_SPDIFRX_SetSampleOffset( U32 ModuleIndex, NX_SPDIFRX_SAMPLEOFFSET Offset );
-NX_SPDIFRX_SAMPLEOFFSET		NX_SPDIFRX_GetSampleOffset( U32 ModuleIndex );
-
-
-CBOOL	NX_SPDIFRX_GetLock( U32 ModuleIndex );
-void	NX_SPDIFRX_ResetFIFO( U32 ModuleIndex, CBOOL Enable );
-
-
-void	NX_SPDIFRX_SetDMADataOnly( U32 ModuleIndex, CBOOL Enable );
-CBOOL	NX_SPDIFRX_GetDMADataOnly( U32 ModuleIndex );
-
-void	NX_SPDIFRX_SetDMADataSwap( U32 ModuleIndex, CBOOL Enable );
-CBOOL	NX_SPDIFRX_GetDMADataSwap( U32 ModuleIndex );
-//@}
-
 
 //--------------------------------------------------------------------------
 /// @name	Configuration operations

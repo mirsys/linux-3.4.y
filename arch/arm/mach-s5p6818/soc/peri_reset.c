@@ -59,7 +59,7 @@ void nxp_soc_peri_reset_enter(int id)
 
 	spin_lock_irqsave(&lock, flags);
 
-	NX_RSTCON_SetBaseAddress((void*)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
+	NX_RSTCON_SetBaseAddress(IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
 	NX_RSTCON_SetRST(RSTIndex, RSTCON_ASSERT);
 
 	spin_unlock_irqrestore(&lock, flags);
@@ -86,7 +86,7 @@ void nxp_soc_peri_reset_exit(int id)
 
 	spin_lock_irqsave(&lock, flags);
 
-	NX_RSTCON_SetBaseAddress((void*)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
+	NX_RSTCON_SetBaseAddress(IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
 	NX_RSTCON_SetRST(RSTIndex, RSTCON_NEGATE);
 
 	spin_unlock_irqrestore(&lock, flags);
@@ -113,7 +113,7 @@ void nxp_soc_peri_reset_set(int id)
 
 	spin_lock_irqsave(&lock, flags);
 
-	NX_RSTCON_SetBaseAddress((void*)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
+	NX_RSTCON_SetBaseAddress(IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
 	NX_RSTCON_SetRST(RSTIndex, RSTCON_ASSERT);
 	mdelay(1);
 	NX_RSTCON_SetRST(RSTIndex, RSTCON_NEGATE);
@@ -133,7 +133,7 @@ int nxp_soc_peri_reset_status(int id)
 
 	spin_lock_irqsave(&lock, flags);
 
-	NX_RSTCON_SetBaseAddress((void*)IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
+	NX_RSTCON_SetBaseAddress(IO_ADDRESS(NX_RSTCON_GetPhysicalAddress()));
 	power = NX_RSTCON_GetRST(RSTIndex) ? 1 : 0;
 
 	spin_unlock_irqrestore(&lock, flags);

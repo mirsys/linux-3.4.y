@@ -132,10 +132,8 @@ U32		NX_GIC400_GetNumberOfModule( void );
 //@{
 U32		NX_GIC400_GetPhysicalAddress( void );
 U32		NX_GIC400_GetSizeOfRegisterSet( void );
-
-void	NX_GIC400_SetBaseAddress( void* BaseAddress );
-void*	NX_GIC400_GetBaseAddress( void );
-
+void	NX_GIC400_SetBaseAddress( U32 BaseAddress );
+U32		NX_GIC400_GetBaseAddress( void );
 CBOOL	NX_GIC400_OpenModule( void );
 CBOOL	NX_GIC400_CloseModule( void );
 CBOOL	NX_GIC400_CheckBusy( void );

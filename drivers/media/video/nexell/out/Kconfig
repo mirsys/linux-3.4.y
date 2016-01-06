@@ -14,7 +14,7 @@ config NXP_OUT_HDMI
       Say y here to enable v4l2 hdmi
 
 if NXP_OUT_HDMI
-source arch/arm/mach-s5p4418/soc/hdmi/Kconfig
+source arch/arm/mach-s5p6818/soc/hdmi/Kconfig
 endif
 
 config NXP_HDMI_CEC

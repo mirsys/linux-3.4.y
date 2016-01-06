@@ -44,7 +44,7 @@ static u8 * media_on_ram;
  * Optimize Option
  ******************************************************************************/
 #if defined (__COMPILE_MODE_BEST_DEBUGGING__)
-//#pragma GCC push_options
+#pragma GCC push_options
 #pragma GCC optimize("O0")
 #endif
 
@@ -61,9 +61,6 @@ void media_gpio_c00_high(void);
 void media_gpio_c00_low(void);
 void media_gpio_c01_high(void);
 void media_gpio_c01_low(void);
-
-static ktime_t media_elapse_begin(void);
-static void media_elapse_end(ELAPSED_MEDIA_IO * elapsed_io, ktime_t begin_tm, unsigned int lba, unsigned int seccnt);
 
 /******************************************************************************
  *
@@ -96,7 +93,6 @@ int media_open(void)
   //Exchange.debug.misc.media_open = 1;
   //Exchange.debug.misc.media_format = 1;
   //Exchange.debug.misc.media_close = 1;
-  //Exchange.debug.misc.media_rw_memcpy = 1;
   //Exchange.debug.misc.smart_store = 1;
   //Exchange.debug.misc.uboot_format = 1;
   //Exchange.debug.misc.uboot_init = 1;
@@ -108,7 +104,6 @@ int media_open(void)
     Exchange.debug.ftl.memory_usage = 1;
     Exchange.debug.ftl.boot = 1;
     Exchange.debug.ftl.block_summary = 1;
-    Exchange.debug.ftl.license_detail = 0;
     Exchange.debug.ftl.warn = 1;
     Exchange.debug.ftl.error = 1;
 
@@ -198,7 +193,7 @@ int media_open(void)
      **************************************************************************/
 #if defined (__COMPILE_MODE_FORMAT__)
     if (Exchange.debug.misc.media_format) { Exchange.sys.fn.print("MIO.MEDIA: Exchange.ftl.fnFormat()\n"); }
-    if (Exchange.ftl.fnFormat(CHIP_NAME, CHIP_ID_BASE, 0) < 0)
+    if (Exchange.ftl.fnFormat("NXP4330", 0xF0067000, 0) < 0)
     {
         printk(KERN_ERR "MIO.MEDIA: Exchange.ftl.fnFormat() Fail\n");
         return -1;
@@ -206,7 +201,7 @@ int media_open(void)
 #endif
 
     if (Exchange.debug.misc.media_open) { Exchange.sys.fn.print("MIO.MEDIA: Exchange.ftl.fnOpen()\n"); }
-    if (Exchange.ftl.fnOpen(CHIP_NAME, CHIP_ID_BASE, 0) < 0)
+    if (Exchange.ftl.fnOpen("NXP4330", 0xF0067000, 0) < 0)
     {
         printk(KERN_ERR "MIO.MEDIA: Exchange.ftl.fnOpen() Fail\n");
         return -1;
@@ -320,21 +315,18 @@ void media_write(sector_t _lba, unsigned int _seccnt, u8 * _buffer, void * _io_s
     sector_t lba = _lba;
     unsigned int seccnt = _seccnt;
     u8 * buffer = _buffer;
-  //struct mio_state * io_state = _io_state;
+    struct mio_state * io_state = _io_state;
 
 #if defined (__MEDIA_ON_RAM__)
     memcpy(media_on_ram + lba * __SECTOR_SIZEOF(1), buffer, seccnt * __SECTOR_SIZEOF(1));
 #elif defined (__MEDIA_ON_NAND__)
     int wcidxfar = 0;
     int wcidx = 0;
-    ktime_t begin_tm;
 
 #if defined (__COMPILE_MODE_ELAPSE_T__)
     Exchange.debug.elapse_t.io.write = 1;
     if (Exchange.sys.fn.elapse_t_io_measure_start) { Exchange.sys.fn.elapse_t_io_measure_start(ELAPSE_T_IO_MEDIA_RW, ELAPSE_T_IO_MEDIA_R, ELAPSE_T_IO_MEDIA_W); }
 #endif
-
-    begin_tm = media_elapse_begin();
 
     // Test Put Command To FTL
     while (1)
@@ -357,47 +349,32 @@ void media_write(sector_t _lba, unsigned int _seccnt, u8 * _buffer, void * _io_s
 
     // Copy buffer to WCache
     {
-        unsigned long dest = 0;
-        unsigned long src  = 0;
+        unsigned int dest = 0;
+        unsigned int src  = 0;
         unsigned int size = 0;
 
         // Write Cache Roll Over
         if ((wcidx + seccnt) > *Exchange.buffer.SectorsOfWriteCache)
         {
             dest = *Exchange.buffer.BaseOfWriteCache + (wcidx << 9);
-            src  = (unsigned long)buffer;
+            src  = (unsigned int)buffer;
             size = (*Exchange.buffer.SectorsOfWriteCache - wcidx) << 9;
             if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dest, (const void *)src, size); }
             else                         {                  memcpy((void *)dest, (const void *)src, size); }
-            if (Exchange.debug.misc.media_rw_memcpy)
-            {
-                if (sizeof(unsigned long) == 8) { printk(KERN_INFO "w %08x, %8x, mcpy 0 %016lx %016lx %8x %08x--%08x\n", (unsigned int)_lba, _seccnt, dest, src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                else                            { printk(KERN_INFO "w %08x, %8x, mcpy 0 %08x %08x %8x %08x--%08x\n", (unsigned int)_lba, _seccnt, (unsigned int)dest, (unsigned int)src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-            }
 
             dest = *Exchange.buffer.BaseOfWriteCache;
-            src  = (unsigned long)buffer + size;
+            src  = (unsigned int)buffer + size;
             size = (seccnt << 9) - size;
             if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dest, (const void *)src, size); }
             else                         {                  memcpy((void *)dest, (const void *)src, size); }
-            if (Exchange.debug.misc.media_rw_memcpy)
-            {
-                if (sizeof(unsigned long) == 8) { printk(KERN_INFO "w %08x, %8x, mcpy 1 %016lx %016lx %8x %08x--%08x\n", (unsigned int)_lba, _seccnt, dest, src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                else                            { printk(KERN_INFO "w %08x, %8x, mcpy 1 %08x %08x %8x %08x--%08x\n", (unsigned int)_lba, _seccnt, (unsigned int)dest, (unsigned int)src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-            }
         }
         else
         {
             dest = *Exchange.buffer.BaseOfWriteCache + (wcidx << 9);
-            src  = (unsigned long)buffer;
+            src  = (unsigned int)buffer;
             size = seccnt << 9;
             if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dest, (const void *)src, size); }
             else                         {                  memcpy((void *)dest, (const void *)src, size); }
-            if (Exchange.debug.misc.media_rw_memcpy)
-            {
-                if (sizeof(unsigned long) == 8) { printk(KERN_INFO "w %08x, %8x, mcpy - %016lx %016lx %8x %08x--%08x\n", (unsigned int)_lba, _seccnt, dest, src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                else                            { printk(KERN_INFO "w %08x, %8x, mcpy - %08x %08x %8x %08x--%08x\n", (unsigned int)_lba, _seccnt, (unsigned int)dest, (unsigned int)src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-            }
         }
     }
 
@@ -407,9 +384,13 @@ void media_write(sector_t _lba, unsigned int _seccnt, u8 * _buffer, void * _io_s
     // Put Command to FTL
     Exchange.ftl.fnPutCommand(IO_CMD_WRITE, 0, lba, seccnt);
 
-    media_super();
+    // IO Summary
+    Exchange.statistics.ios.cur.write += (seccnt << 9);
+    Exchange.statistics.ios.cur.write_seccnt += seccnt;
+    Exchange.statistics.ios.accumulate.write += (seccnt << 9);
+    Exchange.statistics.ios.accumulate.write_seccnt += seccnt;
 
-    media_elapse_end(&(elapsed_mio_media_info.max_write), begin_tm, _lba, _seccnt);
+    media_super();
 
 #if defined (__COMPILE_MODE_ELAPSE_T__)
     if (Exchange.sys.fn.elapse_t_io_measure_end) { Exchange.sys.fn.elapse_t_io_measure_end(ELAPSE_T_IO_MEDIA_RW, ELAPSE_T_IO_MEDIA_R, ELAPSE_T_IO_MEDIA_W); }
@@ -434,14 +415,11 @@ void media_read(sector_t _lba, unsigned int _seccnt, u8 * _buffer, void * _io_st
     memcpy(buffer, media_on_ram + lba * __SECTOR_SIZEOF(1), seccnt * __SECTOR_SIZEOF(1));
 #elif defined (__MEDIA_ON_NAND__)
     int rbidxfar = 0;
-    ktime_t begin_tm;
 
 #if defined (__COMPILE_MODE_ELAPSE_T__)
     Exchange.debug.elapse_t.io.read = 1;
     if (Exchange.sys.fn.elapse_t_io_measure_start) { Exchange.sys.fn.elapse_t_io_measure_start(ELAPSE_T_IO_MEDIA_RW, ELAPSE_T_IO_MEDIA_R, ELAPSE_T_IO_MEDIA_W); }
 #endif
-
-    begin_tm = media_elapse_begin();
 
     // Test Put Command to FTL
     while (1)
@@ -463,6 +441,12 @@ void media_read(sector_t _lba, unsigned int _seccnt, u8 * _buffer, void * _io_st
 
     // Put Command to FTL
     Exchange.ftl.fnPutCommand(IO_CMD_READ, 0, lba, seccnt);
+
+    // IO Summary
+    Exchange.statistics.ios.cur.read += (seccnt << 9);
+    Exchange.statistics.ios.cur.read_seccnt += seccnt;
+    Exchange.statistics.ios.accumulate.read += (seccnt << 9);
+    Exchange.statistics.ios.accumulate.read_seccnt += seccnt;
 
     // Copy DATA From "FTL Read Buffer" to "BIO Read Buffer"
     while (1)
@@ -517,8 +501,8 @@ void media_read(sector_t _lba, unsigned int _seccnt, u8 * _buffer, void * _io_st
              ******************************************************************/
             unsigned int IsLinear = 1;
 
-            unsigned long dest = 0;
-            unsigned long src  = 0;
+            unsigned int dest = 0;
+            unsigned int src  = 0;
             unsigned int size = 0;
             unsigned int trseccnt = 0;
 
@@ -534,17 +518,12 @@ void media_read(sector_t _lba, unsigned int _seccnt, u8 * _buffer, void * _io_st
                 // "FTL Readed Buffer" is Linear
                 if (IsLinear)
                 {
-                    dest = (unsigned long)buffer;
+                    dest = (unsigned int)buffer;
                     src  = *Exchange.buffer.BaseOfReadBuffer + (rbidx << 9);
                     size = seccnt << 9;
                     trseccnt += size >> 9;
                     if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dest, (const void *)src, size); }
                     else                         {                  memcpy((void *)dest, (const void *)src, size); }
-                    if (Exchange.debug.misc.media_rw_memcpy)
-                    {
-                        if (sizeof(unsigned long) == 8) { printk(KERN_INFO "r %08x, %8x, %8x mcpy %016lx %016lx %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, dest, src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                        else                            { printk(KERN_INFO "r %08x, %8x, %8x mcpy %08x %08x %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, (unsigned int)dest, (unsigned int)src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                    }
                 }
                 // "FTL Readed Buffer" is Roll Over
                 else
@@ -552,43 +531,28 @@ void media_read(sector_t _lba, unsigned int _seccnt, u8 * _buffer, void * _io_st
                     // But 'seccnt' is Linear
                     if ((*Exchange.buffer.SectorsOfReadBuffer - rbidx) >= seccnt)
                     {
-                        dest = (unsigned long)buffer;
+                        dest = (unsigned int)buffer;
                         src  = *Exchange.buffer.BaseOfReadBuffer + (rbidx << 9);
                         size = seccnt << 9;
                         trseccnt += size >> 9;
                         if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dest, (const void *)src, size); }
                         else                         {                  memcpy((void *)dest, (const void *)src, size); }
-                        if (Exchange.debug.misc.media_rw_memcpy)
-                        {
-                            if (sizeof(unsigned long) == 8) { printk(KERN_INFO "r %08x, %8x, %8x mcpy %016lx %016lx %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, dest, src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                            else                            { printk(KERN_INFO "r %08x, %8x, %8x mcpy %08x %08x %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, (unsigned int)dest, (unsigned int)src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                        }
                     }
                     else
                     {
-                        dest = (unsigned long)buffer;
+                        dest = (unsigned int)buffer;
                         src  = *Exchange.buffer.BaseOfReadBuffer + (rbidx << 9);
                         size = (*Exchange.buffer.SectorsOfReadBuffer - rbidx) << 9;
                         trseccnt += size >> 9;
                         if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dest, (const void *)src, size); }
                         else                         {                  memcpy((void *)dest, (const void *)src, size); }
-                        if (Exchange.debug.misc.media_rw_memcpy)
-                        {
-                            if (sizeof(unsigned long) == 8) { printk(KERN_INFO "r %08x, %8x, %8x mcpy %016lx %016lx %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, dest, src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                            else                            { printk(KERN_INFO "r %08x, %8x, %8x mcpy %08x %08x %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, (unsigned int)dest, (unsigned int)src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                        }
 
-                        dest = (unsigned long)buffer + size;
+                        dest = (unsigned int)buffer + size;
                         src  = *Exchange.buffer.BaseOfReadBuffer;
                         size = (seccnt << 9) - size;
                         trseccnt += size >> 9;
                         if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dest, (const void *)src, size); }
                         else                         {                  memcpy((void *)dest, (const void *)src, size); }
-                        if (Exchange.debug.misc.media_rw_memcpy)
-                        {
-                            if (sizeof(unsigned long) == 8) { printk(KERN_INFO "r %08x, %8x, %8x mcpy %016lx %016lx %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, dest, src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                            else                            { printk(KERN_INFO "r %08x, %8x, %8x mcpy %08x %08x %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, (unsigned int)dest, (unsigned int)src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                        }
                     }
                 }
             }
@@ -598,44 +562,29 @@ void media_read(sector_t _lba, unsigned int _seccnt, u8 * _buffer, void * _io_st
                 // "FTL Readed Buffer" is Linear
                 if (IsLinear)
                 {
-                    dest = (unsigned long)buffer;
+                    dest = (unsigned int)buffer;
                     src  = *Exchange.buffer.BaseOfReadBuffer + (rbidx << 9);
                     size = readed << 9;
                     trseccnt += size >> 9;
                     if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dest, (const void *)src, size); }
                     else                         {                  memcpy((void *)dest, (const void *)src, size); }
-                    if (Exchange.debug.misc.media_rw_memcpy)
-                    {
-                        if (sizeof(unsigned long) == 8) { printk(KERN_INFO "r %08x, %8x, %8x mcpy %016lx %016lx %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, dest, src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                        else                            { printk(KERN_INFO "r %08x, %8x, %8x mcpy %08x %08x %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, (unsigned int)dest, (unsigned int)src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                    }
                 }
                 // "FTL Readed Buffer" is Roll Over
                 else
                 {
-                    dest = (unsigned long)buffer;
+                    dest = (unsigned int)buffer;
                     src  = *Exchange.buffer.BaseOfReadBuffer + (rbidx << 9);
                     size = (*Exchange.buffer.SectorsOfReadBuffer - rbidx) << 9;
                     trseccnt += size >> 9;
                     if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dest, (const void *)src, size); }
                     else                         {                  memcpy((void *)dest, (const void *)src, size); }
-                    if (Exchange.debug.misc.media_rw_memcpy)
-                    {
-                        if (sizeof(unsigned long) == 8) { printk(KERN_INFO "r %08x, %8x, %8x mcpy %016lx %016lx %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, dest, src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                        else                            { printk(KERN_INFO "r %08x, %8x, %8x mcpy %08x %08x %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, (unsigned int)dest, (unsigned int)src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                    }
 
-                    dest = (unsigned long)buffer + size;
+                    dest = (unsigned int)buffer + size;
                     src  = *Exchange.buffer.BaseOfReadBuffer;
                     size = (readed << 9) - size;
                     trseccnt += size >> 9;
                     if (Exchange.sys.fn._memcpy) { Exchange.sys.fn._memcpy((void *)dest, (const void *)src, size); }
                     else                         {                  memcpy((void *)dest, (const void *)src, size); }
-                    if (Exchange.debug.misc.media_rw_memcpy)
-                    {
-                        if (sizeof(unsigned long) == 8) { printk(KERN_INFO "r %08x, %8x, %8x mcpy %016lx %016lx %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, dest, src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                        else                            { printk(KERN_INFO "r %08x, %8x, %8x mcpy %08x %08x %8x %08x--%08x\n", (unsigned int)_lba, req_trseccnt, _seccnt, (unsigned int)dest, (unsigned int)src, size, *((unsigned int *)src), *((unsigned int *)(src + size - 4))); }
-                    }
                 }
             }
 
@@ -659,8 +608,6 @@ void media_read(sector_t _lba, unsigned int _seccnt, u8 * _buffer, void * _io_st
     }
 
     media_super();
-
-    media_elapse_end(&(elapsed_mio_media_info.max_read), begin_tm, _lba, _seccnt);
 
 #if defined (__COMPILE_MODE_ELAPSE_T__)
     if (Exchange.sys.fn.elapse_t_io_measure_end) { Exchange.sys.fn.elapse_t_io_measure_end(ELAPSE_T_IO_MEDIA_RW, ELAPSE_T_IO_MEDIA_R, ELAPSE_T_IO_MEDIA_W); }
@@ -693,10 +640,6 @@ int media_super(void)
  ******************************************************************************/
 void media_flush(void * _io_state)
 {
-    ktime_t begin_tm;
-
-    begin_tm = media_elapse_begin();
-
     while (1)
     {
         media_super();
@@ -710,18 +653,12 @@ void media_flush(void * _io_state)
             }
         }
     }
-
-    media_elapse_end(&(elapsed_mio_media_info.max_flush), begin_tm, 0, 0);
 }
 
 void media_trim(void * _io_state, int _lba, int _seccnt)
 {
-    ktime_t begin_tm;
-
     // Make Trim Buffer
     unsigned int (*entry)[2] = (unsigned int (*)[2])__trim_buffer;
-
-    begin_tm = media_elapse_begin();
 
     memset((void *)__trim_buffer, 0, 512);
     entry[0][0] = _lba;
@@ -733,15 +670,13 @@ void media_trim(void * _io_state, int _lba, int _seccnt)
 
         if (Exchange.ftl.fnIsReady())
         {
-            if (Exchange.ftl.fnPrePutCommand(IO_CMD_DATA_SET_MANAGEMENT, IO_CMD_DATA_SET_MANAGEMENT_FEATURE_TRIM, (unsigned long)__trim_buffer, 1) >= 0)
+            if (Exchange.ftl.fnPrePutCommand(IO_CMD_DATA_SET_MANAGEMENT, IO_CMD_DATA_SET_MANAGEMENT_FEATURE_TRIM, (int)__trim_buffer, 1) >= 0)
             {
-                Exchange.ftl.fnPutCommand(IO_CMD_DATA_SET_MANAGEMENT, IO_CMD_DATA_SET_MANAGEMENT_FEATURE_TRIM, (unsigned long)__trim_buffer, 1);
+                Exchange.ftl.fnPutCommand(IO_CMD_DATA_SET_MANAGEMENT, IO_CMD_DATA_SET_MANAGEMENT_FEATURE_TRIM, (int)__trim_buffer, 1);
                 break;
             }
         }
     }
-
-    media_elapse_end(&(elapsed_mio_media_info.max_trim), begin_tm, 0, 0);
 }
 
 void media_background(void * _io_state)
@@ -763,10 +698,6 @@ void media_background(void * _io_state)
 
 void media_standby(void * _io_state)
 {
-    ktime_t begin_tm;
-
-    begin_tm = media_elapse_begin();
-
     while (1)
     {
         media_super();
@@ -780,16 +711,10 @@ void media_standby(void * _io_state)
             }
         }
     }
-
-    media_elapse_end(&(elapsed_mio_media_info.max_standby), begin_tm, 0, 0);
 }
 
 void media_powerdown(void * _io_state)
 {
-    ktime_t begin_tm;
-
-    begin_tm = media_elapse_begin();
-
     while (1)
     {
         media_super();
@@ -803,8 +728,6 @@ void media_powerdown(void * _io_state)
             }
         }
     }
-
-    media_elapse_end(&(elapsed_mio_media_info.max_powerdown), begin_tm, 0, 0);
 }
 
 int media_is_idle(void * _io_state)
@@ -816,27 +739,6 @@ int media_is_idle(void * _io_state)
     }
 
     return 1;
-}
-
-/******************************************************************************
- *
- ******************************************************************************/
-static ktime_t media_elapse_begin(void)
-{
-    return ktime_get();
-}
-
-static void media_elapse_end(ELAPSED_MEDIA_IO * elapsed_io, ktime_t begin_tm, unsigned int lba, unsigned int seccnt)
-{
-    ktime_t end_tm = ktime_get();
-    s64 elapsed_ns = ktime_to_ns(ktime_sub(end_tm, begin_tm));
-
-    if (elapsed_io->elapsed_ns < elapsed_ns)
-    {
-        elapsed_io->elapsed_ns = elapsed_ns;
-        elapsed_io->lba = lba;
-        elapsed_io->seccnt = seccnt;
-    }
 }
 
 /******************************************************************************
@@ -876,5 +778,5 @@ void media_gpio_c01_low(void)
  * Optimize Restore
  ******************************************************************************/
 #if defined (__COMPILE_MODE_BEST_DEBUGGING__)
-//#pragma GCC pop_options
+#pragma GCC pop_options
 #endif

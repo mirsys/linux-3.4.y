@@ -24,15 +24,12 @@
 #include <sound/soc.h>
 #include <sound/soc-dai.h>
 #include <mach/platform.h>
-#include "nxp-i2s.h"
+#include "nxp-pcm.h"
 
-/*
-#define pr_debug				printk
-*/
 static char str_dai_name[16] = DEV_NAME_I2S;
 
 #define STUB_RATES		SNDRV_PCM_RATE_8000_192000
-#define STUB_FORMATS	(SNDRV_PCM_FMTBIT_S8 | SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE)
+#define STUB_FORMATS	(SNDRV_PCM_FMTBIT_S16_LE | SNDRV_PCM_FMTBIT_S24_LE)
 
 static struct snd_soc_codec_driver soc_codec_snd_null;
 
@@ -90,35 +87,6 @@ MODULE_LICENSE("GPL");
 /*
  * SND-NULL Card DAI
  */
-#if defined(CONFIG_SND_NXP_DFS)
-static int snd_null_hw_params(struct snd_pcm_substream *substream,
-				struct snd_pcm_hw_params *params)
-{
-	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct snd_soc_dai *cpu_dai = rtd->cpu_dai;
-    unsigned int sample_rate = params_rate(params);
-//	unsigned int freq = params_rate(params) * 256;	/* 48K * 256 = 12.288 Mhz */
-//	unsigned int fmt  = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
-//						SND_SOC_DAIFMT_CBS_CFS;
-	int ret = 0;
-
-	pr_debug("%s\n", __func__);
-
-    ret = snd_soc_dai_set_sysclk(cpu_dai, 0, sample_rate, SND_SOC_CLOCK_IN);
-	if (0 > ret)
-		return ret;
-/*
-    ret = snd_soc_dai_set_fmt(cpu_dai, fmt);
-    if (0 > ret)
-       return ret;
-*/
-	return ret;
-}
-
-static struct snd_soc_ops snd_null_ops = {
-	.hw_params		= snd_null_hw_params,
-};
-#endif
 static struct snd_soc_dai_link snd_null_dai_link = {
 	.name 			= "ASoc-NULL",
 	.stream_name 	= "Null Voice",
@@ -126,9 +94,6 @@ static struct snd_soc_dai_link snd_null_dai_link = {
 	.platform_name  = DEV_NAME_PCM,			/* nxp_snd_pcm_driver name */
 	.codec_dai_name = "snd-null-voice",
 	.codec_name 	= "snd-null",
-#if defined(CONFIG_SND_NXP_DFS)
-	.ops			= &snd_null_ops,
-#endif
 	.symmetric_rates = 1,
 };
 

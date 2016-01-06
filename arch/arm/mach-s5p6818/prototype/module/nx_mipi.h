@@ -103,7 +103,7 @@ typedef struct
 	volatile U32 __Reserved4    [(0x2000-0x015C)/4];
 
 	// CSI DATA [0x2000~0x3FFF]
-	volatile U32 MIPI_CSIS_PKTDATA  [0x2000/4] ; // 0x2000 R   Specifies the memory area for storing non-image data.
+	volatile U32 CSIS_PKTDATA  [0x2000/4] ; // 0x2000 R   Specifies the memory area for storing non-image data.
 } NX_MIPI_RegisterSet;
 
 //------------------------------------------------------------------------------
@@ -457,8 +457,8 @@ CBOOL NX_MIPI_Initialize( void );
 U32   NX_MIPI_GetNumberOfModule( void );
 
 U32   NX_MIPI_GetSizeOfRegisterSet( void );
-void  NX_MIPI_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void* NX_MIPI_GetBaseAddress( U32 ModuleIndex );
+void  NX_MIPI_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_MIPI_GetBaseAddress( U32 ModuleIndex );
 U32   NX_MIPI_GetPhysicalAddress ( U32 ModuleIndex );
 CBOOL NX_MIPI_OpenModule( U32 ModuleIndex );
 CBOOL NX_MIPI_CloseModule( U32 ModuleIndex );

@@ -85,17 +85,17 @@ static inline bool _hdmi_initialize(struct nxp_hdmi *me)
          * [SEQ 2] set the HDMI CLKGEN's PCLKMODE to always enabled
          */
         NX_DISPTOP_CLKGEN_SetBaseAddress(HDMI_CLKGEN,
-                (void*)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(HDMI_CLKGEN)));
+                (U32)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(HDMI_CLKGEN)));
         NX_DISPTOP_CLKGEN_SetClockPClkMode(HDMI_CLKGEN, NX_PCLKMODE_ALWAYS);
 
-        NX_HDMI_SetBaseAddress(0, (void*)IO_ADDRESS(NX_HDMI_GetPhysicalAddress(0)));
+        NX_HDMI_SetBaseAddress(0, (U32)IO_ADDRESS(NX_HDMI_GetPhysicalAddress(0)));
         NX_HDMI_Initialize();
 
         /**
          * [SEQ 3] set the 0xC001100C[0] to 1
          */
         /* NX_TIEOFF_Initialize(); */
-        NX_TIEOFF_SetBaseAddress((void*)IO_ADDRESS(NX_TIEOFF_GetPhysicalAddress()));
+        NX_TIEOFF_SetBaseAddress((U32)IO_ADDRESS(NX_TIEOFF_GetPhysicalAddress()));
         NX_TIEOFF_Set(TIEOFFINDEX_OF_DISPLAYTOP0_i_HDMI_PHY_REFCLK_SEL, 1);
 
         /**
@@ -130,7 +130,7 @@ static inline bool _wait_for_ecid_ready(void)
     int retry_count = 100;
     bool is_key_ready = false;
 
-    NX_ECID_SetBaseAddress((void*)IO_ADDRESS(NX_ECID_GetPhysicalAddress()));
+    NX_ECID_SetBaseAddress((U32)IO_ADDRESS(NX_ECID_GetPhysicalAddress()));
 
     do {
         is_key_ready = NX_ECID_GetKeyReady();
@@ -387,7 +387,7 @@ static int _set_hdmi_clkgen(struct nxp_hdmi *me)
 {
     // TODO : use get_clk(), set_clk() interface
     NX_DISPTOP_CLKGEN_SetBaseAddress(ToMIPI_CLKGEN,
-            (void*)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(ToMIPI_CLKGEN)));
+            (U32)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(ToMIPI_CLKGEN)));
     NX_DISPTOP_CLKGEN_SetClockDivisorEnable(ToMIPI_CLKGEN, CFALSE);
     NX_DISPTOP_CLKGEN_SetClockPClkMode(ToMIPI_CLKGEN, NX_PCLKMODE_ALWAYS);
     // TODO select source & divider
@@ -402,7 +402,7 @@ static int _set_audio_clkgen(struct nxp_hdmi *me)
 {
     // TODO : use get_clk(), set_clk() interface
     NX_DISPTOP_CLKGEN_SetBaseAddress(ToMIPI_CLKGEN,
-            (void*)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(ToMIPI_CLKGEN)));
+            (U32)IO_ADDRESS(NX_DISPTOP_CLKGEN_GetPhysicalAddress(ToMIPI_CLKGEN)));
     NX_DISPTOP_CLKGEN_SetClockPClkMode(ToMIPI_CLKGEN, NX_PCLKMODE_ALWAYS);
     NX_DISPTOP_CLKGEN_SetClockDivisorEnable(ToMIPI_CLKGEN, CTRUE);
     return 0;

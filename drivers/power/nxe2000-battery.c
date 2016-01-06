@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Date		ID				Description
 //--------------------------------------------------------------------
-//06-08-2015			modify	- Remove OTGID check.
 //
 //01-21-2015			modify	- Fuelgauge Patch.
 //
@@ -48,7 +47,7 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-#define NXE2000_BATTERY_VERSION "NXE2000_BATTERY_VERSION: 2014.11.27 V3.1.3.3(2015.06.08:modify)"
+#define NXE2000_BATTERY_VERSION "NXE2000_BATTERY_VERSION: 2014.11.27 V3.1.3.3(2015.01.21:modify)"
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -281,7 +280,6 @@ struct nxe2000_battery_info {
 	int				status;
 	int				input_power_type;
 	int				gpio_otg_usbid;
-	int				gpio_otg_usbid_status;
 	int				gpio_otg_vbus;
 	int				gpio_pmic_vbus;
 	int				gpio_pmic_lowbat;
@@ -437,8 +435,8 @@ void nxe2000_register_dump(struct device *dev)
 	PM_DBGOUT("## : VSYSDATAH(0x%02x)   : 0x%02x \n", NXE2000_REG_VSYSDATAH, value[NXE2000_REG_VSYSDATAH]);
 	PM_DBGOUT("## : VSYS_THL(0x%02x)    : 0x%02x \n", NXE2000_ADC_VSYS_THL, value[NXE2000_ADC_VSYS_THL]);
 
-	//if(info->gpio_otg_usbid > -1)
-	PM_DBGOUT("## : gpio_otg_usbid    : 0x%02x \n", info->gpio_otg_usbid_status);
+	if(info->gpio_otg_usbid > -1)
+		PM_DBGOUT("## : gpio_otg_usbid    : 0x%02x \n", gpio_get_value(info->gpio_otg_usbid));
 
 	if (info->gpio_pmic_vbus > -1)
 		PM_DBGOUT("## : gpio_pmic_vbus    : 0x%02x \n", gpio_get_value(info->gpio_pmic_vbus));
@@ -3946,10 +3944,8 @@ static void charger_irq_work(struct work_struct *work)
 
 	power_supply_changed(&info->battery);
 
-	//if (info->gpio_otg_usbid > -1)
-	//	otg_id = gpio_get_value(info->gpio_otg_usbid);
-	otg_id = info->gpio_otg_usbid_status;
-
+	if (info->gpio_otg_usbid > -1)
+		otg_id = gpio_get_value(info->gpio_otg_usbid);
 	if (info->gpio_pmic_vbus > -1)
 		pmic_vbus	 = gpio_get_value(info->gpio_pmic_vbus);
 
@@ -4276,7 +4272,6 @@ static void charger_irq_work(struct work_struct *work)
 	}
 }
 
-#if 0
 static void otgid_detect_irq_work(struct work_struct *work)
 {
 	struct nxe2000_battery_info *info = container_of(work,
@@ -4295,7 +4290,6 @@ static void otgid_detect_irq_work(struct work_struct *work)
 
 	msleep(10);
 }
-#endif
 
 int otgid_power_control_by_dwc(int enable)
 {
@@ -4306,17 +4300,14 @@ int otgid_power_control_by_dwc(int enable)
 	PM_DBGOUT(KERN_ERR "## [\e[31m%s\e[0m():%d] enable:%d\n", __func__, __LINE__, enable);
 #endif
 
-	//if (info_by_dwc->gpio_otg_usbid > -1) 
-	//{
+	if (info_by_dwc->gpio_otg_usbid > -1) {
 		if (enable){
-			info_by_dwc->gpio_otg_usbid_status = 0;
 			set_otg_power_control(info_by_dwc, 0);
 		}
 		else{
 			set_otg_power_control(info_by_dwc, 1);
-			info_by_dwc->gpio_otg_usbid_status = 1;
 		}
-	//}
+	}
 
 	return 0;
 }
@@ -5077,10 +5068,14 @@ static int nxe2000_batt_get_prop(struct power_supply *psy,
 				union power_supply_propval *val)
 {
 	struct nxe2000_battery_info *info = dev_get_drvdata(psy->dev->parent);
+	int otg_id = 1;
 	int data = 0;
 	int ret = 0;
 
 	mutex_lock(&info->lock);
+
+	if (info->gpio_otg_usbid > -1)
+		otg_id = gpio_get_value(info->gpio_otg_usbid);
 
 	val->intval = 0;
 
@@ -5358,12 +5353,12 @@ struct power_supply	powerusb = {
 static void set_gpio_config(struct nxe2000_battery_info *info)
 {
 #if defined(CONFIG_USB_DWCOTG)
-	//if ( (info->gpio_otg_usbid > -1)
-	//	&& (nxp_soc_gpio_get_io_func(info->gpio_otg_usbid) != nxp_soc_gpio_get_altnum(info->gpio_otg_usbid)) )
-	//{
-	//	nxp_soc_gpio_set_io_func(info->gpio_otg_usbid, nxp_soc_gpio_get_altnum(info->gpio_otg_usbid));
-	//	nxp_soc_gpio_set_io_dir(info->gpio_otg_usbid, 0);      // input mode
-	//}
+	if ( (info->gpio_otg_usbid > -1)
+		&& (nxp_soc_gpio_get_io_func(info->gpio_otg_usbid) != nxp_soc_gpio_get_altnum(info->gpio_otg_usbid)) )
+	{
+		nxp_soc_gpio_set_io_func(info->gpio_otg_usbid, nxp_soc_gpio_get_altnum(info->gpio_otg_usbid));
+		nxp_soc_gpio_set_io_dir(info->gpio_otg_usbid, 0);      // input mode
+	}
 
 	if ( (info->gpio_otg_vbus > -1)
 		&& (nxp_soc_gpio_get_io_func(info->gpio_otg_vbus) != nxp_soc_gpio_get_altnum(info->gpio_otg_vbus)) )
@@ -5428,8 +5423,7 @@ static __devinit int nxe2000_battery_probe(struct platform_device *pdev)
 	pdata = pdev->dev.platform_data;
 	info->monitor_time = pdata->monitor_time;
 	info->input_power_type  = pdata->input_power_type;
-	//info->gpio_otg_usbid    = pdata->gpio_otg_usbid;
-	info->gpio_otg_usbid_status = 1;
+	info->gpio_otg_usbid    = pdata->gpio_otg_usbid;
 	info->gpio_otg_vbus     = pdata->gpio_otg_vbus;
 	info->gpio_pmic_vbus    = pdata->gpio_pmic_vbus;
 	info->gpio_pmic_lowbat  = pdata->gpio_pmic_lowbat;
@@ -5508,9 +5502,8 @@ static __devinit int nxe2000_battery_probe(struct platform_device *pdev)
 
 	set_gpio_config(info);
 
-	//if (info->gpio_otg_usbid > -1)
-	//	otg_id = gpio_get_value(info->gpio_otg_usbid);
-	otg_id = info->gpio_otg_usbid_status;
+	if (info->gpio_otg_usbid > -1)
+		otg_id = gpio_get_value(info->gpio_otg_usbid);
 
 #if 1
 	if (otg_id == 0)
@@ -5620,9 +5613,9 @@ static __devinit int nxe2000_battery_probe(struct platform_device *pdev)
 #endif
 #endif
 
-#if 0
 	/* Supported for OTG VBUS. */
 	if (info->gpio_otg_usbid > -1) {
+#if 0 // by hsjung
 		nxp_soc_gpio_set_int_enable(info->gpio_otg_usbid, 0);
 
 		ret = request_irq(gpio_to_irq(info->gpio_otg_usbid), otgid_det_isr,
@@ -5632,9 +5625,9 @@ static __devinit int nxe2000_battery_probe(struct platform_device *pdev)
 				"Can't get CHG_INT IRQ for chrager: %d\n", ret);
 			goto out;
 		}
+#endif
 		INIT_DELAYED_WORK_DEFERRABLE(&info->otgid_detect_work, otgid_detect_irq_work);
 	}
-#endif
 
 	/* Charger IRQ workqueue settings */
 	charger_irq = pdata->irq;
@@ -5895,19 +5888,15 @@ static int nxe2000_battery_suspend(struct device *dev)
 	}
 #endif
 
-	//if (info->gpio_otg_usbid > -1) 
-	//{
-	//	otg_id = gpio_get_value(info->gpio_otg_usbid);
-		otg_id = info->gpio_otg_usbid_status;
-		if ((vbus_irq_disabled == 0) && (otg_id == 0))
-		{
+	if (info->gpio_otg_usbid > -1) {
+		otg_id = gpio_get_value(info->gpio_otg_usbid);
+		if ((vbus_irq_disabled == 0) && (otg_id == 0)){
 			disable_irq(charger_irq + NXE2000_IRQ_FVUSBDETSINT);
 			vbus_irq_disabled = 1;
 		}
-	//}
+	}
 
 #if 1
-#if 0
 	/* OTG POWER OFF */
 	if (info->gpio_otg_vbus > -1)
 		gpio_set_value(info->gpio_otg_vbus, 0);
@@ -5918,7 +5907,6 @@ static int nxe2000_battery_suspend(struct device *dev)
 		set_val	&= ~(0x1 << NXE2000_POS_CHGCTL1_OTG_BOOST_EN);
 		nxe2000_write(info->dev->parent, NXE2000_REG_CHGCTL1, set_val);
 	}
-#endif
 #else
 	if (info->input_power_type == INPUT_POWER_TYPE_ADP)
 	{
@@ -6594,8 +6582,7 @@ static int nxe2000_battery_resume(struct device *dev) {
 		}
 	}
 
-	//if (info->gpio_otg_usbid > -1) 
-	{
+	if (info->gpio_otg_usbid > -1) {
 		if (vbus_irq_disabled == 1)
 		{
 			enable_irq(charger_irq + NXE2000_IRQ_FVUSBDETSINT);
@@ -6660,7 +6647,7 @@ static int __init nxe2000_battery_init(void)
 {
 	return platform_driver_register(&nxe2000_battery_driver);
 }
-subsys_initcall(nxe2000_battery_init);
+module_init(nxe2000_battery_init);
 
 static void __exit nxe2000_battery_exit(void)
 {

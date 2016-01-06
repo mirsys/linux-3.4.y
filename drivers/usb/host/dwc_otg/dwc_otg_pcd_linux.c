@@ -1500,11 +1500,6 @@ int pcd_init(dwc_bus_dev_t *_dev)
         free_wrapper(gadget_wrapper);
         otg_dev->pcd = 0;
     }
-	#if defined (CONFIG_USB_G_ANDROID)
-	else {
-		dwc_otg_pcd_softconnect(gadget_wrapper->pcd, 0);
-	}
-	#endif
 #endif
 	return retval;
 }

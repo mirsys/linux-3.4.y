@@ -96,7 +96,6 @@ struct s3c24xx_i2c {
 #endif
 	unsigned int freq;
 	bool condition;
-	bool tr;
 };
 
 const static int i2c_reset[3] = {RESET_ID_I2C0, RESET_ID_I2C1, RESET_ID_I2C2};
@@ -154,7 +153,6 @@ static inline void s3c24xx_i2c_master_complete(struct s3c24xx_i2c *i2c, int ret)
 		i2c->msg_idx = ret;
 
 	i2c->condition = 1;
-	i2c->tr = 0;
 	wake_up(&i2c->wait);
 }
 
@@ -475,7 +473,7 @@ static irqreturn_t s3c24xx_i2c_irq(int irqno, void *dev_id)
 	unsigned long tmp;
 
 	spin_lock(&i2c->lock);
-	i2c->tr = 1;
+
 	status = readl(i2c->regs + S3C2410_IICSTAT);
 
 	if (status & S3C2410_IICSTAT_ARBITR) {
@@ -551,13 +549,12 @@ static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
 
 	spin_lock_irq(&i2c->lock);
 
-	i2c->msg     	= msgs;
-	i2c->msg_num 	= num;
-	i2c->msg_ptr 	= 0;
-	i2c->msg_idx 	= 0;
-	i2c->state   	= STATE_START;
-	i2c->condition 	= 0;
-	i2c->tr			= 0;
+	i2c->msg     = msgs;
+	i2c->msg_num = num;
+	i2c->msg_ptr = 0;
+	i2c->msg_idx = 0;
+	i2c->state   = STATE_START;
+	i2c->condition = 0;
 
 	s3c24xx_i2c_enable_irq(i2c);
 	s3c24xx_i2c_message_start(i2c, msgs);
@@ -565,15 +562,9 @@ static int s3c24xx_i2c_doxfer(struct s3c24xx_i2c *i2c,
 	spin_unlock_irq(&i2c->lock);
 	
 	/* change set transfer timeout. modify by bok*/
-	do {
-	i2c->tr=0;
 	wait = num * msecs_to_jiffies(WAIT_ACK_TIME);
 	timeout = wait_event_interruptible_timeout(i2c->wait, i2c->condition, wait);
-	if(i2c->condition == 1)
-		break;
 
-	} while(i2c->tr);
-		
 	ret = i2c->msg_idx;
 	/* having these next two as dev_err() makes life very
 	 * noisy when doing an i2cdetect */
@@ -635,10 +626,8 @@ static int s3c24xx_i2c_xfer(struct i2c_adapter *adap,
 			struct i2c_msg *msgs, int num)
 {
 	struct s3c24xx_i2c *i2c = (struct s3c24xx_i2c *)adap->algo_data;
-	struct s3c2410_platform_i2c	*pdata = (struct s3c2410_platform_i2c *)i2c->pdata;
 	int retry;
 	int ret;
-	int delay  = pdata->retry_delay ;
 
 	if (i2c->is_suspended) {
 		dev_err(i2c->dev, "I2C is not initialzed.\n");
@@ -660,7 +649,7 @@ static int s3c24xx_i2c_xfer(struct i2c_adapter *adap,
 
 		dev_dbg(i2c->dev, "Retrying transmission (%d)\n", retry);
 
-		udelay(delay);
+		udelay(100);
 	}
 
 	clk_disable(i2c->clk);
@@ -775,6 +764,65 @@ static int s3c24xx_i2c_clockrate(struct s3c24xx_i2c *i2c)
 
 	return 0;
 }
+
+#ifdef CONFIG_CPU_FREQ
+
+#define freq_to_i2c(_n) container_of(_n, struct s3c24xx_i2c, freq_transition)
+
+static int s3c24xx_i2c_cpufreq_transition(struct notifier_block *nb,
+					  unsigned long val, void *data)
+{
+	struct s3c24xx_i2c *i2c = freq_to_i2c(nb);
+	unsigned long flags;
+	int delta_f;
+	int ret;
+
+	delta_f = clk_get_rate(i2c->clk) - i2c->clkrate;
+
+	/* if we're post-change and the input clock has slowed down
+	 * or at pre-change and the clock is about to speed up, then
+	 * adjust our clock rate. <0 is slow, >0 speedup.
+	 */
+
+	if ((val == CPUFREQ_POSTCHANGE && delta_f < 0) ||
+	    (val == CPUFREQ_PRECHANGE && delta_f > 0)) {
+		spin_lock_irqsave(&i2c->lock, flags);
+		ret = s3c24xx_i2c_clockrate(i2c);
+		spin_unlock_irqrestore(&i2c->lock, flags);
+
+		if (ret < 0)
+			dev_err(i2c->dev, "cannot find frequency\n");
+		else
+			dev_info(i2c->dev, "setting freq %d\n", i2c->freq);
+	}
+
+	return 0;
+}
+
+static inline int s3c24xx_i2c_register_cpufreq(struct s3c24xx_i2c *i2c)
+{
+	i2c->freq_transition.notifier_call = s3c24xx_i2c_cpufreq_transition;
+
+	return cpufreq_register_notifier(&i2c->freq_transition,
+					 CPUFREQ_TRANSITION_NOTIFIER);
+}
+
+static inline void s3c24xx_i2c_deregister_cpufreq(struct s3c24xx_i2c *i2c)
+{
+	cpufreq_unregister_notifier(&i2c->freq_transition,
+				    CPUFREQ_TRANSITION_NOTIFIER);
+}
+
+#else
+static inline int s3c24xx_i2c_register_cpufreq(struct s3c24xx_i2c *i2c)
+{
+	return 0;
+}
+
+static inline void s3c24xx_i2c_deregister_cpufreq(struct s3c24xx_i2c *i2c)
+{
+}
+#endif
 
 #ifdef CONFIG_OF
 static int s3c24xx_i2c_parse_dt_gpio(struct s3c24xx_i2c *i2c)
@@ -931,9 +979,10 @@ static int s3c24xx_i2c_probe(struct platform_device *pdev)
 	strlcpy(i2c->adap.name, "s3c2410-i2c", sizeof(i2c->adap.name));
 	i2c->adap.owner   = THIS_MODULE;
 	i2c->adap.algo    = &s3c24xx_i2c_algorithm;
-	i2c->adap.retries = pdata->retry_cnt;
+	i2c->adap.retries = 2;
 	i2c->adap.class   = I2C_CLASS_HWMON | I2C_CLASS_SPD;
 	i2c->tx_setup     = 50;
+
 	spin_lock_init(&i2c->lock);
 	init_waitqueue_head(&i2c->wait);
 
@@ -1011,6 +1060,13 @@ static int s3c24xx_i2c_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "cannot claim IRQ %d\n", i2c->irq);
 		goto err_iomap;
 	}
+
+	ret = s3c24xx_i2c_register_cpufreq(i2c);
+	if (ret < 0) {
+		dev_err(&pdev->dev, "failed to register cpufreq notifier\n");
+		goto err_irq;
+	}
+
 	/* Note, previous versions of the driver used i2c_add_adapter()
 	 * to add the bus at any number. We now pass the bus number via
 	 * the platform data, so if unset it will now default to always
@@ -1039,6 +1095,9 @@ static int s3c24xx_i2c_probe(struct platform_device *pdev)
 	return 0;
 
  err_cpufreq:
+	s3c24xx_i2c_deregister_cpufreq(i2c);
+
+ err_irq:
 	free_irq(i2c->irq, i2c);
 
  err_iomap:
@@ -1068,7 +1127,7 @@ static int s3c24xx_i2c_remove(struct platform_device *pdev)
 	pm_runtime_disable(&i2c->adap.dev);
 	pm_runtime_disable(&pdev->dev);
 
-//	s3c24xx_i2c_deregister_cpufreq(i2c);
+	s3c24xx_i2c_deregister_cpufreq(i2c);
 
 	i2c_del_adapter(&i2c->adap);
 	free_irq(i2c->irq, i2c);

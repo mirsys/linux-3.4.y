@@ -636,10 +636,6 @@ void DWC_SPINLOCK(dwc_spinlock_t *lock)
 void DWC_SPINUNLOCK(dwc_spinlock_t *lock)
 {
 #if defined(CONFIG_PREEMPT) || defined(CONFIG_SMP)
-	if ((lock == NULL) || !spin_is_locked((spinlock_t *)lock)) {
-		printk("WARN: %s lock %p unlocked\n", __func__, lock);
-		return;
-	}
 	spin_unlock((spinlock_t *)lock);
 #endif
 }
@@ -659,10 +655,6 @@ void DWC_SPINLOCK_IRQSAVE(dwc_spinlock_t *lock, dwc_irqflags_t *flags)
 void DWC_SPINUNLOCK_IRQRESTORE(dwc_spinlock_t *lock, dwc_irqflags_t flags)
 {
 #if defined(CONFIG_PREEMPT) || defined(CONFIG_SMP)
-	if ((lock == NULL) || !spin_is_locked((spinlock_t *)lock)) {
-		printk("WARN: %s lock %p unlocked\n", __func__, lock);
-		return;
-	}
 	spin_unlock_irqrestore((spinlock_t *)lock, flags);
 #else
 	local_irq_restore(flags);

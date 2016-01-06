@@ -766,7 +766,7 @@ static struct binder_buffer *binder_alloc_buf(struct binder_proc *proc,
 
 	while (n) {
 		buffer = rb_entry(n, struct binder_buffer, rb_node);
-		BUG_ON(!buffer->free);
+		//BUG_ON(!buffer->free);
 		buffer_size = binder_buffer_size(proc, buffer);
 
 		if (size < buffer_size) {

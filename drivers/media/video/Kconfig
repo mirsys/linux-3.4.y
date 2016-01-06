@@ -97,8 +97,6 @@ config VIDEOBUF2_ION_NXP
 
 source "drivers/media/video/nexell/Kconfig"
 
-source "drivers/media/video/coda960/Kconfig"
-
 #
 # Multimedia Video device configuration
 #
@@ -657,12 +655,6 @@ config VIDEO_SP0838_FIXED_FRAMERATE
     depends on VIDEO_SP0838
     ---help---
       if this option on, framerate is fixed 15frame, else variable 8-10frame
-
-config VIDEO_OV5640
-	tristate "ov5640 camera support"
-	depends on I2C && VIDEO_V4L2
-	---help---
-	  This is a V4L2 camera driver for the OmniVision OV5640 sensor
 
 config VIDEO_OV5645
 	tristate "ov5645 mipi camera support"

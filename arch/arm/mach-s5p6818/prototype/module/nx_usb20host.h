@@ -103,8 +103,8 @@ CBOOL NX_USB20HOST_Initialize( void );
 U32   NX_USB20HOST_GetNumberOfModule( void );
 
 U32   NX_USB20HOST_GetSizeOfRegisterSet( void );
-void  NX_USB20HOST_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*  NX_USB20HOST_GetBaseAddress( U32 ModuleIndex );
+void  NX_USB20HOST_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_USB20HOST_GetBaseAddress( U32 ModuleIndex );
 U32   NX_USB20HOST_GetPhysicalAddress ( U32 ModuleIndex );
 CBOOL NX_USB20HOST_OpenModule( U32 ModuleIndex );
 CBOOL NX_USB20HOST_CloseModule( U32 ModuleIndex );
@@ -159,14 +159,6 @@ typedef enum
     NX_USB20HOST_DMA_RXDMA = 1, ///< RX channel
 } NX_USB20HOST_DMA;
 U32 NX_USB20HOST_GetDMANumber ( U32 ModuleIndex, U32 DMAChannelIndex );
-//@}
-
-//------------------------------------------------------------------------------
-///	@name	PAD Interface
-//------------------------------------------------------------------------------
-//@{
-U32 NX_USB20HOST_GetNumberOfPADMode ( U32 ModuleIndex );
-U32 NX_USB20HOST_EnablePAD ( U32 ModuleIndex, U32 ModeIndex );
 //@}
 
 

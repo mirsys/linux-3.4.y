@@ -45,7 +45,7 @@ extern "C"
         volatile U32    DELTAXREG;          ///< 0x2C           : Scaler Delta X Register
         volatile U32    DELTAYREG;          ///< 0x30           : Scaler Delta Y Register
         volatile U32    HVSOFTREG;          ///< 0x34           : Horizontal and Vertical Filter Ratio Register
-        volatile U32    CMDBUFADDR;         ///< 0x3C           : Scaler Command Buffer Address Register 
+        volatile U32    CMDBUFADDR;         ///< 0x3C           : Scaler Command Buffer Address Register
         volatile U32    CMDBUFCON;          ///< 0x38           : Scaler Command Buffer Control Register
         volatile U32    YVFILTER[3][8];     ///< 0x40 ~ 0x5C
         volatile U32    __Reserved00[24];
@@ -88,8 +88,8 @@ U32     NX_SCALER_GetNumberOfModule( void );
 //@{
 U32     NX_SCALER_GetPhysicalAddress( U32 ModuleIndex );
 U32     NX_SCALER_GetSizeOfRegisterSet( void );
-void    NX_SCALER_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*    NX_SCALER_GetBaseAddress( U32 ModuleIndex );
+void    NX_SCALER_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32     NX_SCALER_GetBaseAddress( U32 ModuleIndex );
 CBOOL   NX_SCALER_OpenModule( U32 ModuleIndex );
 CBOOL   NX_SCALER_CloseModule( U32 ModuleIndex );
 CBOOL   NX_SCALER_CheckBusy( U32 ModuleIndex );
@@ -182,9 +182,6 @@ void    NX_SCALER_RunCmdBuf( U32 ModuleIndex );
 void    NX_SCALER_StopCmdBuf( U32 ModuleIndex );
 //@}
 
-U32 NX_SCALER_CLKGEN_GetPhysicalAddress(U32 ModuleIndex);
-void NX_SCALER_CLKGEN_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress);
-void NX_SCALER_SetClockBClkMode( U32 ModuleIndex, NX_BCLKMODE mode );
 //@}
 
 #ifdef  __cplusplus

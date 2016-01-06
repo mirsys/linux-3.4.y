@@ -24,34 +24,6 @@
 #include <mach/serial.h>
 #include <mach/s5p6818.h>
 
-#ifndef CFG_UART_CLKGEN_CLOCK_HZ
-#define CFG_UART_CLKGEN_CLOCK_HZ                50000000 
-#endif
-
-#ifndef CFG_UART0_CLKGEN_CLOCK_HZ
-#define CFG_UART0_CLKGEN_CLOCK_HZ CFG_UART_CLKGEN_CLOCK_HZ
-#endif
-
-#ifndef CFG_UART1_CLKGEN_CLOCK_HZ
-#define CFG_UART1_CLKGEN_CLOCK_HZ CFG_UART_CLKGEN_CLOCK_HZ
-#endif
-
-#ifndef CFG_UART2_CLKGEN_CLOCK_HZ
-#define CFG_UART2_CLKGEN_CLOCK_HZ CFG_UART_CLKGEN_CLOCK_HZ
-#endif
-
-#ifndef CFG_UART3_CLKGEN_CLOCK_HZ
-#define CFG_UART3_CLKGEN_CLOCK_HZ CFG_UART_CLKGEN_CLOCK_HZ
-#endif
-
-#ifndef CFG_UART4_CLKGEN_CLOCK_HZ
-#define CFG_UART4_CLKGEN_CLOCK_HZ CFG_UART_CLKGEN_CLOCK_HZ
-#endif
-
-#ifndef CFG_UART5_CLKGEN_CLOCK_HZ
-#define CFG_UART5_CLKGEN_CLOCK_HZ CFG_UART_CLKGEN_CLOCK_HZ
-#endif
-
 #define UART_RESOURCE(device, base, irqnr)  \
 struct resource device##_resource[] = {	\
 		[0] = { .start	= base, .end = base + 0x40, .flags = IORESOURCE_MEM,	},	\
@@ -76,7 +48,7 @@ struct platform_device device##_device = {	\
 			NX_TIEOFF_Set(TIEOFF_UART## ch ##_SMCRXENB, 0);	\
 			nxp_soc_peri_reset_set(RESET_ID_UART## ch);			\
 		}													\
-		clk_set_rate(clk, CFG_UART## ch ##_CLKGEN_CLOCK_HZ);		\
+		clk_set_rate(clk, CFG_UART_CLKGEN_CLOCK_HZ);		\
 		clk_enable(clk);								\
 	};
 
@@ -131,9 +103,9 @@ static struct s3c24xx_uart_platdata  uart0_data = {
 	.ucon = S5PV210_UCON_DEFAULT,
 	.ufcon = S5PV210_UFCON_DEFAULT,
 	.has_fracval = 1,
-	#if defined(CONFIG_SERIAL_NXP_UART0_DMA) && defined(CONFIG_DMA_ENGINE)
+	#if defined(CONFIG_SERIAL_NXP_UART0_DMA)
 	.enable_dma = 1,
-	.dma_filter = pl08x_filter_id,
+ 	.dma_filter = pl08x_filter_id,
  	.dma_rx_param = (void *) DMA_PERIPHERAL_NAME_UART0_RX,
  	.dma_tx_param = (void *) DMA_PERIPHERAL_NAME_UART0_TX,
 	#else
@@ -159,7 +131,7 @@ static struct s3c24xx_uart_platdata  uart1_data = {
 	.ucon = S5PV210_UCON_DEFAULT,
 	.ufcon = S5PV210_UFCON_DEFAULT,
 	.has_fracval = 1,
-	#if defined(CONFIG_SERIAL_NXP_UART1_DMA) && defined(CONFIG_DMA_ENGINE)
+	#if defined(CONFIG_SERIAL_NXP_UART1_DMA)
 	.enable_dma = 1,
  	.dma_filter = pl08x_filter_id,
  	.dma_rx_param = (void *) DMA_PERIPHERAL_NAME_UART1_RX,
@@ -190,7 +162,7 @@ static struct s3c24xx_uart_platdata  uart2_data = {
 	.ucon = S5PV210_UCON_DEFAULT,
 	.ufcon = S5PV210_UFCON_DEFAULT,
 	.has_fracval = 1,
-	#if defined(CONFIG_SERIAL_NXP_UART2_DMA) && defined(CONFIG_DMA_ENGINE)
+	#if defined(CONFIG_SERIAL_NXP_UART2_DMA)
 	.enable_dma = 1,
  	.dma_filter = pl08x_filter_id,
  	.dma_rx_param = (void *) DMA_PERIPHERAL_NAME_UART2_RX,

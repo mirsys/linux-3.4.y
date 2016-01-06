@@ -9,7 +9,7 @@
 //  FOR A PARTICULAR PURPOSE.
 //
 //	Module     : I2S
-//	File       : nx_i2s.c
+//	File       	   : nx_i2s.c
 //	Description:
 //	Author      : Firmware Team
 //	History     : 2012.08.23 parkjh - xl00300_I2S proto type
@@ -96,8 +96,7 @@ U32		NX_I2S_GetSizeOfRegisterSet( void )
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
  */
-
-void	NX_I2S_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
+void	NX_I2S_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
     NX_ASSERT( NUMBER_OF_I2S_MODULE > ModuleIndex );
@@ -110,13 +109,11 @@ void	NX_I2S_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
  *	@brief		Get a base address of register set
  *	@return		Module's base address.
  */
-
-void*	NX_I2S_GetBaseAddress( U32 ModuleIndex )
+U32		NX_I2S_GetBaseAddress( U32 ModuleIndex )
 {
     NX_ASSERT( NUMBER_OF_I2S_MODULE > ModuleIndex );
 
-
-	return (void*)__g_ModuleVariables[ModuleIndex].pRegister;
+	return (U32)__g_ModuleVariables[ModuleIndex].pRegister;
 }
 
 //------------------------------------------------------------------------------
@@ -1088,11 +1085,11 @@ void    NX_I2S_SetTxData( U32 ModuleIndex, NX_I2S_CH ChannelIndex, NX_I2S_BITLEN
 {
 	const U32 BLC_POS 	= 13;
 	const U32 BLC_MASK	= 1UL << BLC_POS;
+	U32 tData			= 0;
 	
 	register struct NX_I2S_RegisterSet* pRegister;
 	register U32 regvalue;
 
-    ChannelIndex = ChannelIndex;
     NX_ASSERT( NUMBER_OF_I2S_MODULE > ModuleIndex );
 
 	pRegister = __g_ModuleVariables[ModuleIndex].pRegister;
@@ -1106,8 +1103,7 @@ void    NX_I2S_SetTxData( U32 ModuleIndex, NX_I2S_CH ChannelIndex, NX_I2S_BITLEN
     regvalue     |= BitLength << BLC_POS;
 
 	WriteIO32(&pRegister->MOD, regvalue);
-#if 0
-   	U32 tData			= 0;
+
 	if( BitLength == NX_I2S_BITLENGTH_8 )
 		tData	= (TxData & 0xFF);
 	else if( BitLength == NX_I2S_BITLENGTH_16 )
@@ -1119,9 +1115,7 @@ void    NX_I2S_SetTxData( U32 ModuleIndex, NX_I2S_CH ChannelIndex, NX_I2S_BITLEN
 		tData <<= 16; 
 
 	WriteIO32(&pRegister->TXD, tData);
-#else
-	WriteIO32(&pRegister->TXD, TxData);
-#endif
+
 }
 
 //------------------------------------------------------------------------------
@@ -1147,12 +1141,6 @@ U32     NX_I2S_GetRxData( U32 ModuleIndex, NX_I2S_CH ChannelIndex, NX_I2S_BITLEN
 	pRegister = __g_ModuleVariables[ModuleIndex].pRegister;
 	NX_ASSERT( CNULL != pRegister );
 
-    ChannelIndex = ChannelIndex;
-    BitLength = BitLength;    
-    RxDataMask = RxDataMask;
-    RxDataPos  = RxDataPos;
-    
-    return (U32)(ReadIO32(&pRegister->RXD));
-	//return ((ReadIO32(&pRegister->RXD)) & RxDataMask);
+	return ((ReadIO32(&pRegister->RXD)) & RxDataMask);
 }
 

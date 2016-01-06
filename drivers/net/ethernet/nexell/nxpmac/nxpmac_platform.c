@@ -28,10 +28,6 @@
 #include <linux/of_net.h>
 #include "nxpmac.h"
 
-#include <mach/platform.h>
-#include <mach/devices.h>
-#include <mach/soc.h>
-
 #ifdef CONFIG_OF
 static int stmmac_probe_config_dt(struct platform_device *pdev,
 				  struct plat_stmmacenet_data *plat,
@@ -234,36 +230,51 @@ static int stmmac_pltfr_remove(struct platform_device *pdev)
 #ifdef CONFIG_PM
 static int stmmac_pltfr_suspend(struct device *dev)
 {
-	int ret;
 	struct net_device *ndev = dev_get_drvdata(dev);
-	struct stmmac_priv *priv = netdev_priv(ndev);
-	struct platform_device *pdev = to_platform_device(dev);
 
-	//lldebugout(" +++++ plat_suspend enter\n");
-
-	ret = stmmac_suspend(ndev);
-	if (priv->plat->exit)
-		priv->plat->exit(pdev);
-
-	return ret;
+	return stmmac_suspend(ndev);
 }
 
 static int stmmac_pltfr_resume(struct device *dev)
 {
 	struct net_device *ndev = dev_get_drvdata(dev);
-	struct stmmac_priv *priv = netdev_priv(ndev);
-	struct platform_device *pdev = to_platform_device(dev);
-
-	//lldebugout(" +++++ plat_resume enter\n");
-
-	if (priv->plat->init)
-		priv->plat->init(pdev);
 
 	return stmmac_resume(ndev);
 }
 
-static SIMPLE_DEV_PM_OPS(stmmac_pltfr_pm_ops,
-			 stmmac_pltfr_suspend, stmmac_pltfr_resume);
+int stmmac_pltfr_freeze(struct device *dev)
+{
+	int ret;
+	struct plat_stmmacenet_data *plat_dat = dev_get_platdata(dev);
+	struct net_device *ndev = dev_get_drvdata(dev);
+	struct platform_device *pdev = to_platform_device(dev);
+
+	ret = stmmac_freeze(ndev);
+	if (plat_dat->exit)
+		plat_dat->exit(pdev);
+
+	return ret;
+}
+
+int stmmac_pltfr_restore(struct device *dev)
+{
+	struct plat_stmmacenet_data *plat_dat = dev_get_platdata(dev);
+	struct net_device *ndev = dev_get_drvdata(dev);
+	struct platform_device *pdev = to_platform_device(dev);
+
+	if (plat_dat->init)
+		plat_dat->init(pdev);
+
+	return stmmac_restore(ndev);
+}
+
+static const struct dev_pm_ops stmmac_pltfr_pm_ops = {
+	.suspend = stmmac_pltfr_suspend,
+	.resume = stmmac_pltfr_resume,
+	.freeze = stmmac_pltfr_freeze,
+	.thaw = stmmac_pltfr_restore,
+	.restore = stmmac_pltfr_restore,
+};
 #else
 static const struct dev_pm_ops stmmac_pltfr_pm_ops;
 #endif /* CONFIG_PM */
@@ -284,10 +295,7 @@ struct platform_driver stmmac_pltfr_driver = {
 	.driver = {
 		   .name = NXPMAC_RESOURCE_NAME,
 		   .owner = THIS_MODULE,
-#if CFG_ETHER_LOOPBACK_MODE == 1
-#else
-		   .pm = &stmmac_pltfr_pm_ops,
-#endif
+	//	   .pm = &stmmac_pltfr_pm_ops,
 		   .of_match_table = of_match_ptr(stmmac_dt_ids),
 		   },
 };

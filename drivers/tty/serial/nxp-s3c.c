@@ -122,17 +122,17 @@ static int s3c24xx_serial_txempty_nofifo(struct uart_port *port)
  * in the interrupt controller. Check if the port type is s3c64xx or higher.
  */
  
-#ifdef CONFIG_DMA_ENGINE
-#define S3C24XX_DMA_BUFFER_SIZE PAGE_SIZE
+#if 1// def CONFIG_DMA_ENGINE
+#define PL011_DMA_BUFFER_SIZE PAGE_SIZE
 
-static int s3c24xx_sgbuf_init(struct dma_chan *chan, struct s3c24xx_sgbuf *sg,
+static int pl011_sgbuf_init(struct dma_chan *chan, struct pl011_sgbuf *sg,
 	enum dma_data_direction dir)
 {
-	sg->buf = kmalloc(S3C24XX_DMA_BUFFER_SIZE, GFP_KERNEL);
+	sg->buf = kmalloc(PL011_DMA_BUFFER_SIZE, GFP_KERNEL);
 	if (!sg->buf)
 		return -ENOMEM;
 
-	sg_init_one(&sg->sg, sg->buf, S3C24XX_DMA_BUFFER_SIZE);
+	sg_init_one(&sg->sg, sg->buf, PL011_DMA_BUFFER_SIZE);
 
 	if (dma_map_sg(chan->device->dev, &sg->sg, 1, dir) != 1) {
 		kfree(sg->buf);
@@ -141,7 +141,7 @@ static int s3c24xx_sgbuf_init(struct dma_chan *chan, struct s3c24xx_sgbuf *sg,
 	return 0;
 }
 
-static void s3c24xx_sgbuf_free(struct dma_chan *chan, struct s3c24xx_sgbuf *sg,
+static void pl011_sgbuf_free(struct dma_chan *chan, struct pl011_sgbuf *sg,
 	enum dma_data_direction dir)
 {
 	if (sg->buf) {
@@ -150,7 +150,7 @@ static void s3c24xx_sgbuf_free(struct dma_chan *chan, struct s3c24xx_sgbuf *sg,
 	}
 }
 
-static void s3c24xx_dma_probe_initcall(struct s3c24xx_uart_port *uport)
+static void pl011_dma_probe_initcall(struct s3c24xx_uart_port *uport)
 {
 	/* DMA is the sole user of the platform data right now */
 	struct s3c24xx_uart_platdata *plat = uport->port.dev->platform_data;
@@ -223,40 +223,40 @@ struct dma_uport {
 	struct s3c24xx_uart_port *uport;
 };
 
-static LIST_HEAD(s3c24xx_dma_uarts);
+static LIST_HEAD(pl011_dma_uarts);
 
-static int __init s3c24xx_dma_initcall(void)
+static int __init pl011_dma_initcall(void)
 {
 	struct list_head *node, *tmp;
 
-	list_for_each_safe(node, tmp, &s3c24xx_dma_uarts) {
+	list_for_each_safe(node, tmp, &pl011_dma_uarts) {
 		struct dma_uport *dmau = list_entry(node, struct dma_uport, node);
-		s3c24xx_dma_probe_initcall(dmau->uport);
+		pl011_dma_probe_initcall(dmau->uport);
 		list_del(node);
 		kfree(dmau);
 	}
 	return 0;
 }
 
-device_initcall(s3c24xx_dma_initcall);
+device_initcall(pl011_dma_initcall);
 
-static void s3c24xx_dma_probe(struct s3c24xx_uart_port *uport)
+static void pl011_dma_probe(struct s3c24xx_uart_port *uport)
 {
 
 	struct dma_uport *dmau = kzalloc(sizeof(struct dma_uport), GFP_KERNEL);
 	if (dmau) {
 		dmau->uport = uport;
-		list_add_tail(&dmau->node, &s3c24xx_dma_uarts);
+		list_add_tail(&dmau->node, &pl011_dma_uarts);
 	}
 }
 #else
-static void s3c24xx_dma_probe(struct s3c24xx_uart_port *uport)
+static void pl011_dma_probe(struct uart_amba_port *uport)
 {
-	s3c24xx_dma_probe_initcall(uport);
+	pl011_dma_probe_initcall(uport);
 }
 #endif
 
-static void s3c24xx_dma_remove(struct s3c24xx_uart_port *uport)
+static void pl011_dma_remove(struct s3c24xx_uart_port *uport)
 {
 	/* TODO: remove the initcall if it has not yet executed */
 	if (uport->dmatx.chan)
@@ -266,17 +266,17 @@ static void s3c24xx_dma_remove(struct s3c24xx_uart_port *uport)
 }
 
 /* Forward declare this for the refill routine */
-static int s3c24xx_dma_tx_refill(struct s3c24xx_uart_port *uport);
+static int pl011_dma_tx_refill(struct s3c24xx_uart_port *uport);
 
 /*
  * The current DMA TX buffer has been sent.
  * Try to queue up another DMA buffer.
  */
 static void s3c24xx_serial_stop_tx(struct uart_port *port);
-static void s3c24xx_dma_tx_callback(void *data)
+static void pl011_dma_tx_callback(void *data)
 {
 	struct s3c24xx_uart_port *uport = data;
-	struct s3c24xx_dmatx_data *dmatx = &uport->dmatx;
+	struct pl011_dmatx_data *dmatx = &uport->dmatx;
 	struct uart_port *port = &uport->port;
 	struct circ_buf *xmit = &uport->port.state->xmit;
 	unsigned long flags;
@@ -304,7 +304,7 @@ static void s3c24xx_dma_tx_callback(void *data)
 		spin_unlock_irqrestore(&uport->port.lock, flags);
 		return;
 	}
-	if (s3c24xx_dma_tx_refill(uport) <= 0) {
+	if (pl011_dma_tx_refill(uport) <= 0) {
 		/*
 		 * We didn't queue a DMA buffer for some reason, but we
 		 * have data pending to be sent.  Re-enable the TX IRQ.
@@ -324,9 +324,9 @@ static void s3c24xx_dma_tx_callback(void *data)
  *   0 if we didn't want to handle this by DMA
  *  <0 on error
  */
-static int s3c24xx_dma_tx_refill(struct s3c24xx_uart_port *uport)
+static int pl011_dma_tx_refill(struct s3c24xx_uart_port *uport)
 {
-	struct s3c24xx_dmatx_data *dmatx = &uport->dmatx;
+	struct pl011_dmatx_data *dmatx = &uport->dmatx;
 	struct dma_chan *chan = dmatx->chan;
 	struct dma_device *dma_dev = chan->device;
 	struct dma_async_tx_descriptor *desc;
@@ -351,8 +351,8 @@ static int s3c24xx_dma_tx_refill(struct s3c24xx_uart_port *uport)
 	count -= 1;
 
 	/* Else proceed to copy the TX chars to the DMA buffer and fire DMA */
-	if (count > S3C24XX_DMA_BUFFER_SIZE)
-		count = S3C24XX_DMA_BUFFER_SIZE;
+	if (count > PL011_DMA_BUFFER_SIZE)
+		count = PL011_DMA_BUFFER_SIZE;
 
 	if(count == 0)
 		count = 1;
@@ -389,7 +389,7 @@ static int s3c24xx_dma_tx_refill(struct s3c24xx_uart_port *uport)
 	}
 
 	/* Some data to go along to the callback */
-	desc->callback = s3c24xx_dma_tx_callback;
+	desc->callback = pl011_dma_tx_callback;
 	desc->callback_param = uport;
 
 	/* All errors should happen at prepare time */
@@ -421,7 +421,7 @@ static int s3c24xx_dma_tx_refill(struct s3c24xx_uart_port *uport)
  *   false if we want to use PIO to transmit
  *   true if we queued a DMA buffer
  */
-static bool s3c24xx_dma_tx_irq(struct s3c24xx_uart_port *uport)
+static bool pl011_dma_tx_irq(struct s3c24xx_uart_port *uport)
 {
 	struct uart_port *port = &uport->port;
 	if (!uport->using_tx_dma)
@@ -442,7 +442,7 @@ static bool s3c24xx_dma_tx_irq(struct s3c24xx_uart_port *uport)
 	 * We don't have a TX buffer queued, so try to queue one.
 	 * If we successfully queued a buffer, mask the TX IRQ.
 	 */
-	if (s3c24xx_dma_tx_refill(uport) > 0) {
+	if (pl011_dma_tx_refill(uport) > 0) {
 			__clear_bit(S3C64XX_UINTM_TXD,portaddrl(port, S3C64XX_UINTM));
 		return true;
 	}
@@ -453,7 +453,7 @@ static bool s3c24xx_dma_tx_irq(struct s3c24xx_uart_port *uport)
  * Stop the DMA transmit (eg, due to received XOFF).
  * Locking: called with port lock held and IRQs disabled.
  */
-static inline void s3c24xx_dma_tx_stop(struct s3c24xx_uart_port *uport)
+static inline void pl011_dma_tx_stop(struct s3c24xx_uart_port *uport)
 {
 }
 
@@ -465,7 +465,7 @@ static inline void s3c24xx_dma_tx_stop(struct s3c24xx_uart_port *uport)
  *   false if we want the TX IRQ to be enabled
  *   true if we have a buffer queued
  */
-static inline bool s3c24xx_dma_tx_start(struct s3c24xx_uart_port *uport)
+static inline bool pl011_dma_tx_start(struct s3c24xx_uart_port *uport)
 {
 	struct uart_port *port = &uport->port;
 	if (!uport->using_tx_dma)
@@ -476,7 +476,7 @@ static inline bool s3c24xx_dma_tx_start(struct s3c24xx_uart_port *uport)
 		bool ret = true;
 
 		if (!uport->dmatx.queued) {
-			if (s3c24xx_dma_tx_refill(uport) > 0) {
+			if (pl011_dma_tx_refill(uport) > 0) {
 				__clear_bit(S3C64XX_UINTM_TXD,portaddrl(port, S3C64XX_UINTM));
 				ret = true;
 			} else {
@@ -515,7 +515,7 @@ static inline bool s3c24xx_dma_tx_start(struct s3c24xx_uart_port *uport)
  * Flush the transmit buffer.
  * Locking: called with port lock held and IRQs disabled.
  */
-static void s3c24xx_dma_flush_buffer(struct uart_port *port)
+static void pl011_dma_flush_buffer(struct uart_port *port)
 {
 	struct s3c24xx_uart_port *uport = to_uport(port);
 	if (!uport->using_tx_dma)
@@ -532,14 +532,14 @@ static void s3c24xx_dma_flush_buffer(struct uart_port *port)
 	}
 }
 
-static void s3c24xx_dma_rx_callback(void *data);
+static void pl011_dma_rx_callback(void *data);
 
-static int s3c24xx_dma_rx_trigger_dma(struct s3c24xx_uart_port *uport)
+static int pl011_dma_rx_trigger_dma(struct s3c24xx_uart_port *uport)
 {
 	struct dma_chan *rxchan = uport->dmarx.chan;
-	struct s3c24xx_dmarx_data *dmarx = &uport->dmarx;
+	struct pl011_dmarx_data *dmarx = &uport->dmarx;
 	struct dma_async_tx_descriptor *desc;
-	struct s3c24xx_sgbuf *sgbuf;
+	struct pl011_sgbuf *sgbuf;
 
 	if (!rxchan)
 		return -EIO;
@@ -562,7 +562,7 @@ static int s3c24xx_dma_rx_trigger_dma(struct s3c24xx_uart_port *uport)
 	}
 
 	/* Some data to go along to the callback */
-	desc->callback = s3c24xx_dma_rx_callback;
+	desc->callback = pl011_dma_rx_callback;
 	desc->callback_param = uport;
 	dmarx->cookie = dmaengine_submit(desc);
 	dma_async_issue_pending(rxchan);
@@ -577,12 +577,12 @@ static int s3c24xx_dma_rx_trigger_dma(struct s3c24xx_uart_port *uport)
  * the FIFO timeout interrupt occurred. This must be called
  * with the port spinlock uport->port.lock held.
  */
-static void s3c24xx_dma_rx_chars(struct s3c24xx_uart_port *uport,
+static void pl011_dma_rx_chars(struct s3c24xx_uart_port *uport,
 			       u32 pending, bool use_buf_b,
 			       bool readfifo)
 {
 	struct tty_struct *tty = uport->port.state->port.tty;
-	struct s3c24xx_sgbuf *sgbuf = use_buf_b ?
+	struct pl011_sgbuf *sgbuf = use_buf_b ?
 		&uport->dmarx.sgbuf_b : &uport->dmarx.sgbuf_a;
 	struct device *dev = uport->dmarx.chan->device->dev;
 	int dma_count = 0;
@@ -638,11 +638,11 @@ static void s3c24xx_dma_rx_chars(struct s3c24xx_uart_port *uport,
 	spin_lock(&uport->port.lock);
 }
 
-static int s3c24xx_dma_rx_irq(struct s3c24xx_uart_port *uport)
+static int pl011_dma_rx_irq(struct s3c24xx_uart_port *uport)
 {
-	struct s3c24xx_dmarx_data *dmarx = &uport->dmarx;
+	struct pl011_dmarx_data *dmarx = &uport->dmarx;
 	struct dma_chan *rxchan = dmarx->chan;
-	struct s3c24xx_sgbuf *sgbuf = dmarx->use_buf_b ?
+	struct pl011_sgbuf *sgbuf = dmarx->use_buf_b ?
 		&dmarx->sgbuf_b : &dmarx->sgbuf_a;
 	size_t pending;
 	struct dma_tx_state state;
@@ -664,7 +664,7 @@ static int s3c24xx_dma_rx_irq(struct s3c24xx_uart_port *uport)
 	uport->dmarx.running = false;
 
 	pending = sgbuf->sg.length - state.residue;
-	BUG_ON(pending > S3C24XX_DMA_BUFFER_SIZE);
+	BUG_ON(pending > PL011_DMA_BUFFER_SIZE);
 	/* Then we terminate the transfer - we now know our residue */
 	dmaengine_terminate_all(rxchan);
 
@@ -672,25 +672,25 @@ static int s3c24xx_dma_rx_irq(struct s3c24xx_uart_port *uport)
 	 * This will take the chars we have so far and insert
 	 * into the framework.
 	 */
-	s3c24xx_dma_rx_chars(uport, pending, dmarx->use_buf_b, true);
+	pl011_dma_rx_chars(uport, pending, dmarx->use_buf_b, true);
 
 	/* Switch buffer & re-trigger DMA job */
 	dmarx->use_buf_b = !dmarx->use_buf_b;
-	if (s3c24xx_dma_rx_trigger_dma(uport)) {
+	if (pl011_dma_rx_trigger_dma(uport)) {
 		dev_dbg(uport->port.dev, "could not retrigger RX DMA job "
 			"fall back to interrupt mode\n");
 	}
 	return IRQ_HANDLED;
 }
 
-static void s3c24xx_dma_rx_callback(void *data)
+static void pl011_dma_rx_callback(void *data)
 {
 	struct s3c24xx_uart_port *uport = data;
 	struct uart_port *port = &uport->port;
-	struct s3c24xx_dmarx_data *dmarx = &uport->dmarx;
+	struct pl011_dmarx_data *dmarx = &uport->dmarx;
 	struct dma_chan *rxchan = dmarx->chan;
 	bool lastbuf = dmarx->use_buf_b;
-	struct s3c24xx_sgbuf *sgbuf = dmarx->use_buf_b ?
+	struct pl011_sgbuf *sgbuf = dmarx->use_buf_b ?
 		&dmarx->sgbuf_b : &dmarx->sgbuf_a;
 	size_t pending;
 	struct dma_tx_state state;
@@ -710,15 +710,15 @@ static void s3c24xx_dma_rx_callback(void *data)
 	 */
 	rxchan->device->device_tx_status(rxchan, dmarx->cookie, &state);
 	pending = sgbuf->sg.length - state.residue;
-	BUG_ON(pending > S3C24XX_DMA_BUFFER_SIZE);
+	BUG_ON(pending > PL011_DMA_BUFFER_SIZE);
 	/* Then we terminate the transfer - we now know our residue */
 	dmaengine_terminate_all(rxchan);
 
 	uport->dmarx.running = false;
 	dmarx->use_buf_b = !lastbuf;
-	ret = s3c24xx_dma_rx_trigger_dma(uport);
+	ret = pl011_dma_rx_trigger_dma(uport);
 
-	s3c24xx_dma_rx_chars(uport, pending, lastbuf, false);
+	pl011_dma_rx_chars(uport, pending, lastbuf, false);
 	spin_unlock_irq(&uport->port.lock);
 	/*
 	 * Do this check after we picked the DMA chars so we don't
@@ -738,12 +738,12 @@ static void s3c24xx_dma_rx_callback(void *data)
  * suspending this port.
  * Locking: called with port lock held and IRQs disabled.
  */
-static inline void s3c24xx_dma_rx_stop(struct s3c24xx_uart_port *uport)
+static inline void pl011_dma_rx_stop(struct s3c24xx_uart_port *uport)
 {
 	/* FIXME.  Just disable the DMA enable */
 }
 
-static void s3c24xx_dma_startup(struct s3c24xx_uart_port *uport)
+static void pl011_dma_startup(struct s3c24xx_uart_port *uport)
 {
 	int ret;
 	struct uart_port *port = &uport->port;
@@ -757,17 +757,17 @@ static void s3c24xx_dma_startup(struct s3c24xx_uart_port *uport)
 	ucon |= S3C2410_UCON_TXDMAMODE;
 	ucon |= 0x00100000 ;
 
-	uport->dmatx.buf = kmalloc(S3C24XX_DMA_BUFFER_SIZE, GFP_KERNEL);
+	uport->dmatx.buf = kmalloc(PL011_DMA_BUFFER_SIZE, GFP_KERNEL);
 	if (!uport->dmatx.buf) {
 		dev_err(uport->port.dev, "no memory for DMA TX buffer\n");
 		uport->port.fifosize = uport->info->fifosize;
 		return;
 	}
 
-	sg_init_one(&uport->dmatx.sg, uport->dmatx.buf, S3C24XX_DMA_BUFFER_SIZE);
+	sg_init_one(&uport->dmatx.sg, uport->dmatx.buf, PL011_DMA_BUFFER_SIZE);
 
 	/* The DMA buffer is now the FIFO the TTY subsystem can use */
-	uport->port.fifosize = S3C24XX_DMA_BUFFER_SIZE;
+	uport->port.fifosize = PL011_DMA_BUFFER_SIZE;
 	uport->using_tx_dma = true;
 
 	wr_regl(port, S3C2410_UCON, ucon);
@@ -779,7 +779,7 @@ static void s3c24xx_dma_startup(struct s3c24xx_uart_port *uport)
 	ucon |= 0x0010000 ;
 	wr_regl(port, S3C2410_UCON, ucon);
 	/* Allocate and map DMA RX buffers */
-	ret = s3c24xx_sgbuf_init(uport->dmarx.chan, &uport->dmarx.sgbuf_a,
+	ret = pl011_sgbuf_init(uport->dmarx.chan, &uport->dmarx.sgbuf_a,
 			       DMA_FROM_DEVICE);
 	if (ret) {
 		dev_err(uport->port.dev, "failed to init DMA %s: %d\n",
@@ -787,12 +787,12 @@ static void s3c24xx_dma_startup(struct s3c24xx_uart_port *uport)
 		goto skip_rx;
 	}
 
-	ret = s3c24xx_sgbuf_init(uport->dmarx.chan, &uport->dmarx.sgbuf_b,
+	ret = pl011_sgbuf_init(uport->dmarx.chan, &uport->dmarx.sgbuf_b,
 			       DMA_FROM_DEVICE);
 	if (ret) {
 		dev_err(uport->port.dev, "failed to init DMA %s: %d\n",
 			"RX buffer B", ret);
-		s3c24xx_sgbuf_free(uport->dmarx.chan, &uport->dmarx.sgbuf_a,
+		pl011_sgbuf_free(uport->dmarx.chan, &uport->dmarx.sgbuf_a,
 				 DMA_FROM_DEVICE);
 		goto skip_rx;
 	}
@@ -802,13 +802,13 @@ static void s3c24xx_dma_startup(struct s3c24xx_uart_port *uport)
 skip_rx:
 
 	if (uport->using_rx_dma) {
-		if (s3c24xx_dma_rx_trigger_dma(uport))
+		if (pl011_dma_rx_trigger_dma(uport))
 			dev_dbg(uport->port.dev, "could not trigger initial "
 				"RX DMA job, fall back to interrupt mode\n");
 	}
 }
 
-static void s3c24xx_dma_shutdown(struct s3c24xx_uart_port *uport)
+static void pl011_dma_shutdown(struct s3c24xx_uart_port *uport)
 {
 	struct uart_port *port = &uport->port;
 	int ucon = rd_regl(port, S3C2410_UCON);
@@ -826,7 +826,7 @@ static void s3c24xx_dma_shutdown(struct s3c24xx_uart_port *uport)
 	spin_unlock_irq(&uport->port.lock);
 
 	if (uport->using_tx_dma) {
-		/* In theory, this should already be done by s3c24xx_dma_flush_buffer */
+		/* In theory, this should already be done by pl011_dma_flush_buffer */
 		dmaengine_terminate_all(uport->dmatx.chan);
 		if (uport->dmatx.queued) {
 			dma_unmap_sg(uport->dmatx.chan->device->dev, &uport->dmatx.sg, 1,
@@ -841,18 +841,18 @@ static void s3c24xx_dma_shutdown(struct s3c24xx_uart_port *uport)
 	if (uport->using_rx_dma) {
 		dmaengine_terminate_all(uport->dmarx.chan);
 		/* Clean up the RX DMA */
-		s3c24xx_sgbuf_free(uport->dmarx.chan, &uport->dmarx.sgbuf_a, DMA_FROM_DEVICE);
-		s3c24xx_sgbuf_free(uport->dmarx.chan, &uport->dmarx.sgbuf_b, DMA_FROM_DEVICE);
+		pl011_sgbuf_free(uport->dmarx.chan, &uport->dmarx.sgbuf_a, DMA_FROM_DEVICE);
+		pl011_sgbuf_free(uport->dmarx.chan, &uport->dmarx.sgbuf_b, DMA_FROM_DEVICE);
 		uport->using_rx_dma = false;
 	}
 }
 
-static inline bool s3c24xx_dma_rx_available(struct s3c24xx_uart_port *uport)
+static inline bool pl011_dma_rx_available(struct s3c24xx_uart_port *uport)
 {
 	return uport->using_rx_dma;
 }
 
-static inline bool s3c24xx_dma_rx_running(struct s3c24xx_uart_port *uport)
+static inline bool pl011_dma_rx_running(struct s3c24xx_uart_port *uport)
 {
 	return uport->using_rx_dma && uport->dmarx.running;
 }
@@ -860,60 +860,60 @@ static inline bool s3c24xx_dma_rx_running(struct s3c24xx_uart_port *uport)
 
 #else
 /* Blank functions if the DMA engine is not available */
-static inline void s3c24xx_dma_probe(struct s3c24xx_uart_port *uport)
+static inline void pl011_dma_probe(struct uart_amba_port *uport)
 {
 }
 
-static inline void s3c24xx_dma_remove(struct s3c24xx_uart_port *uport)
+static inline void pl011_dma_remove(struct uart_amba_port *uport)
 {
 }
 
-static inline void s3c24xx_dma_startup(struct s3c24xx_uart_port *uport)
+static inline void pl011_dma_startup(struct uart_amba_port *uport)
 {
 }
 
-static inline void s3c24xx_dma_shutdown(struct s3c24xx_uart_port *uport)
+static inline void pl011_dma_shutdown(struct uart_amba_port *uport)
 {
 }
 
-static inline bool s3c24xx_dma_tx_irq(struct s3c24xx_uart_port *uport)
-{
-	return false;
-}
-
-static inline void s3c24xx_dma_tx_stop(struct s3c24xx_uart_port *uport)
-{
-}
-
-static inline bool s3c24xx_dma_tx_start(struct s3c24xx_uart_port *uport)
+static inline bool pl011_dma_tx_irq(struct uart_amba_port *uport)
 {
 	return false;
 }
 
-static inline int s3c24xx_dma_rx_irq(struct s3c24xx_uart_port *uport)
+static inline void pl011_dma_tx_stop(struct uart_amba_port *uport)
 {
 }
 
-static inline void s3c24xx_dma_rx_stop(struct s3c24xx_uart_port *uport)
+static inline bool pl011_dma_tx_start(struct uart_amba_port *uport)
+{
+	return false;
+}
+
+static inline void pl011_dma_rx_irq(struct uart_amba_port *uport)
 {
 }
 
-static inline int s3c24xx_dma_rx_trigger_dma(struct s3c24xx_uart_port *uport)
+static inline void pl011_dma_rx_stop(struct uart_amba_port *uport)
+{
+}
+
+static inline int pl011_dma_rx_trigger_dma(struct uart_amba_port *uport)
 {
 	return -EIO;
 }
 
-static inline bool s3c24xx_dma_rx_available(struct s3c24xx_uart_port *uport)
+static inline bool pl011_dma_rx_available(struct uart_amba_port *uport)
 {
 	return false;
 }
 
-static inline bool s3c24xx_dma_rx_running(struct s3c24xx_uart_port *uport)
+static inline bool pl011_dma_rx_running(struct uart_amba_port *uport)
 {
 	return false;
 }
 
-#define s3c24xx_dma_flush_buffer	NULL
+#define pl011_dma_flush_buffer	NULL
 #endif
 
  
@@ -977,15 +977,14 @@ static void s3c24xx_serial_rx_disable(struct uart_port *port)
 static void s3c24xx_serial_stop_tx(struct uart_port *port)
 {
 	struct s3c24xx_uart_port *uport = to_uport(port);
-#ifdef CONFIG_DMA_ENGINE
 	struct s3c24xx_uart_platdata *data = s3c24xx_port_to_data(port);
 	unsigned int ucon;
 
 	if(data->enable_dma)
 	{
 		//printk("%s :  %d \n",__func__,__LINE__);	
-	//	s3c24xx_dma_shutdown(uport);
-		/* In theory, this should already be done by s3c24xx_dma_flush_buffer */
+	//	pl011_dma_shutdown(uport);
+		/* In theory, this should already be done by pl011_dma_flush_buffer */
 		dmaengine_terminate_all(uport->dmatx.chan);
 			dma_unmap_sg(uport->dmatx.chan->device->dev, &uport->dmatx.sg, 1,
 				     DMA_TO_DEVICE);
@@ -1001,7 +1000,6 @@ static void s3c24xx_serial_stop_tx(struct uart_port *port)
 		wr_regl(port, S3C2410_UCON, ucon);
 	//	tx_enabled(port) = 0;
 	}
-#endif
 	if (tx_enabled(port)) {
 		if (s3c24xx_serial_has_interrupt_mask(port))
 			__set_bit(S3C64XX_UINTM_TXD,
@@ -1030,7 +1028,7 @@ static void s3c24xx_serial_start_tx(struct uart_port *port)
 			enable_irq(uport->tx_irq);
 		tx_enabled(port) = 1;
 		if(data->enable_dma) 
-			s3c24xx_dma_tx_start(uport);
+			pl011_dma_tx_start(uport);
 	}
 }
 
@@ -1196,21 +1194,18 @@ static irqreturn_t s3c24xx_serial_tx_chars(int irq, void *id)
    
 	/* If we are using DMA mode, try to send some characters. */
 	if(data->enable_dma) {
-		s3c24xx_dma_tx_irq(uport);
+		pl011_dma_tx_irq(uport);
 	}
 	/* try and drain the buffer... */
 
 	while (!uart_circ_empty(xmit) && count-- > 0) {
 		if (rd_regl(port, S3C2410_UFSTAT) & uport->info->tx_fifofull)
 			break;
-		if(irq ==  IRQ_PHY_UART4 )
-			printk("[%x] ", xmit->buf[xmit->tail]);
+
 		wr_regb(port, S3C2410_UTXH, xmit->buf[xmit->tail]);
 		xmit->tail = (xmit->tail + 1) & (UART_XMIT_SIZE - 1);
 		port->icount.tx++;
 	}
-		if(irq ==  IRQ_PHY_UART4 )
-			printk("\n");
 
 	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(port);
@@ -1232,15 +1227,15 @@ static irqreturn_t s3c24xx_serial_handle_irq(int irq, void *id)
 
 	spin_lock_irqsave(&port->lock, flags);
 	if (pend & S3C64XX_UINTM_RXD_MSK) {
-		if (s3c24xx_dma_rx_running(uport)){
-			ret = s3c24xx_dma_rx_irq(uport);
+		if (pl011_dma_rx_running(uport)){
+			ret = pl011_dma_rx_irq(uport);
 		}
 		ret = s3c24xx_serial_rx_chars(irq, id);
 		wr_regl(port, S3C64XX_UINTP, S3C64XX_UINTM_RXD_MSK);
 	}
 	if (pend & S3C64XX_UINTM_TXD_MSK) {
 		ret = s3c24xx_serial_tx_chars(irq, id);
-		if (s3c24xx_dma_rx_running(uport)){
+		if (pl011_dma_rx_running(uport)){
 	}
 		wr_regl(port, S3C64XX_UINTP, S3C64XX_UINTM_TXD_MSK);
 	}
@@ -1327,7 +1322,7 @@ static void s3c24xx_serial_shutdown(struct uart_port *port)
 		wr_regl(port, S3C64XX_UINTP, 0xf);
 		wr_regl(port, S3C64XX_UINTM, 0xf);
 	}
-	s3c24xx_dma_shutdown(uport);
+	pl011_dma_shutdown(uport);
 
 	if (uport->data) {
 		struct s3c24xx_uart_platdata *udata = uport->data;
@@ -1373,7 +1368,7 @@ static int s3c24xx_serial_startup(struct uart_port *port)
 	{
 		count = uart_circ_chars_pending(xmit);
 		if(count > 4)
-		s3c24xx_dma_startup(uport);
+		pl011_dma_startup(uport);
 	}	
 	dbg("s3c24xx_serial_startup ok\n");
 	return ret;
@@ -1772,7 +1767,7 @@ static struct uart_ops s3c24xx_serial_ops = {
 	.config_port	= s3c24xx_serial_config_port,
 	.verify_port	= s3c24xx_serial_verify_port,
 	.wake_peer		= s3c24xx_serial_wake_peer,
-	.flush_buffer	= s3c24xx_dma_flush_buffer,
+	.flush_buffer	= pl011_dma_flush_buffer,
 };
 
 static struct uart_driver s3c24xx_uart_drv = {
@@ -1959,7 +1954,7 @@ static int s3c24xx_serial_probe(struct platform_device *pdev)
 
 
 	if(uport->data->enable_dma)
-		s3c24xx_dma_probe(uport);
+		pl011_dma_probe(uport);
 
 #if defined (CONFIG_PM) && defined (CONFIG_SERIAL_NXP_RESUME_WORK)
 	INIT_DELAYED_WORK(&uport->resume_work, s3c24xx_resume_work);
@@ -1983,7 +1978,7 @@ static int s3c24xx_serial_probe(struct platform_device *pdev)
 
  probe_err:
 	if(uport->data->enable_dma)
-		s3c24xx_dma_remove(uport);
+		pl011_dma_remove(uport);
 	return ret;
 }
 
@@ -2206,11 +2201,12 @@ s3c24xx_serial_console_setup(struct console *co, char *options)
 		co->index = 0;
 
 	uport = s3c24xx_serial_ports[co->index];
+	port  = &uport->port;
+
 	/* is the port configured? */
 
-	if (!uport)
+	if (port->mapbase == 0x0)
 		return -ENODEV;
-	port  = &uport->port;
 
 	cons_uart = port;
 

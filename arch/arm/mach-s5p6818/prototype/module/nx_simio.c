@@ -38,8 +38,8 @@ static U32 MES_SIMIO_ParameterStack[MAX_NUMBER_OF_PARAMETERS];
 //------------------------------------------------------------------------------
 /**
  *	@brief	Initialize of prototype enviroment & local variables.
- *	@return  CTRUE	indicates that Initialize is successed.
- *			 CFALSE	indicates that Initialize is failed.
+ *	@return \b CTRUE	indicates that Initialize is successed.\n
+ *			\b CFALSE	indicates that Initialize is failed.\n
  *	@see	NX_SIMIO_GetNumberOfModule
  */
 CBOOL	NX_SIMIO_Initialize( void )
@@ -78,6 +78,10 @@ U32		NX_SIMIO_GetNumberOfModule( void )
  *	@brief		Get module's physical address.
  *	@param[in]	ModuleIndex		An index of module ( 0 : First MLC ).
  *	@return		Module's physical address
+ *	@see		NX_SIMIO_GetSizeOfRegisterSet,
+ *				NX_SIMIO_SetBaseAddress,		NX_SIMIO_GetBaseAddress,
+ *				NX_SIMIO_OpenModule,			NX_SIMIO_CloseModule,
+ *				NX_SIMIO_CheckBusy,			NX_SIMIO_CanPowerDown
  */
 U32		NX_SIMIO_GetPhysicalAddress( void )
 {
@@ -94,6 +98,10 @@ U32		NX_SIMIO_GetPhysicalAddress( void )
 /**
  *	@brief		Get a size, in byte, of register set.
  *	@return		Size of module's register set.
+ *	@see		NX_SIMIO_GetPhysicalAddress,
+ *				NX_SIMIO_SetBaseAddress,		NX_SIMIO_GetBaseAddress,
+ *				NX_SIMIO_OpenModule,			NX_SIMIO_CloseModule,
+ *				NX_SIMIO_CheckBusy,			NX_SIMIO_CanPowerDown
  */
 U32		NX_SIMIO_GetSizeOfRegisterSet( void )
 {
@@ -106,8 +114,12 @@ U32		NX_SIMIO_GetSizeOfRegisterSet( void )
  *	@param[in]	ModuleIndex		An index of module ( 0 : First MLC ).
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
+ *	@see		NX_SIMIO_GetPhysicalAddress,	NX_SIMIO_GetSizeOfRegisterSet,
+ *				NX_SIMIO_GetBaseAddress,
+ *				NX_SIMIO_OpenModule,			NX_SIMIO_CloseModule,
+ *				NX_SIMIO_CheckBusy,			NX_SIMIO_CanPowerDown
  */
-void	NX_SIMIO_SetBaseAddress( void* BaseAddress )
+void	NX_SIMIO_SetBaseAddress( U32 BaseAddress )
 {
     U32 ModuleIndex = 0;
 	NX_ASSERT( NUMBER_OF_SIMIO_MODULE > ModuleIndex );
@@ -121,21 +133,29 @@ void	NX_SIMIO_SetBaseAddress( void* BaseAddress )
  *	@brief		Get a base address of register set
  *	@param[in]	ModuleIndex		An index of module ( 0 : First MLC ).
  *	@return		Module's base address.
+ *	@see		NX_SIMIO_GetPhysicalAddress,	NX_SIMIO_GetSizeOfRegisterSet,
+ *				NX_SIMIO_SetBaseAddress,
+ *				NX_SIMIO_OpenModule,			NX_SIMIO_CloseModule,
+ *				NX_SIMIO_CheckBusy,			NX_SIMIO_CanPowerDown
  */
-void*	NX_SIMIO_GetBaseAddress( void )
+U32		NX_SIMIO_GetBaseAddress( void )
 {
     U32 ModuleIndex = 0;
 	NX_ASSERT( NUMBER_OF_SIMIO_MODULE > ModuleIndex );
 
-	return (void*)__g_ModuleVariables[ModuleIndex].pRegister;
+	return (U32)__g_ModuleVariables[ModuleIndex].pRegister;
 }
 
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize selected modules with default value.
  *	@param[in]	ModuleIndex		An index of module ( 0 : First MLC ).
- *	@return		 CTRUE	indicates that Initialize is successed. 
- *				 CFALSE	indicates that Initialize is failed.
+ *	@return		\b CTRUE	indicates that Initialize is successed. \n
+ *				\b CFALSE	indicates that Initialize is failed.
+ *	@see		NX_SIMIO_GetPhysicalAddress,	NX_SIMIO_GetSizeOfRegisterSet,
+ *				NX_SIMIO_SetBaseAddress,		NX_SIMIO_GetBaseAddress,
+ *				NX_SIMIO_CloseModule,
+ *				NX_SIMIO_CheckBusy,			NX_SIMIO_CanPowerDown
  */
 CBOOL	NX_SIMIO_OpenModule( void )
 {
@@ -157,8 +177,12 @@ CBOOL	NX_SIMIO_OpenModule( void )
 /**
  *	@brief		Deinitialize selected module to the proper stage.
  *	@param[in]	ModuleIndex		An index of module ( 0 : First MLC ).
- *	@return		 CTRUE	indicates that Deinitialize is successed. 
- *				 CFALSE	indicates that Deinitialize is failed.
+ *	@return		\b CTRUE	indicates that Deinitialize is successed. \n
+ *				\b CFALSE	indicates that Deinitialize is failed.
+ *	@see		NX_SIMIO_GetPhysicalAddress,	NX_SIMIO_GetSizeOfRegisterSet,
+ *				NX_SIMIO_SetBaseAddress,		NX_SIMIO_GetBaseAddress,
+ *				NX_SIMIO_OpenModule,
+ *				NX_SIMIO_CheckBusy,			NX_SIMIO_CanPowerDown
  */
 CBOOL	NX_SIMIO_CloseModule( void )
 {
@@ -172,8 +196,12 @@ CBOOL	NX_SIMIO_CloseModule( void )
 /**
  *	@brief		Indicates whether the selected modules is busy or not.
  *	@param[in]	ModuleIndex		An index of module ( 0 : First MLC ).
- *	@return		 CTRUE	indicates that Module is Busy. 
- *				 CFALSE	indicates that Module is NOT Busy.
+ *	@return		\b CTRUE	indicates that Module is Busy. \n
+ *				\b CFALSE	indicates that Module is NOT Busy.
+ *	@see		NX_SIMIO_GetPhysicalAddress,	NX_SIMIO_GetSizeOfRegisterSet,
+ *				NX_SIMIO_SetBaseAddress,		NX_SIMIO_GetBaseAddress,
+ *				NX_SIMIO_OpenModule,			NX_SIMIO_CloseModule,
+ *				NX_SIMIO_CanPowerDown
  */
 CBOOL	NX_SIMIO_CheckBusy( void )
 {
@@ -187,8 +215,12 @@ CBOOL	NX_SIMIO_CheckBusy( void )
 /**
  *	@brief		Indicaes whether the selected modules is ready to enter power-down stage
  *	@param[in]	ModuleIndex		An index of module ( 0 : First MLC ).
- *	@return		 CTRUE	indicates that Ready to enter power-down stage. 
- *				 CFALSE	indicates that This module can't enter to power-down stage.
+ *	@return		\b CTRUE	indicates that Ready to enter power-down stage. \n
+ *				\b CFALSE	indicates that This module can't enter to power-down stage.
+ *	@see		NX_SIMIO_GetPhysicalAddress,	NX_SIMIO_GetSizeOfRegisterSet,
+ *				NX_SIMIO_SetBaseAddress,		NX_SIMIO_GetBaseAddress,
+ *				NX_SIMIO_OpenModule,			NX_SIMIO_CloseModule,
+ *				NX_SIMIO_CheckBusy
  */
 CBOOL	NX_SIMIO_CanPowerDown( void )
 {
@@ -423,7 +455,7 @@ NX_SIMIO_LoadHexFile
         return CFALSE;
     }
 
-    while( EOF != fscanf( fp, "%x", &data ) )
+    while( EOF != fscanf( fp, "%x\n", &data ) )
     {
         ((unsigned char*)pMemory)[datacount] = (unsigned char)data;
         datacount++;
@@ -469,7 +501,7 @@ NX_SIMIO_SaveHexFile
     U32 i;
     for( i=0; i<ByteSize; i++ )
     {
-        fprintf(fp, "%02x", ((unsigned char*)pMemory)[i]);
+        fprintf(fp, "%02x\n", ((unsigned char*)pMemory)[i]);
     }
 
     fclose( fp );
@@ -558,7 +590,7 @@ NX_SIMIO_LoadImgFile
 
     for(i=0; i<12; i++)
     {
-        fscanf( fp, "%x", &data );
+        fscanf( fp, "%x\n", &data );
         if ( i==0  ) pWidth0  = (data & 0xff);
         if ( i==1  ) pWidth1  = (data & 0xff);
         if ( i==2  ) pWidth2  = (data & 0xff);
@@ -578,14 +610,14 @@ NX_SIMIO_LoadImgFile
     *pBPP = (pBPP3<<24) | (pBPP2<<16) | (pBPP1<<8) | (pBPP0<<0);
 
     // @modified 050503 Gamza
-    //while( EOF != fscanf( fp, "%x", &data ) )
+    //while( EOF != fscanf( fp, "%x\n", &data ) )
     {
         for(y=0; y<*pHeight; y++)
         {
             for(x=0; x<((*pWidth)*(*pBPP)/8); x++)
             {
                 // @modified 050503 Gamza
-                if( EOF == fscanf( fp, "%x", &data ) ){ fclose( fp ); return CFALSE; }
+                if( EOF == fscanf( fp, "%x\n", &data ) ){ fclose( fp ); return CFALSE; }
                 ((unsigned char*)pMemory)[y*Stride+x] = (unsigned char)data;
             }
         }
@@ -635,25 +667,25 @@ NX_SIMIO_SaveImgFile
     sprintf( pathname, "../../%s", FileName );
     fp = fopen( pathname, "w" );
 
-    fprintf(fp, "%02x", (U8)(Width >>0  & 0xff) );
-    fprintf(fp, "%02x", (U8)(Width >>8  & 0xff) );
-    fprintf(fp, "%02x", (U8)(Width >>16 & 0xff) );
-    fprintf(fp, "%02x", (U8)(Width >>24 & 0xff) );
-    fprintf(fp, "%02x", (U8)(Height>>0  & 0xff) );
-    fprintf(fp, "%02x", (U8)(Height>>8  & 0xff) );
-    fprintf(fp, "%02x", (U8)(Height>>16 & 0xff) );
-    fprintf(fp, "%02x", (U8)(Height>>24 & 0xff) );
-    fprintf(fp, "%02x", (U8)(BPP   >>0  & 0xff) );
-    fprintf(fp, "%02x", (U8)(BPP   >>8  & 0xff) );
-    fprintf(fp, "%02x", (U8)(BPP   >>16 & 0xff) );
-    fprintf(fp, "%02x", (U8)(BPP   >>24 & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(Width >>0  & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(Width >>8  & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(Width >>16 & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(Width >>24 & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(Height>>0  & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(Height>>8  & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(Height>>16 & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(Height>>24 & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(BPP   >>0  & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(BPP   >>8  & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(BPP   >>16 & 0xff) );
+    fprintf(fp, "%02x\n", (U8)(BPP   >>24 & 0xff) );
 
     for(y=0; y<Height; y++)
     {
         for(x=0; x<(Width*BPP/8); x++)
         {
-            //fprintf(fp, "%02x", ((const U8*)pMemory)[datacount]);
-            fprintf(fp, "%02x", ((const U8*)pMemory)[y*Stride+x]);
+            //fprintf(fp, "%02x\n", ((const U8*)pMemory)[datacount]);
+            fprintf(fp, "%02x\n", ((const U8*)pMemory)[y*Stride+x]);
        }
     }
 
@@ -766,7 +798,7 @@ NX_SIMIO_LoadImgFileBin
 /*
     for(i=0; i<12; i++)
     {
-        fscanf( fp, "%x", &data );
+        fscanf( fp, "%x\n", &data );
         if ( i==0  ) pWidth0  = (data & 0xff);
         if ( i==1  ) pWidth1  = (data & 0xff);
         if ( i==2  ) pWidth2  = (data & 0xff);
@@ -803,7 +835,7 @@ NX_SIMIO_LoadImgFileBin
     *pBPP = (pBPP3<<24) | (pBPP2<<16) | (pBPP1<<8) | (pBPP0<<0);
 
     // @modified 050503 Gamza
-    //while( EOF != fscanf( fp, "%x", &data ) )
+    //while( EOF != fscanf( fp, "%x\n", &data ) )
     {
         for(y=0; y<*pHeight; y++)
         {
@@ -812,7 +844,7 @@ NX_SIMIO_LoadImgFileBin
             {
                 // @modified 050503 Gamza
                 if( EOF == fread(&data, 1, 1, fp) ){ fclose( fp ); return CFALSE; }
-                //if( EOF == fscanf( fp, "%x", &data ) ){ fclose( fp ); return CFALSE; }
+                //if( EOF == fscanf( fp, "%x\n", &data ) ){ fclose( fp ); return CFALSE; }
                 ((unsigned char*)pMemory)[y*Stride+x] = (unsigned char)data;
             }
             */
@@ -1214,7 +1246,7 @@ NX_SIMIO_CMPBINFILE
         return CFALSE;
     }
 
-    while( EOF != fscanf( fp, "%x", &data ) )
+    while( EOF != fscanf( fp, "%x\n", &data ) )
     {
         ((unsigned char*)pMemory)[datacount] = (unsigned char)data;
         datacount++;
@@ -1261,7 +1293,7 @@ NX_SIMIO_LoadCodecYUV
         return CFALSE;
     }
 
-    while( EOF != fscanf( fp, "%x", &data ) )
+    while( EOF != fscanf( fp, "%x\n", &data ) )
     {
         ((unsigned char*)pMemory)[datacount] = (unsigned char)data;
         datacount++;
@@ -1304,7 +1336,7 @@ NX_SIMIO_LoadCodecStream
         return CFALSE;
     }
 
-    while( EOF != fscanf( fp, "%x", &data ) )
+    while( EOF != fscanf( fp, "%x\n", &data ) )
     {
         ((unsigned char*)pMemory)[datacount] = (unsigned char)data;
         datacount++;
@@ -1347,7 +1379,7 @@ NX_SIMIO_LoadCodecBitCode
         return CFALSE;
     }
 
-    while( EOF != fscanf( fp, "%x", &data ) )
+    while( EOF != fscanf( fp, "%x\n", &data ) )
     {
         ((unsigned char*)pMemory)[datacount] = (unsigned char)data;
         datacount++;
@@ -1448,7 +1480,7 @@ CBOOL NX_SIMIO_LoadImgFile_A8 // Only A8R8G8B8
 
     for(i=0; i<12; i++)
     {
-        fscanf( fp, "%x", &data );
+        fscanf( fp, "%x\n", &data );
         if ( i==0  ) pWidth0  = (data & 0xff);
         if ( i==1  ) pWidth1  = (data & 0xff);
         if ( i==2  ) pWidth2  = (data & 0xff);
@@ -1470,7 +1502,7 @@ CBOOL NX_SIMIO_LoadImgFile_A8 // Only A8R8G8B8
 	*pBPP = *pBPP + 8;
 	
     // @modified 050503 Gamza
-    //while( EOF != fscanf( fp, "%x", &data ) )
+    //while( EOF != fscanf( fp, "%x\n", &data ) )
     {
         for(y=0; y<*pHeight; y++)
         {
@@ -1484,7 +1516,7 @@ CBOOL NX_SIMIO_LoadImgFile_A8 // Only A8R8G8B8
             	else // RGB Value
                 {
                 	// @modified 050503 Gamza
-                	if( EOF == fscanf( fp, "%x", &data ) ){ fclose( fp ); return CFALSE; }
+                	if( EOF == fscanf( fp, "%x\n", &data ) ){ fclose( fp ); return CFALSE; }
                 	((unsigned char*)pMemory)[y*Stride+x] = (unsigned char)data;
                 }
             }

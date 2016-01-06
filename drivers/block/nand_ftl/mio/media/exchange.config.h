@@ -45,8 +45,7 @@
 /******************************************************************************
  * Register Width
  ******************************************************************************/
-#if defined(__x86_64__) || defined(__ia64__) || defined(_M_AMD64) || defined(_M_IA64) || defined(_WIN64) || defined(__alpha__) || defined(__s390__) || \
-    defined(CONFIG_ARM64) /* ... */
+#if defined(__x86_64__) || defined(__ia64__) || defined(_M_AMD64) || defined(_M_IA64) || defined(_WIN64) || defined(__alpha__) || defined(__s390__) /* ... */
 #define __SUPPORT_X64_OS__
 #endif
 
@@ -83,15 +82,6 @@
     #define __COMPILE_MODE_HALT_ERROR__
   //#define __COMPILE_MODE_BEST_DEBUGGING__
     #define __COMPILE_MODE_ELAPSE_T__
-  //#define __COMPILE_MODE_READONLY__
-
-  //#define __MIO_UNIT_TEST_RANDOMIZER__
-  //#define __MIO_UNIT_TEST_THREAD__
-  //#define __MIO_UNIT_TEST_SLEEP__
-
-	#ifndef CONFIG_LOCAL_TIMERS
-    #define __USING_DELAY_FOR_SHORT_SLEEP__
-	#endif
 
 #elif defined (__SUPPORT_MIO_UBOOT__)
 
@@ -105,7 +95,6 @@
   //#define __COMPILE_MODE_BEST_DEBUGGING__
   //#define __COMPILE_MODE_ELAPSE_T__
   //#define __COMPILE_MODE_RW_TEST__
-  //#define __COMPILE_MODE_READONLY__
 
 #endif
 

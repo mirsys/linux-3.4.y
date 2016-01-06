@@ -205,8 +205,8 @@ CBOOL NX_VIP_Initialize( void );
 U32   NX_VIP_GetNumberOfModule( void );
 
 U32   NX_VIP_GetSizeOfRegisterSet( void );
-void  NX_VIP_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void* NX_VIP_GetBaseAddress( U32 ModuleIndex );
+void  NX_VIP_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_VIP_GetBaseAddress( U32 ModuleIndex );
 U32   NX_VIP_GetPhysicalAddress ( U32 ModuleIndex );
 CBOOL NX_VIP_OpenModule( U32 ModuleIndex );
 CBOOL NX_VIP_CloseModule( U32 ModuleIndex );

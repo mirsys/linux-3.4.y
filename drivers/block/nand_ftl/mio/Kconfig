@@ -12,7 +12,7 @@ if NEXELL_FTL
 
 config NAND_FTL
 	depends on BLOCK
-	depends on ARCH_NXP4330 || ARCH_S5P4418 || ARCH_S5P6818
+	depends on ARCH_NXP4330 || ARCH_S5P4418
 	tristate "NEXELL Nand FTL Driver"
 
 endif # NEXELL_FTL

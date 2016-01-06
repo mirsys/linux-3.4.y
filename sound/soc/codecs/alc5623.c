@@ -662,11 +662,11 @@ static int set_init_regs(struct snd_soc_codec *codec)
         }
         msleep(10);
         reg= i2c_smbus_read_word_data(i2c,(u8)init_regs[i][0]);
-        pr_debug("Read reg[0x%02x] = 0x%04x \n",init_regs[i][0],reg);
+        printk("Read reg[0x%02x] = 0x%04x \n",init_regs[i][0],reg);
 
 
     }
-    pr_debug("%s over %d regs \n",__func__,REG_INIT_NUM);
+    printk("%s over %d regs \n",__func__,REG_INIT_NUM);
     return 0;
 }
 
@@ -790,7 +790,10 @@ static void init_codec(struct i2c_client *client)
 
     ALC5625_write_IIC(client,0x3C,0x2000);
     ALC5625_write_IIC(client,0x3E,0x8000);
-    ALC5625_write_IIC(client,0x1C,0x0740);
+    //ALC5625_write_IIC(client,0x1C,0x0740);//class a/b 0000 0111 0100 0000; 0010 
+    ALC5625_write_IIC(client,0x1C,0xA740);//class d
+    ALC5625_write_IIC(client,0x6A,0x46);
+    ALC5625_write_IIC(client,0x6C,0xFFFF);	
     ALC5625_write_IIC(client,0x14,0x3F3F);
     ALC5625_write_IIC(client,0x0C,0x0808);
     ALC5625_write_IIC(client,0x04,0x8888);
@@ -800,20 +803,75 @@ static void init_codec(struct i2c_client *client)
     ALC5625_write_IIC(client,0x40,0x5F00);
 
     ALC5625_write_IIC(client,0x3A,0x8830);
-    ALC5625_write_IIC(client,0x3C,0xA7F7); //6734 class d
+    //ALC5625_write_IIC(client,0x3C,0xA7F7); //6734 class d 1010 0111 1111 0111
+    //ALC5625_write_IIC(client,0x3C,0xF7FF);		//0110 0111 1111 0111 
+    ALC5625_write_IIC(client,0x3C,0x67F7);
     ALC5625_write_IIC(client,0x3E,0x960A);
     ALC5625_write_IIC(client,0x34,0x8000);
     ALC5625_write_IIC(client,0x0C,0x4808);
-    ALC5625_write_IIC(client,0x1C,0x9F00); //AF00 class d
+    //ALC5625_write_IIC(client,0x1C,0x9F00); //AF00 class d
+    //ALC5625_write_IIC(client,0x1C,0xA740);//class d
+    ALC5625_write_IIC(client,0x1C,0xBF00);//class d
     ALC5625_write_IIC(client,0x02,0x0000);
     ALC5625_write_IIC(client,0x04,0x0000);
     ALC5625_write_IIC(client,0x10,0xF0E0);
+    ALC5625_write_IIC(client,0x0E,0xFFFF); //hdc added 20150209;
     ALC5625_write_IIC(client,0x22,0x0800); // mic1 boost +30db
     ALC5625_write_IIC(client,0x14,0x3F3F);
     ALC5625_write_IIC(client,0x12,0xF58B); //FF9F FB16 F58B
+
     //ALC5625_write_IIC(client,0x5A,0x8880);
 
 }
+
+/*
+ * show all codec regs' value
+ * hdc 20150209
+ */
+static void show_codec_regs(struct i2c_client *client)
+{
+	int regs_value[140]={0},i=0,j=0;
+
+	for(j=0;j<200;j++);
+	for(i=0;i<=0x7E;i=i+2)
+	{
+		regs_value[i] = ALC5625_read_IIC(client,i);
+		for(j=0;j<100;j++);
+	}
+	for(i=0;i<=0x7E;i=i+2)
+	{
+		printk("regs 0x%02x : %04x\n",i,regs_value[i]);
+	}
+}
+
+/*
+ * control codec's speaker or headphone's vol;
+ * with these to complete the speaker and headphone selection function;
+ * hdc 20150209
+ */
+void alc5623_headset(int on)
+{
+	int j=0;
+	if(on)
+	{
+		ALC5625_write_IIC(i2c,0x02,0x0000); //speaker on
+		for(j=0;j<20;j++);
+    		ALC5625_write_IIC(i2c,0x04,0x8080); //headphone	off
+		
+		//printk("headphone plug out\n");
+	}
+	else
+	{
+		ALC5625_write_IIC(i2c,0x02,0x8080); //speaker off
+		for(j=0;j<20;j++);
+		ALC5625_write_IIC(i2c,0x04,0x0000); //headphone on
+		
+		//printk("headphone plug in\n");
+	}
+	//printk("reg 0x02: %04x\n",ALC5625_read_IIC(i2c,0x02));
+	//printk("reg 0x04: %04x\n",ALC5625_read_IIC(i2c,0x04));
+}
+EXPORT_SYMBOL(alc5623_headset);
 
 
 static int get_coeff(struct snd_soc_codec *codec, int rate)
@@ -1137,7 +1195,7 @@ static int alc5623_probe(struct snd_soc_codec *codec)
 	struct alc5623_priv *alc5623 = snd_soc_codec_get_drvdata(codec);
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 	int ret;
-    pr_debug("%s ............\n",__func__);
+    printk("%s ............\n",__func__);
 
 	ret = snd_soc_codec_set_cache_io(codec, 8, 16, alc5623->control_type);
 	if (ret < 0) {
@@ -1212,6 +1270,8 @@ static int alc5623_probe(struct snd_soc_codec *codec)
 
     init_codec(i2c);
     alc5623_fill_cache(codec);
+
+    //show_codec_regs(i2c);	//show codec regs' value;
 	return ret;
 }
 
@@ -1246,7 +1306,7 @@ static __devinit int alc5623_i2c_probe(struct i2c_client *client,
 	struct alc5623_priv *alc5623;
 	int ret, vid1, vid2;
 
-    pr_debug("%s ............\n",__func__);
+    printk("%s ............\n",__func__);
 
 	/*vid1 = i2c_smbus_read_word_data(client, ALC5623_VENDOR_ID1);
 	if (vid1 < 0) {

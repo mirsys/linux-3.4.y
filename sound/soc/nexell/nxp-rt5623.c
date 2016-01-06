@@ -69,7 +69,7 @@ static struct snd_soc_jack_gpio jack_gpio = {
 
 static struct snd_soc_jack hp_jack;
 
-
+extern void alc5623_headset(int on);	//alc5623.c;hdc added 20150209
 static int alc5623_jack_status_check(void)
 {
 	struct snd_soc_codec *codec = alc5623;
@@ -83,9 +83,10 @@ static int alc5623_jack_status_check(void)
 	if(invert)
 		level = !level;
 
-	printk("%s: hp jack %s\n", __func__, level?"IN":"OUT");
+	printk("%s: hp jack %s\n", __func__, level?"OUT":"IN");
 
-	if (!level) {
+#if 0
+	if (level) {
 #if defined(CONFIG_PLAT_S5P4418_NBOX)
 		/***************************************/
 		// jimmy@zhongwei, 20140609 Testing
@@ -93,7 +94,7 @@ static int alc5623_jack_status_check(void)
 		NXL_JackInOut = 0x00; // 1: jack In
 #endif
         snd_soc_update_bits(codec, 0x04, 0x8080, 0x8080);
-		gpio_direction_output(AUDIO_AMP_POWER, 1);
+		//gpio_direction_output(AUDIO_AMP_POWER, 1);
 	} else {
 #if defined(CONFIG_PLAT_S5P4418_NBOX)
 		/***************************************/
@@ -102,8 +103,9 @@ static int alc5623_jack_status_check(void)
 		NXL_JackInOut = 0x02; // 1: jack In
 #endif
         snd_soc_update_bits(codec, 0x04, 0x8080, 0);
-		gpio_direction_output(AUDIO_AMP_POWER, 0);
+		//gpio_direction_output(AUDIO_AMP_POWER, 0);
 	}
+#endif	//hdc 20150428
 
 #if defined(CONFIG_PLAT_S5P4418_NBOX)
 	/***************************************/
@@ -117,6 +119,7 @@ static int alc5623_jack_status_check(void)
 	}
 #endif
 
+	alc5623_headset(level);//1:speaker on,headphone off;0:speaker off,headphone on;hdc 20150209;
 	return level;
 }
 

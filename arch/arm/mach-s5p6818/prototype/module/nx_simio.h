@@ -109,8 +109,8 @@ CBOOL	NX_SIMIO_Initialize( void );
 //@{
 U32		NX_SIMIO_GetPhysicalAddress( void );
 U32		NX_SIMIO_GetSizeOfRegisterSet( void );
-void	NX_SIMIO_SetBaseAddress( void* BaseAddress );
-void*	NX_SIMIO_GetBaseAddress( void );
+void	NX_SIMIO_SetBaseAddress( U32 BaseAddress );
+U32		NX_SIMIO_GetBaseAddress( void );
 CBOOL	NX_SIMIO_OpenModule( void );
 CBOOL	NX_SIMIO_CloseModule( void );
 CBOOL	NX_SIMIO_CheckBusy( void );

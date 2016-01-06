@@ -109,8 +109,8 @@ CBOOL NX_CRYPTO_Initialize( void );
 U32   NX_CRYPTO_GetNumberOfModule( void );
 
 U32   NX_CRYPTO_GetSizeOfRegisterSet( void );
-void  NX_CRYPTO_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*  NX_CRYPTO_GetBaseAddress( U32 ModuleIndex );
+void  NX_CRYPTO_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_CRYPTO_GetBaseAddress( U32 ModuleIndex );
 U32   NX_CRYPTO_GetPhysicalAddress ( U32 ModuleIndex );
 CBOOL NX_CRYPTO_OpenModule( U32 ModuleIndex );
 CBOOL NX_CRYPTO_CloseModule( U32 ModuleIndex );

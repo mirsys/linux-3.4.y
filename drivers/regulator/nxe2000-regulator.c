@@ -493,52 +493,56 @@ static int nxe2000_regulator_preinit(struct device *parent,
 		nxe2000_pdata->regulator.consumer_supplies;
 	int ret = 0;
 
-	if (ret < 0)
-		dev_err(ri->dev, "Not able to %s rail %d err %d\n",
-			(nxe2000_pdata->init_enable) ? "enable" : "disable",
-			ri->desc.id, ret);
-
-	if (nxe2000_pdata->sleep_slots > -1)
-		ret = nxe2000_update(parent, ri->sleep_slot_reg, nxe2000_pdata->sleep_slots, 0xF);
-	else
-		ret = nxe2000_update(parent, ri->sleep_slot_reg, 0xF, 0xF);
-
-	if (ret < 0)
-		dev_err(ri->dev, "Not able to 0x%02X rail %d err %d\n",
-			nxe2000_pdata->sleep_slots, ri->desc.id, ret);
-
-#ifndef CONFIG_ENABLE_INIT_VOLTAGE
-	if(ri->id == NXE2000_ID_DC1 || ri->id == NXE2000_ID_DC2) 
-	{
-		return ret;
-	}
-#endif
-
 	if (0 == strcmp(consumer_supplies->supply, "vdd_core_1.2V")) {
 		if (nxe2000_pdata->init_uV > -1)
 			nxe2000_pdata->init_uV = nxe2000_calculate_margin(nxe2000_pdata->init_uV);
 	}
 
 	if (nxe2000_pdata->init_uV > -1) {
-		ret = __nxe2000_set_voltage(parent, ri,	nxe2000_pdata->init_uV, nxe2000_pdata->init_uV, 0, 0);
+		ret = __nxe2000_set_voltage(parent, ri,
+				nxe2000_pdata->init_uV,
+				nxe2000_pdata->init_uV, 0, 0);
 		if (ret < 0) {
-			dev_err(ri->dev, "Not able to initialize voltage %d for rail %d err %d\n", nxe2000_pdata->init_uV, ri->desc.id, ret);
+			dev_err(ri->dev, "Not able to initialize voltage %d "
+				"for rail %d err %d\n", nxe2000_pdata->init_uV,
+				ri->desc.id, ret);
 			return ret;
 		}
 	}
 
 	if (nxe2000_pdata->sleep_slots == -1) {
-		ret = __nxe2000_set_voltage(parent, ri,	nxe2000_pdata->init_uV, nxe2000_pdata->init_uV, 0, 1);
+		ret = __nxe2000_set_voltage(parent, ri,
+				nxe2000_pdata->init_uV,
+				nxe2000_pdata->init_uV, 0, 1);
 		if (ret < 0) {
-			dev_err(ri->dev, "Not able to sleep voltage %d for rail %d err %d\n", nxe2000_pdata->init_uV, ri->desc.id, ret);
+			dev_err(ri->dev, "Not able to sleep voltage %d "
+				"for rail %d err %d\n", nxe2000_pdata->init_uV,
+				ri->desc.id, ret);
 			return ret;
 		}
 	}
 
 	if (nxe2000_pdata->init_enable)
-		ret = nxe2000_set_bits(parent, ri->reg_en_reg, (1 << ri->en_bit));
+		ret = nxe2000_set_bits(parent, ri->reg_en_reg,
+							(1 << ri->en_bit));
 	else
-		ret = nxe2000_clr_bits(parent, ri->reg_en_reg, (1 << ri->en_bit));
+		ret = nxe2000_clr_bits(parent, ri->reg_en_reg,
+							(1 << ri->en_bit));
+	if (ret < 0)
+		dev_err(ri->dev, "Not able to %s rail %d err %d\n",
+			(nxe2000_pdata->init_enable) ? "enable" : "disable",
+			ri->desc.id, ret);
+
+	if (nxe2000_pdata->sleep_slots > -1)
+		ret = nxe2000_update(parent, ri->sleep_slot_reg,
+							nxe2000_pdata->sleep_slots, 0xF);
+	else
+		ret = nxe2000_update(parent, ri->sleep_slot_reg,
+							0xF, 0xF);
+
+	if (ret < 0)
+		dev_err(ri->dev, "Not able to 0x%02X rail %d err %d\n",
+			nxe2000_pdata->sleep_slots, ri->desc.id, ret);
 
 	return ret;
 }
@@ -604,31 +608,7 @@ static int __devexit nxe2000_regulator_remove(struct platform_device *pdev)
 #ifdef CONFIG_PM
 static int nxe2000_regulator_suspend(struct device *dev)
 {
-	struct nxe2000_regulator *ri = NULL;
-	struct nxe2000_regulator_platform_data *nxe2000_pdata = dev->platform_data;
-	struct regulator_consumer_supply *consumer_supplies = nxe2000_pdata->regulator.consumer_supplies;
-
-	int ret = 0;
-	int cur_vol = 0;
-	uint8_t vsel;
-
-	nxe2000_suspend_status = 0;
-
-	if(!strcmp(consumer_supplies->supply, "vdd_arm_1.3V"))
-	{
-		ri = find_regulator_info(NXE2000_ID_DC1);
-		vsel = ri->vout_reg_cache & ri->vout_mask;
-		cur_vol = ri->min_uV + vsel * ri->step_uV;
-
-		if(cur_vol < nxe2000_pdata->init_uV)
-		{
-			ret = __nxe2000_set_voltage(dev, ri, nxe2000_pdata->init_uV, nxe2000_pdata->init_uV, 0, 0);
-			if (ret < 0) {
-				dev_err(ri->dev, "Not able to initialize voltage %d for rail %d err %d\n", nxe2000_pdata->init_uV, ri->desc.id, ret);
-				return ret;
-			}
-		}
-	}
+//	struct nxe2000_regulator *info = dev_get_drvdata(dev);
 
 	nxe2000_suspend_status = 1;
 

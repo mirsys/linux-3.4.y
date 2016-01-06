@@ -23,7 +23,6 @@
 #include <mach/iomap.h>
 #include <mach/s5p6818.h>
 #include <mach/s5p6818_irq.h>
-#include <mach/soc.h>
 #include <nx_tieoff.h>
 #include <nx_gpio.h>
 
@@ -130,18 +129,15 @@ int nxp_usb_phy_init(struct platform_device *pdev, int type)
 		udelay(1);
 
 		if (type == NXP_USB_PHY_HSIC) {
-#if defined (CFG_GPIO_HSIC_EXTHUB_RESET)
 		    // GPIO Reset
-			nxp_soc_gpio_set_io_dir(CFG_GPIO_HSIC_EXTHUB_RESET, CTRUE);
-		    nxp_soc_gpio_set_io_pull_enb(CFG_GPIO_HSIC_EXTHUB_RESET, CTRUE);
-		    nxp_soc_gpio_set_out_value(CFG_GPIO_HSIC_EXTHUB_RESET, CTRUE);
-			udelay( 10 );
-		    nxp_soc_gpio_set_out_value(CFG_GPIO_HSIC_EXTHUB_RESET, CFALSE);
-		    udelay( 10 );
-		    nxp_soc_gpio_set_out_value(CFG_GPIO_HSIC_EXTHUB_RESET, CTRUE);
-#else
-			printk("is there extern hub on hsic port???\n");
-#endif
+		    NX_GPIO_SetPadFunction( 4, 22, 0 );
+		    NX_GPIO_SetOutputEnable( 4, 22, CTRUE );
+		    NX_GPIO_SetPullEnable( 4, 22, NX_GPIO_PULL_UP );
+		    NX_GPIO_SetOutputValue( 4, 22, CTRUE );
+		    udelay( 100 );
+		    NX_GPIO_SetOutputValue( 4, 22, CFALSE );
+		    udelay( 100 );
+		    NX_GPIO_SetOutputValue( 4, 22, CTRUE );
 		}
 
 		writel(readl(SOC_VA_RSTCON + 0x04) |  (1<<24), SOC_VA_RSTCON + 0x04);			// reset off

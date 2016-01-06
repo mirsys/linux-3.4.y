@@ -146,8 +146,8 @@ CBOOL NX_CAN_Initialize( void );
 U32   NX_CAN_GetNumberOfModule( void );
 
 U32   NX_CAN_GetSizeOfRegisterSet( void );
-void  NX_CAN_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void* NX_CAN_GetBaseAddress( U32 ModuleIndex );
+void  NX_CAN_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_CAN_GetBaseAddress( U32 ModuleIndex );
 U32   NX_CAN_GetPhysicalAddress ( U32 ModuleIndex );
 CBOOL NX_CAN_OpenModule( U32 ModuleIndex );
 CBOOL NX_CAN_CloseModule( U32 ModuleIndex );

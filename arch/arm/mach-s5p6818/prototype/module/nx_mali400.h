@@ -62,9 +62,8 @@ CBOOL NX_MALI400_Initialize( void );
 U32   NX_MALI400_GetNumberOfModule( void );
 
 U32   NX_MALI400_GetSizeOfRegisterSet( void );
-
-void  NX_MALI400_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*  NX_MALI400_GetBaseAddress( U32 ModuleIndex );
+void  NX_MALI400_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_MALI400_GetBaseAddress( U32 ModuleIndex );
 U32   NX_MALI400_GetPhysicalAddress ( U32 ModuleIndex );
 CBOOL NX_MALI400_OpenModule( U32 ModuleIndex );
 CBOOL NX_MALI400_CloseModule( U32 ModuleIndex );

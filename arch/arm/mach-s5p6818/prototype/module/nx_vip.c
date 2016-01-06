@@ -34,8 +34,8 @@ static	NX_VIP_RegisterSet *__g_pRegister[NUMBER_OF_VIP_MODULE];
 //------------------------------------------------------------------------------
 /**
  *	@brief	Initialize of prototype enviroment & local variables.
- *	@return  CTRUE	indicate that Initialize is successed.
- *			 CFALSE	indicate that Initialize is failed.
+ *	@return \b CTRUE	indicate that Initialize is successed.\n
+ *			\b CFALSE	indicate that Initialize is failed.
  *	@see	NX_VIP_GetNumberOfModule
  */
 CBOOL	NX_VIP_Initialize( void )
@@ -54,8 +54,9 @@ CBOOL	NX_VIP_Initialize( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get number of modules in the chip.
- *	@return		Module's number. 
+ *	@return		Module's number. \n
  *				It is equal to NUMBER_OF_VIP_MODULE in <nx_chip.h>.
+ *	@see		NX_VIP_Initialize
  */
 U32		NX_VIP_GetNumberOfModule( void )
 {
@@ -66,6 +67,10 @@ U32		NX_VIP_GetNumberOfModule( void )
 /**
  *	@brief		Get a size, in byte, of register set.
  *	@return		Size of module's register set.
+ *	@see		NX_VIP_GetPhysicalAddress,
+ *				NX_VIP_SetBaseAddress,			NX_VIP_GetBaseAddress,
+ *				NX_VIP_OpenModule,				NX_VIP_CloseModule,
+ *				NX_VIP_CheckBusy,
  */
 U32		NX_VIP_GetSizeOfRegisterSet( void )
 {
@@ -77,8 +82,12 @@ U32		NX_VIP_GetSizeOfRegisterSet( void )
  *	@brief		Set a base address of register set.
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
+ *	@see		NX_VIP_GetPhysicalAddress,		NX_VIP_GetSizeOfRegisterSet,
+ *				NX_VIP_GetBaseAddress,
+ *				NX_VIP_OpenModule,				NX_VIP_CloseModule,
+ *				NX_VIP_CheckBusy,
  */
-void	NX_VIP_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
+void	NX_VIP_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
     NX_ASSERT( NUMBER_OF_VIP_MODULE > ModuleIndex );
@@ -89,18 +98,26 @@ void	NX_VIP_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
 /**
  *	@brief		Get a base address of register set
  *	@return		Module's base address.
+ *	@see		NX_VIP_GetPhysicalAddress,		NX_VIP_GetSizeOfRegisterSet,
+ *				NX_VIP_SetBaseAddress,
+ *				NX_VIP_OpenModule,				NX_VIP_CloseModule,
+ *				NX_VIP_CheckBusy,
  */
-void*	NX_VIP_GetBaseAddress( U32 ModuleIndex )
+U32		NX_VIP_GetBaseAddress( U32 ModuleIndex )
 {
     NX_ASSERT( NUMBER_OF_VIP_MODULE > ModuleIndex );
-	return (void*)__g_pRegister[ModuleIndex];
+	return (U32)__g_pRegister[ModuleIndex];
 }
 
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's physical address.
- *	@return		Module's physical address. 
+ *	@return		Module's physical address. \n
  *				It is equal to PHY_BASEADDR_VIP?_MODULE in <nx_chip.h>.
+ *	@see		NX_VIP_GetSizeOfRegisterSet,
+ *				NX_VIP_SetBaseAddress,			NX_VIP_GetBaseAddress,
+ *				NX_VIP_OpenModule,				NX_VIP_CloseModule,
+ *				NX_VIP_CheckBusy,
  */
 U32		NX_VIP_GetPhysicalAddress( U32 ModuleIndex )
 {
@@ -116,8 +133,12 @@ U32		NX_VIP_GetPhysicalAddress( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize selected modules with default value.
- *	@return		 CTRUE	indicate that Initialize is successed. 
- *				 CFALSE	indicate that Initialize is failed.
+ *	@return		\b CTRUE	indicate that Initialize is successed. \n
+ *				\b CFALSE	indicate that Initialize is failed.
+ *	@see		NX_VIP_GetPhysicalAddress,		NX_VIP_GetSizeOfRegisterSet,
+ *				NX_VIP_SetBaseAddress,			NX_VIP_GetBaseAddress,
+ *				NX_VIP_CloseModule,
+ *				NX_VIP_CheckBusy,
  */
 CBOOL	NX_VIP_OpenModule( U32 ModuleIndex )
 {
@@ -130,8 +151,12 @@ CBOOL	NX_VIP_OpenModule( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Deinitialize selected module to the proper stage.
- *	@return		 CTRUE	indicate that Deinitialize is successed. 
- *				 CFALSE	indicate that Deinitialize is failed.
+ *	@return		\b CTRUE	indicate that Deinitialize is successed. \n
+ *				\b CFALSE	indicate that Deinitialize is failed.
+ *	@see		NX_VIP_GetPhysicalAddress,		NX_VIP_GetSizeOfRegisterSet,
+ *				NX_VIP_SetBaseAddress,			NX_VIP_GetBaseAddress,
+ *				NX_VIP_OpenModule,
+ *				NX_VIP_CheckBusy,
  */
 CBOOL	NX_VIP_CloseModule( U32 ModuleIndex )
 {
@@ -144,8 +169,11 @@ CBOOL	NX_VIP_CloseModule( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether the selected modules is busy or not.
- *	@return		 CTRUE	indicate that Module is Busy. 
- *				 CFALSE	indicate that Module is NOT Busy.
+ *	@return		\b CTRUE	indicate that Module is Busy. \n
+ *				\b CFALSE	indicate that Module is NOT Busy.
+ *	@see		NX_VIP_GetPhysicalAddress,		NX_VIP_GetSizeOfRegisterSet,
+ *				NX_VIP_SetBaseAddress,			NX_VIP_GetBaseAddress,
+ *				NX_VIP_OpenModule,				NX_VIP_CloseModule,
  */
 CBOOL	NX_VIP_CheckBusy( U32 ModuleIndex )
 {
@@ -161,8 +189,14 @@ CBOOL	NX_VIP_CheckBusy( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's clock index.
- *	@return		Module's clock index.
+ *	@return		Module's clock index.\n
  *				It is equal to CLOCKINDEX_OF_VIP?_MODULE in <nx_chip.h>.
+ *	@see		NX_CLKGEN_SetClockDivisorEnable,
+ *				NX_CLKGEN_GetClockDivisorEnable,
+ *				NX_CLKGEN_SetClockSource,
+ *				NX_CLKGEN_GetClockSource,
+ *				NX_CLKGEN_SetClockDivisor,
+ *				NX_CLKGEN_GetClockDivisor
  */
 U32 NX_VIP_GetClockNumber ( U32 ModuleIndex )
 {
@@ -178,8 +212,11 @@ U32 NX_VIP_GetClockNumber ( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's reset index.
- *	@return		Module's reset index.
+ *	@return		Module's reset index.\n
  *				It is equal to RESETINDEX_OF_VIP?_MODULE_i_nRST in <nx_chip.h>.
+ *	@see		NX_RSTCON_Enter,
+ *				NX_RSTCON_Leave,
+ *				NX_RSTCON_GetStatus
  */
 U32 NX_VIP_GetResetNumber ( U32 ModuleIndex )
 {
@@ -199,8 +236,17 @@ U32 NX_VIP_GetResetNumber ( U32 ModuleIndex )
 /**
  *	@brief		Get a interrupt number for the interrupt controller.
  *	@param[in]	ModuleIndex		an index of module.
- *	@return		A interrupt number.
+ *	@return		A interrupt number.\n
  *				It is equal to INTNUM_OF_VIP?_MODULE in <nx_chip.h>.
+ *	@see		NX_VIP_SetInterruptEnable,
+ *				NX_VIP_GetInterruptEnable,
+ *				NX_VIP_GetInterruptPending,
+ *				NX_VIP_ClearInterruptPending,
+ *				NX_VIP_SetInterruptEnableAll,
+ *				NX_VIP_GetInterruptEnableAll,
+ *				NX_VIP_GetInterruptPendingAll,
+ *				NX_VIP_ClearInterruptPendingAll,
+ *				NX_VIP_GetInterruptPendingNumber
  */
 U32 	NX_VIP_GetInterruptNumber( U32 ModuleIndex )
 {
@@ -216,11 +262,20 @@ U32 	NX_VIP_GetInterruptNumber( U32 ModuleIndex )
 /**
  *	@brief		Set a specified interrupt to be enabled or disabled.
  *	@param[in]	ModuleIndex		an index of module.
- *	@param[in]	IntNum	a interrupt Number .
+ *	@param[in]	IntNum	a interrupt Number .\n
  *						refer to NX_VIP_INTCH_xxx in <nx_vip.h>
- *	@param[in]	Enable	 Set as CTRUE to enable a specified interrupt. 
- *						 Set as CFALSE to disable a specified interrupt.
+ *	@param[in]	Enable	\b Set as CTRUE to enable a specified interrupt. \r\n
+ *						\b Set as CFALSE to disable a specified interrupt.
  *	@return		None.
+ *	@see		NX_VIP_GetInterruptNumber,
+ *				NX_VIP_GetInterruptEnable,
+ *				NX_VIP_GetInterruptPending,
+ *				NX_VIP_ClearInterruptPending,
+ *				NX_VIP_SetInterruptEnableAll,
+ *				NX_VIP_GetInterruptEnableAll,
+ *				NX_VIP_GetInterruptPendingAll,
+ *				NX_VIP_ClearInterruptPendingAll,
+ *				NX_VIP_GetInterruptPendingNumber
  */
 void	NX_VIP_SetInterruptEnable( U32 ModuleIndex, U32 IntNum, CBOOL Enable )
 {
@@ -265,10 +320,19 @@ void	NX_VIP_SetInterruptEnable( U32 ModuleIndex, U32 IntNum, CBOOL Enable )
 /**
  *	@brief		Indicates whether a specified interrupt is enabled or disabled.
  *	@param[in]	ModuleIndex		an index of module.
- *	@param[in]	IntNum	a interrupt Number.
+ *	@param[in]	IntNum	a interrupt Number.\n
  *						refer to NX_VIP_INTCH_xxx in <nx_vip.h>
- *	@return		 CTRUE	indicates that a specified interrupt is enabled. 
- *				 CFALSE	indicates that a specified interrupt is disabled.
+ *	@return		\b CTRUE	indicates that a specified interrupt is enabled. \r\n
+ *				\b CFALSE	indicates that a specified interrupt is disabled.
+ *	@see		NX_VIP_GetInterruptNumber,
+ *				NX_VIP_SetInterruptEnable,
+ *				NX_VIP_GetInterruptPending,
+ *				NX_VIP_ClearInterruptPending,
+ *				NX_VIP_SetInterruptEnableAll,
+ *				NX_VIP_GetInterruptEnableAll,
+ *				NX_VIP_GetInterruptPendingAll,
+ *				NX_VIP_ClearInterruptPendingAll,
+ *				NX_VIP_GetInterruptPendingNumber
 
  */
 CBOOL	NX_VIP_GetInterruptEnable( U32 ModuleIndex, U32 IntNum )
@@ -292,10 +356,19 @@ CBOOL	NX_VIP_GetInterruptEnable( U32 ModuleIndex, U32 IntNum )
 /**
  *	@brief		Indicates whether a specified interrupt is pended or not
  *	@param[in]	ModuleIndex		an index of module.
- *	@param[in]	IntNum	a interrupt Number.
+ *	@param[in]	IntNum	a interrupt Number.\n
  *						refer to NX_VIP_INTCH_xxx in <nx_vip.h>
- *	@return		 CTRUE	indicates that a specified interrupt is pended. 
- *				 CFALSE	indicates that a specified interrupt is not pended.
+ *	@return		\b CTRUE	indicates that a specified interrupt is pended. \r\n
+ *				\b CFALSE	indicates that a specified interrupt is not pended.
+ *	@see		NX_VIP_GetInterruptNumber,
+ *				NX_VIP_SetInterruptEnable,
+ *				NX_VIP_GetInterruptEnable,
+ *				NX_VIP_ClearInterruptPending,
+ *				NX_VIP_SetInterruptEnableAll,
+ *				NX_VIP_GetInterruptEnableAll,
+ *				NX_VIP_GetInterruptPendingAll,
+ *				NX_VIP_ClearInterruptPendingAll,
+ *				NX_VIP_GetInterruptPendingNumber
 
  */
 CBOOL	NX_VIP_GetInterruptPending( U32 ModuleIndex, U32 IntNum )
@@ -319,9 +392,18 @@ CBOOL	NX_VIP_GetInterruptPending( U32 ModuleIndex, U32 IntNum )
 /**
  *	@brief		Clear a pending state of specified interrupt.
  *	@param[in]	ModuleIndex		an index of module.
- *	@param[in]	IntNum	a interrupt number.
+ *	@param[in]	IntNum	a interrupt number.\n
  *						refer to NX_VIP_INTCH_xxx in <nx_vip.h>
  *	@return		None.
+ *	@see		NX_VIP_GetInterruptNumber,
+ *				NX_VIP_SetInterruptEnable,
+ *				NX_VIP_GetInterruptEnable,
+ *				NX_VIP_GetInterruptPending,
+ *				NX_VIP_SetInterruptEnableAll,
+ *				NX_VIP_GetInterruptEnableAll,
+ *				NX_VIP_GetInterruptPendingAll,
+ *				NX_VIP_ClearInterruptPendingAll,
+ *				NX_VIP_GetInterruptPendingNumber
 
  */
 void	NX_VIP_ClearInterruptPending( U32 ModuleIndex, U32 IntNum )
@@ -360,9 +442,18 @@ void	NX_VIP_ClearInterruptPending( U32 ModuleIndex, U32 IntNum )
 /**
  *	@brief		Set all interrupts to be enabled or disabled.
  *	@param[in]	ModuleIndex		an index of module.
- *	@param[in]	Enable	 Set as CTRUE to enable all interrupts. 
- *						 Set as CFALSE to disable all interrupts.
+ *	@param[in]	Enable	\b Set as CTRUE to enable all interrupts. \r\n
+ *						\b Set as CFALSE to disable all interrupts.
  *	@return		None.
+ *	@see		NX_VIP_GetInterruptNumber,
+ *				NX_VIP_SetInterruptEnable,
+ *				NX_VIP_GetInterruptEnable,
+ *				NX_VIP_GetInterruptPending,
+ *				NX_VIP_ClearInterruptPending,
+ *				NX_VIP_GetInterruptEnableAll,
+ *				NX_VIP_GetInterruptPendingAll,
+ *				NX_VIP_ClearInterruptPendingAll,
+ *				NX_VIP_GetInterruptPendingNumber
 
  */
 void	NX_VIP_SetInterruptEnableAll( U32 ModuleIndex, CBOOL Enable )
@@ -396,8 +487,17 @@ void	NX_VIP_SetInterruptEnableAll( U32 ModuleIndex, CBOOL Enable )
 /**
  *	@brief		Indicates whether some of interrupts are enabled or not.
  *	@param[in]	ModuleIndex		an index of module.
- *	@return		 CTRUE	indicates that one or more interrupts are enabled. 
- *				 CFALSE	indicates that all interrupts are disabled.
+ *	@return		\b CTRUE	indicates that one or more interrupts are enabled. \r\n
+ *				\b CFALSE	indicates that all interrupts are disabled.
+ *	@see		NX_VIP_GetInterruptNumber,
+ *				NX_VIP_SetInterruptEnable,
+ *				NX_VIP_GetInterruptEnable,
+ *				NX_VIP_GetInterruptPending,
+ *				NX_VIP_ClearInterruptPending,
+ *				NX_VIP_SetInterruptEnableAll,
+ *				NX_VIP_GetInterruptPendingAll,
+ *				NX_VIP_ClearInterruptPendingAll,
+ *				NX_VIP_GetInterruptPendingNumber
 
  */
 CBOOL	NX_VIP_GetInterruptEnableAll( U32 ModuleIndex )
@@ -424,8 +524,17 @@ CBOOL	NX_VIP_GetInterruptEnableAll( U32 ModuleIndex )
 /**
  *	@brief		Indicates whether some of interrupts are pended or not.
  *	@param[in]	ModuleIndex		an index of module.
- *	@return		 CTRUE	indicates that one or more interrupts are pended. 
- *				 CFALSE	indicates that no interrupt is pended.
+ *	@return		\b CTRUE	indicates that one or more interrupts are pended. \r\n
+ *				\b CFALSE	indicates that no interrupt is pended.
+ *	@see		NX_VIP_GetInterruptNumber,
+ *				NX_VIP_SetInterruptEnable,
+ *				NX_VIP_GetInterruptEnable,
+ *				NX_VIP_GetInterruptPending,
+ *				NX_VIP_ClearInterruptPending,
+ *				NX_VIP_SetInterruptEnableAll,
+ *				NX_VIP_GetInterruptEnableAll,
+ *				NX_VIP_ClearInterruptPendingAll,
+ *				NX_VIP_GetInterruptPendingNumber
 
  */
 CBOOL	NX_VIP_GetInterruptPendingAll( U32 ModuleIndex )
@@ -452,6 +561,15 @@ CBOOL	NX_VIP_GetInterruptPendingAll( U32 ModuleIndex )
  *	@brief		Clear pending state of all interrupts.
  *	@param[in]	ModuleIndex		an index of module.
  *	@return		None.
+ *	@see		NX_VIP_GetInterruptNumber,
+ *				NX_VIP_SetInterruptEnable,
+ *				NX_VIP_GetInterruptEnable,
+ *				NX_VIP_GetInterruptPending,
+ *				NX_VIP_ClearInterruptPending,
+ *				NX_VIP_SetInterruptEnableAll,
+ *				NX_VIP_GetInterruptEnableAll,
+ *				NX_VIP_GetInterruptPendingAll,
+ *				NX_VIP_GetInterruptPendingNumber
 
  */
 void	NX_VIP_ClearInterruptPendingAll( U32 ModuleIndex )
@@ -483,8 +601,17 @@ void	NX_VIP_ClearInterruptPendingAll( U32 ModuleIndex )
 /**
  *	@brief		Get a interrupt number which has the most prority of pended interrupts.
  *	@param[in]	ModuleIndex		an index of module.
- *	@return		a interrupt number. A value of '-1' means that no interrupt is pended.
+ *	@return		a interrupt number. A value of '-1' means that no interrupt is pended.\n
  *				refer to NX_VIP_INTCH_xxx in <nx_vip.h>
+ *	@see		NX_VIP_GetInterruptNumber,
+ *				NX_VIP_SetInterruptEnable,
+ *				NX_VIP_GetInterruptEnable,
+ *				NX_VIP_GetInterruptPending,
+ *				NX_VIP_ClearInterruptPending,
+ *				NX_VIP_SetInterruptEnableAll,
+ *				NX_VIP_GetInterruptEnableAll,
+ *				NX_VIP_GetInterruptPendingAll,
+ *				NX_VIP_ClearInterruptPendingAll
 
  */
 S32		NX_VIP_GetInterruptPendingNumber( U32 ModuleIndex )	// -1 if None
@@ -613,6 +740,7 @@ void NX_VIP_EnablePAD ( U32 ModuleIndex, U32 ModeIndex )
  *	@param[in]	bClipEnb	Set it to CTRUE to enable Clipper.
  *	@param[in]	bDeciEnb	Set it to CTRUE to enable Decimator.
  *	@return		None
+ *	@see		NX_VIP_GetVIPEnable
  */
 void
 NX_VIP_SetVIPEnable
@@ -658,16 +786,17 @@ NX_VIP_SetVIPEnable
 /**
  *	@brief		Informs whether VIP controllers are enabled or disabled.
  *  @param[in]  ModuleIndex	An index of module ( 0 : VIP 0, 1 : VIP 1 ).
- *	@param[out] pbVIPEnb	Determines whether VIP is enabled or not.
+ *	@param[out] pbVIPEnb	Determines whether VIP is enabled or not.\n
  *							CTRUE = Enable, CFALSE = Disable.
- *	@param[out] pbSepEnb	Determines whether Separator is enabled or not.
+ *	@param[out] pbSepEnb	Determines whether Separator is enabled or not.\n
  *							CTRUE = Enable, CFALSE = Disable.
- *	@param[out] pbClipEnb	Determines whether Clipper is enabled or not.
+ *	@param[out] pbClipEnb	Determines whether Clipper is enabled or not.\n
  *							CTRUE = Enable, CFALSE = Disable.
- *	@param[out] pbDeciEnb	Determines whether Decimator is enabled or not.
+ *	@param[out] pbDeciEnb	Determines whether Decimator is enabled or not.\n
  *							CTRUE = Enable, CFALSE = Disable.
  *	@return		None.
  *	@remark		Arguments which does not required can be CNULL.
+ *	@see		NX_VIP_SetVIPEnable
  */
 void
 NX_VIP_GetVIPEnable
@@ -701,12 +830,13 @@ NX_VIP_GetVIPEnable
 /**
  *	@brief		Select VIP module's input port.
  *  @param[in]  ModuleIndex	An index of module ( 0 : VIP 0, 1 : VIP 1 ).
- *	@param[in]	InputPort	Select input port .
- *							- Port A : Use VIDCLK0, VIDHSYNC0, VIDVSYNC0, FIELD/DVALID, VID0 pin for connection to Video decoder. 
+ *	@param[in]	InputPort	Select input port \n.
+ *							- Port A : Use VIDCLK0, VIDHSYNC0, VIDVSYNC0, FIELD/DVALID, VID0 pin for connection to Video decoder. \n
  *							- Port B : Use VIDCLK1, VIDHSYNC1, VIDVSYNC1, SIPFIELD/DVALID, VID1 pin for connection to Video decoder.
  *	@return		None.
- *	@remark		NXP2120 only has one VIP module. but VIP module have 2 set GPIO for connection to video decoder. 
+ *	@remark		NXP2120 only has one VIP module. but VIP module have 2 set GPIO for connection to video decoder. \n
  *				so, Should select which pin use.
+ *	@see		NX_VIP_GetInputPort
  */
 void	NX_VIP_SetInputPort( U32 ModuleIndex, NX_VIP_INPUTPORT InputPort )
 {
@@ -726,8 +856,9 @@ void	NX_VIP_SetInputPort( U32 ModuleIndex, NX_VIP_INPUTPORT InputPort )
 /**
  *	@brief		Get selected input port of VIP modules.
  *  @param[in]  ModuleIndex	An index of module ( 0 : VIP 0, 1 : VIP 1 ).
- *	@return		NX_VIP_INPUTPORT_A	: Port A connected to VIP module(VIDCLK0, VIDHSYNC0, VIDVSYNC0, FIELD/DVALID, VID0). 
- *				NX_VIP_INPUTPORT_B	: Port B connected to VIP module(VIDCLK1, VIDHSYNC1, VIDVSYNC1, SIPFIELD/DVALID, VID1). 
+ *	@return		NX_VIP_INPUTPORT_A	: Port A connected to VIP module(VIDCLK0, VIDHSYNC0, VIDVSYNC0, FIELD/DVALID, VID0). \n
+ *				NX_VIP_INPUTPORT_B	: Port B connected to VIP module(VIDCLK1, VIDHSYNC1, VIDVSYNC1, SIPFIELD/DVALID, VID1). \n
+ *	@see		NX_VIP_SetInputPort
  */
 NX_VIP_INPUTPORT	NX_VIP_GetInputPort( U32 ModuleIndex )
 {
@@ -746,6 +877,7 @@ NX_VIP_INPUTPORT	NX_VIP_GetInputPort( U32 ModuleIndex )
  *	@param[in]	DataOrder	Specifies the input video data order.
  *	@param[in]	DataWidth	Specifies the input data width. 8 or 16 are only valid.
  *	@return		None
+ *	@see		NX_VIP_GetDataMode
  */
 void
 NX_VIP_SetDataMode
@@ -816,32 +948,32 @@ NX_VIP_GetDataMode
 /**
  *	@brief		Set configuration for sync generation.
  *  @param[in]  ModuleIndex	An index of module ( 0 : VIP 0, 1 : VIP 1 ).
- *	@param[in]	bExtSync	Specifies whether external H/V Sync signals are used or not.
+ *	@param[in]	bExtSync	Specifies whether external H/V Sync signals are used or not.\n
  *							CTRUE = External H/V Sync, CFALSE = H/V Sync in Embedded Sync.
 
- *	@param[in]	AVW		Specifies the active video width in clocks, 0 ~ 8190.
+ *	@param[in]	AVW		Specifies the active video width in clocks, 0 ~ 8190.\n
  *							This value must be a multiple of 2.
  *	@param[in]	AVH		Specifies the active video height in lines. 0 ~ 2047.
 
- *	@param[in]	HSW		Specifies the horizontal sync width in clocks.
+ *	@param[in]	HSW		Specifies the horizontal sync width in clocks.\n
  *							This argument is only valid when bExtSync is CFALSE.
- *	@param[in]	HFP		Specifies the horizontal sync front porch in clocks.
- *							This value must be greater than 7.
+ *	@param[in]	HFP		Specifies the horizontal sync front porch in clocks.\n
+ *							This value must be greater than 7.\n
  *							This argument is only valid when bExtSync is CFALSE.
  *	@param[in]	HBP		Specifies the horizontal sync back porch in clocks.
- *							This value must be greater than 0.
+ *							This value must be greater than 0.\n
  *							This argument is only valid when bExtSync is CTRUE.
 
- *	@param[in]	VSW		Specifies the vertical sync width in lines.
+ *	@param[in]	VSW		Specifies the vertical sync width in lines.\n
  *							This argument is only valid when bExtSync is CFALSE.
- *	@param[in]	VFP		Specifies the vertical sync front porch in lines.
+ *	@param[in]	VFP		Specifies the vertical sync front porch in lines.\n
  *							This argument is only valid when bExtSync is CFALSE.
- *	@param[in]	VBP		Specifies the vertical sync back porch in lines.
+ *	@param[in]	VBP		Specifies the vertical sync back porch in lines.\n
  *							This argument is only valid when bExtSync is CTRUE.
 
  *	@return		None.
- *	@remark		You have to set sync parameters even if Embedded sync is used.
- *				A sum of arguments(HSW + HFP + HBP or VSW + VFP + VBP) has to be less than 65536.
+ *	@remark		You have to set sync parameters even if Embedded sync is used.\n
+ *				A sum of arguments(HSW + HFP + HBP or VSW + VFP + VBP) has to be less than 65536.\n
  *				See follwing figure for more details.
  *	@code
  *

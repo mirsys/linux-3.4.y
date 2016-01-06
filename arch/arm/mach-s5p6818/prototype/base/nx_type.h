@@ -84,19 +84,12 @@ typedef S32	CBOOL;							///< boolean type is 32bits signed integer
 /// of Basic type then it's occur compile type error
 //------------------------------------------------------------------------------
 /// @{
-#ifdef  NX_DEBUG
 #ifndef __GNUC__
 #define NX_CASSERT(expr) typedef char __NX_C_ASSERT__[(expr)?1:-1]
 #else
 #define NX_CASSERT_CONCAT_(a, b) a##b
 #define NX_CASSERT_CONCAT(a, b) NX_CASSERT_CONCAT_(a, b)
 #define NX_CASSERT(expr) typedef char NX_CASSERT_CONCAT(__NX_C_ASSERT__,__LINE__)[(expr)?1:-1]
-#endif
-
-#else
-#define NX_CASSERT_CONCAT_(a, b) 
-#define NX_CASSERT_CONCAT(a, b) 
-#define NX_CASSERT(expr)
 #endif
 
 NX_CASSERT	(sizeof(S8)		== 1);

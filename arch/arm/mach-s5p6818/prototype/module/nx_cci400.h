@@ -97,9 +97,8 @@ U32		NX_CCI400_GetNumberOfModule( void );
 //@{
 U32		NX_CCI400_GetPhysicalAddress( void );
 U32		NX_CCI400_GetSizeOfRegisterSet( void );
-
-void	NX_CCI400_SetBaseAddress( void* BaseAddress );
-void*	NX_CCI400_GetBaseAddress( void );
+void	NX_CCI400_SetBaseAddress( U32 BaseAddress );
+U32		NX_CCI400_GetBaseAddress( void );
 CBOOL	NX_CCI400_OpenModule( void );
 CBOOL	NX_CCI400_CloseModule( void );
 CBOOL	NX_CCI400_CheckBusy( void );

@@ -370,20 +370,6 @@ config WDT_SYSFS
 	depends on NXP_WDT
 	default n
 
-config WDT_TASK
-	bool "do keepalive using watchdog task for cpu reset in task hung state"
-	depends on NXP_WDT
-	default n
-
-config DEFAULT_WDT_TASK_TIMEOUT
-    int "Default timeout for hung task detection (in seconds) max:10sec"
-	depends on NXP_WDT && WDT_TASK
-	default 10
-    help 
-      This option controls the default timeout (in seconds) used
-      to determine when a task has become non-responsive and should
-      be considered hung.
-
 # AVR32 Architecture
 
 config AT32AP700X_WDT

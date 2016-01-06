@@ -120,7 +120,7 @@ U32		NX_DISPLAYTOP_GetSizeOfRegisterSet( void )
  *				NX_DISPLAYTOP_OpenModule,				NX_DISPLAYTOP_CloseModule,
  *				NX_DISPLAYTOP_CheckBusy,				NX_DISPLAYTOP_CanPowerDown
  */
-void	NX_DISPLAYTOP_SetBaseAddress( void* BaseAddress )
+void	NX_DISPLAYTOP_SetBaseAddress( U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
 	__g_ModuleVariables.pRegister = (struct NX_DISPLAYTOP_RegisterSet *)BaseAddress;
@@ -136,10 +136,11 @@ void	NX_DISPLAYTOP_SetBaseAddress( void* BaseAddress )
  *				NX_DISPLAYTOP_OpenModule,				NX_DISPLAYTOP_CloseModule,
  *				NX_DISPLAYTOP_CheckBusy,				NX_DISPLAYTOP_CanPowerDown
  */
-void*	NX_DISPLAYTOP_GetBaseAddress( void )
+U32		NX_DISPLAYTOP_GetBaseAddress( void )
 {
 
-	return (void*)__g_ModuleVariables.pRegister;
+
+	return (U32)__g_ModuleVariables.pRegister;
 }
 
 
@@ -413,3 +414,19 @@ void	NX_DISPLAYTOP_SetLCDIF_i80Enb( CBOOL Enb )
 }
 
 
+//enum PrimPAD_MUX_Index{ // Primary TFT MUX
+//	PADMUX_PrimaryMLC = 0,
+//	PADMUX_PrimaryMPU = 1,
+//	PADMUX_SecondaryMLC = 2,
+//	PADMUX_ResolutionConv = 3,
+//};
+//enum PADCLK_Config {
+//	PADCLK_CLK = 0,
+//	PADCLK_InvCLK = 1,
+//	PADCLK_ReservedCLK = 2,
+//	PADCLK_ReservedInvCLK = 3,
+//	PADCLK_CLK_div2_0   = 4,
+//	PADCLK_CLK_div2_90  = 5,
+//	PADCLK_CLK_div2_180 = 6,
+//	PADCLK_CLK_div2_270 = 7,
+//};

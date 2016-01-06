@@ -336,40 +336,8 @@ choice
 		  Say Y here if you want the debug print routines to direct
 		  their output to DEBUG UARTn. The port must have been initialised
 		  by the boot-loader before use.
-	
-endchoice
-
-choice
-	prompt "SLsiAP debugging port"
-   		default DEBUG_NXP_UART_CH0
-		depends on DEBUG_NXP_UART
-  
-	config DEBUG_NXP_UART_CH0
-		bool "UART CH0"
-		depends on DEBUG_NXP_UART
-
-	config DEBUG_NXP_UART_CH1
-		bool "UART CH1"
-		depends on DEBUG_NXP_UART
-
-	config DEBUG_NXP_UART_CH2
-		bool "UART CH2"
-		depends on DEBUG_NXP_UART
-
-	config DEBUG_NXP_UART_CH3
-		bool "UART CH3"
-		depends on DEBUG_NXP_UART
-		
-	config DEBUG_NXP_UART_CH4
-		bool "UART CH4"
-		depends on DEBUG_NXP_UART
-
-	config DEBUG_NXP_UART_CH5
-		bool "UART CH3"
-		depends on DEBUG_NXP_UART
 
 endchoice
-
 
 config EARLY_PRINTK
 	bool "Early printk"

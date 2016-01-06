@@ -22,23 +22,16 @@
 
 #include "media/exchange.h"
 
-#if defined (__COMPILE_MODE_X64__)
-    /* nexell soc headers */
-    #include <nexell/platform.h>
-    #include <nexell/soc-s5pxx18.h>
-    #include <nexell/nxp-ftl-nand.h>
-#else
-    #include <mach/platform.h>
-    #include <mach/devices.h>
-    #include <mach/soc.h>
-#endif
-
+/* nexell soc headers */
+#include <mach/platform.h>
+#include <mach/devices.h>
+#include <mach/soc.h>
 
 /******************************************************************************
  * Optimize Option
  ******************************************************************************/
 #if defined (__COMPILE_MODE_BEST_DEBUGGING__)
-//#pragma GCC push_options
+#pragma GCC push_options
 #pragma GCC optimize("O0")
 #endif
 
@@ -53,11 +46,7 @@ static u_int mio_major = 0;
  * Block Device Operation
  ******************************************************************************/
 static int mio_bdev_open(struct block_device * _bdev, fmode_t _mode);
-#if defined (__COMPILE_MODE_X64__)
-static void mio_bdev_close(struct gendisk * _disk, fmode_t _mode);
-#else
 static int mio_bdev_close(struct gendisk * _disk, fmode_t _mode);
-#endif
 static int mio_bdev_ioctl(struct block_device * _bdev, fmode_t _mode, unsigned int _cmd, unsigned long _arg);
 
 static struct block_device_operations mio_bdev_fops =
@@ -74,12 +63,9 @@ static struct block_device_operations mio_bdev_fops =
 DEFINE_SEMAPHORE(mio_mutex);
 
 static struct mio_state io_state;
+static struct mio_device mio_dev;
 
-#if defined (__COMPILE_MODE_X64__)
-struct nxp_ftl_nand nxp_nand;
-#else
 unsigned long nxp_ftl_start_block = CFG_NAND_FTL_START_BLOCK;
-#endif
 
 /******************************************************************************
  *
@@ -96,17 +82,10 @@ static int mio_bdev_open(struct block_device * _bdev, fmode_t _mode)
     return 0;
 }
 
-#if defined (__COMPILE_MODE_X64__)
-static void mio_bdev_close(struct gendisk * disk, fmode_t _mode)
-{
-    return;
-}
-#else
 static int mio_bdev_close(struct gendisk * disk, fmode_t _mode)
 {
     return 0;
 }
-#endif
 
 static int mio_bdev_ioctl(struct block_device * _bdev, fmode_t _mode, unsigned int _cmd, unsigned long _arg)
 {
@@ -133,7 +112,7 @@ static int mio_background_thread(void * _arg)
         Exchange.sys.fnSpor();
 
         io_state->background.status = MIO_BG_SLEEP;
-        wait_event_interruptible_timeout(io_state->background.wake.q, io_state->background.wake.cnt, HZ/10); // Wake-Up Every 100 ms
+        wait_event_timeout(io_state->background.wake.q, io_state->background.wake.cnt, HZ/10); // Wake-Up Every 100 ms
         io_state->background.status = MIO_BG_IDLE;
 
         if (io_state->power.suspending)
@@ -184,15 +163,7 @@ static int mio_background_thread(void * _arg)
             {
                 if (!io_state->power.suspending)
                 {
-#ifdef TRANS_USING_WQ
-#ifdef USING_WQ_THREAD
-					queue_kthread_work(&mio_dev.io_state->io_worker, &io_state->io_work);
-#else
-					queue_work(io_state->wq, &io_state->work);
-#endif /* USING_WQ_THREAD */
-#else
                     wake_up_process(io_state->transaction.thread);
-#endif /* TRANS_USING_WQ */
                 }
             }
         }
@@ -422,16 +393,11 @@ static int mio_transaction(struct request * _req, struct mio_state * _io_state)
 /******************************************************************************
  *
  ******************************************************************************/
-#ifndef TRANS_USING_WQ
 static int mio_transaction_thread(void * _arg)
 {
     struct mio_state * io_state = mio_dev.io_state;
     struct request_queue * rq = io_state->transaction.rq;
     struct request * req = NULL;
-
-	/* Scheduling */
-	//struct sched_param param = { .sched_priority = 50 };
-	//sched_setscheduler(current, SCHED_FIFO, &param);
 
     if (Exchange.debug.misc.block_thread) { Exchange.sys.fn.print("MIO.BLOCK: mio_transaction_thread() Start\n"); }
 
@@ -478,28 +444,12 @@ static int mio_transaction_thread(void * _arg)
 
             spin_unlock_irq(rq->queue_lock);
             {
-				#ifdef __MIO_UNIT_TEST_SLEEP__
-				ktime_t t1;
-				s64 ns = 0;
-				#endif
                 io_state->transaction.status = MIO_SCHEDULED;
 
 #if defined (__COMPILE_MODE_ELAPSE_T__)
                 if (Exchange.sys.fn.elapse_t_start) { Exchange.sys.fn.elapse_t_start(ELAPSE_T_TRANSACTION_THREAD_SCHEDULED); }
 #endif
-				#ifdef __MIO_UNIT_TEST_SLEEP__
-				t1 = ktime_get();
-				#endif
-
-				wait_event_interruptible_timeout(io_state->transaction.wake.q, io_state->transaction.wake.cnt, HZ/10);
-
-				#ifdef __MIO_UNIT_TEST_SLEEP__
-				ns = ktime_to_ns(ktime_sub(ktime_get(), t1));
-				ns = div64_u64(ns, 1000L * 1000L);
-
-				if (ns >= (HZ/10 * 2))
-					printk("%s: sleeping too long!!! (req: %d, elapse: %lld)\n", __func__, HZ/10, ns);
-				#endif
+                wait_event_timeout(io_state->transaction.wake.q, io_state->transaction.wake.cnt, HZ/10);
 
 #if defined (__COMPILE_MODE_ELAPSE_T__)
                 if (Exchange.sys.fn.elapse_t_end) { Exchange.sys.fn.elapse_t_end(ELAPSE_T_TRANSACTION_THREAD_SCHEDULED); }
@@ -553,7 +503,6 @@ static int mio_transaction_thread(void * _arg)
 
     return 0;
 }
-#endif
 
 /******************************************************************************
  *
@@ -584,16 +533,6 @@ static void mio_request_fetch(struct request_queue * _q)
     }
     else
     {
-#ifdef TRANS_USING_WQ
-
-#ifndef USING_WQ_THREAD
-		queue_work(io_state->wq, &io_state->work);
-#else
-		queue_kthread_work(&mio_dev.io_state->io_worker, &io_state->io_work);
-#endif
-
-#else
-		int ret;
         // Wake Up Background Thread for Suspend Resume
         if (!io_state->power.suspending && (MIO_BG_SCHEDULED == io_state->background.status))
         {
@@ -602,8 +541,7 @@ static void mio_request_fetch(struct request_queue * _q)
 
         // Wake Up Transaction Thread
         io_state->transaction.wake.cnt += 1;
-        ret = wake_up_process(io_state->transaction.thread);
-#endif /* TRANS_USING_WQ */
+        wake_up_process(io_state->transaction.thread);
     }
 }
 
@@ -628,6 +566,15 @@ static void mio_mutex_lock(void)
 static void mio_mutext_unlock(void)
 {
     mutex_unlock(&mio_dev.io_state->transaction.lock.m);
+}
+
+static void mio_elapse_t_init(void)
+{
+    memset(Exchange.debug.elapse_t.sum, 0x00, sizeof(unsigned long long) * ELAPSE_T_MAX);
+    memset(Exchange.debug.elapse_t.avg, 0x00, sizeof(unsigned long long) * ELAPSE_T_MAX);
+    memset(Exchange.debug.elapse_t.cnt, 0x00, sizeof(unsigned long long) * ELAPSE_T_MAX);
+    memset(Exchange.debug.elapse_t.min, 0xFF, sizeof(unsigned long long) * ELAPSE_T_MAX);
+    memset(Exchange.debug.elapse_t.max, 0x00, sizeof(unsigned long long) * ELAPSE_T_MAX);
 }
 
 /******************************************************************************
@@ -715,17 +662,6 @@ static unsigned char mio_elapse_t_condition(int _i)
     return measure_condition;
 }
 
-static void mio_elapse_t_init(void)
-{
-    Exchange.debug.elapse_t.sum_roundup = 1;
-
-    memset(Exchange.debug.elapse_t.sum, 0x00, sizeof(unsigned long long) * ELAPSE_T_MAX);
-    memset(Exchange.debug.elapse_t.avg, 0x00, sizeof(unsigned long long) * ELAPSE_T_MAX);
-    memset(Exchange.debug.elapse_t.cnt, 0x00, sizeof(unsigned long long) * ELAPSE_T_MAX);
-    memset(Exchange.debug.elapse_t.min, 0xFF, sizeof(unsigned long long) * ELAPSE_T_MAX);
-    memset(Exchange.debug.elapse_t.max, 0x00, sizeof(unsigned long long) * ELAPSE_T_MAX);
-}
-
 static void mio_elapse_t_start(int _i)
 {
     if (mio_elapse_t_condition(_i))
@@ -740,20 +676,6 @@ static void mio_elapse_t_end(int _i)
     {
         measure_t.t2[_i] = ktime_get();
         measure_t.dt[_i].tv64 = ktime_to_ns(ktime_sub(measure_t.t2[_i], measure_t.t1[_i]));
-
-        // Roll Over cnt or sum
-        if (((Exchange.debug.elapse_t.cnt[_i] + 1) < Exchange.debug.elapse_t.cnt[_i]) || ((Exchange.debug.elapse_t.sum[_i] + measure_t.dt[_i].tv64) < Exchange.debug.elapse_t.sum[_i]))
-        {
-            int i = 0;
-
-            for (i = 0; i < ELAPSE_T_MAX; i++)
-            {
-                Exchange.sys.fn.div64(Exchange.debug.elapse_t.cnt[_i], 10);
-                Exchange.sys.fn.div64(Exchange.debug.elapse_t.sum[_i], 10);
-            }
-
-            Exchange.debug.elapse_t.sum_roundup *= 10;
-        }
 
         Exchange.debug.elapse_t.cnt[_i] += 1;
         Exchange.debug.elapse_t.sum[_i] += measure_t.dt[_i].tv64;
@@ -785,144 +707,6 @@ static void mio_elapse_t_io_measure_end(int _rw, int _r, int _w)
     }
 }
 #endif
-
-#ifdef TRANS_USING_WQ
-#ifdef USING_WQ_THREAD
-static void mio_trans_work(struct kthread_work *work)
-#else
-static void mio_trans_work(struct work_struct *work)
-#endif
-{
-    struct mio_state * io_state = mio_dev.io_state;
-    struct request_queue * rq = io_state->transaction.rq;
-
-	struct request *req = NULL;
-	int background_done = 0;
-
-	spin_lock_irq(rq->queue_lock);
-
-	while (1) {
-		int res;
-
-		io_state->bg_stop = false;
-		if (!req && !(req = blk_fetch_request(rq))) {
-			if (!background_done)
-			//if (io_state->background && !background_done)
-			{
-				spin_unlock_irq(rq->queue_lock);
-				mio_mutex_lock();
-				// Wake Up Background Thread for Suspend Resume
-				if (!io_state->power.suspending && (MIO_BG_SCHEDULED == io_state->background.status))
-				{
-					wake_up_process(io_state->background.thread);
-				}
-				mio_mutext_unlock();
-				spin_lock_irq(rq->queue_lock);
-				/*
-				 * Do background processing just once per idle
-				 * period.
-				 */
-				background_done = !io_state->bg_stop;
-				continue;
-			}
-			break;
-		}
-
-		spin_unlock_irq(rq->queue_lock);
-
-		mio_mutex_lock();
-		res = mio_transaction(req, io_state);
-		mio_mutext_unlock();
-
-		spin_lock_irq(rq->queue_lock);
-
-		if (!__blk_end_request_cur(req, res))
-			req = NULL;
-
-		background_done = 0;
-	}
-
-	spin_unlock_irq(rq->queue_lock);
-}
-#endif /* TRANS_USING_WQ */
-
-
-/******************************************************************************
- *
- ******************************************************************************/
-#ifdef __MIO_UNIT_TEST_THREAD__
-struct unit_test_thread {
-	struct task_struct *task;
-};
-
-static DEFINE_PER_CPU(struct unit_test_thread, unit_test_info);
-
-extern void NFC_PHY_tDelay(unsigned int _tDelay);
-static int mio_unit_test(void *u)
-{
-	ktime_t w1, w2;
-	long tout = HZ;
-	s64 ns = 0, w_ns = 0;
-
-
-	w1 = ktime_get();
-
-	while (!kthread_should_stop()) {
-		int i = 30;
-
-		while (i--)
-		{
-			ktime_t t1, t2;
-
-			set_current_state(TASK_UNINTERRUPTIBLE);
-			t1 = ktime_get();
-			schedule_timeout(tout);
-			//NFC_PHY_tDelay(NSEC_PER_SEC);
-			t2 = ktime_get();
-
-			ns += ktime_to_ns(ktime_sub(t2, t1));
-		}
-
-		break;
-	}
-
-	w2 = ktime_get();
-	w_ns += ktime_to_ns(ktime_sub(w2, w1));
-
-	printk(" I'm cpu.%d. loop: %lld, total: %lld \n", raw_smp_processor_id(), ns, w_ns);
-
-	return 0;
-}
-
-static int mio_unit_test_prepare(void)
-{
-	struct task_struct *p;
-	struct unit_test_thread *utest;
-	int cpu;
-
-	for_each_possible_cpu(cpu)
-	{
-		p = kthread_create(mio_unit_test, NULL, "mio_unit_test:%d", cpu);
-		if (IS_ERR(p)) {
-			pr_err("Mio unit test thread for cpu.%d create failed.\n", cpu);
-			return PTR_ERR(p);
-		}
-
-		utest = &per_cpu(unit_test_info, cpu);
-		utest->task = p;
-
-		kthread_bind(p, cpu);
-		wake_up_process(p);
-	}
-
-	return 0;
-}
-#else
-void mio_unit_test_prepare(void)
-{
-}
-#endif /* __MIO_UNIT_TEST_THREAD__ */
-
 
 /******************************************************************************
  *
@@ -1053,8 +837,6 @@ static int __init mio_init(void)
         /**********************************************************************
          * KThreads
          **********************************************************************/
-
-#ifndef TRANS_USING_WQ
 //#define THREAD_BIND_TO_CORE
 
         if (NULL == mio_dev.io_state->transaction.thread)
@@ -1074,11 +856,9 @@ static int __init mio_init(void)
 #if defined (THREAD_BIND_TO_CORE)
             // get_cpu() ÈÄ¿¡ put_cpu()
             kthread_bind(mio_dev.io_state->transaction.thread, 0);
-
             wake_up_process(mio_dev.io_state->transaction.thread);
 #endif
         }
-#endif /* TRANS_USING_WQ */
 
         if (NULL == mio_dev.io_state->background.thread)
         {
@@ -1087,10 +867,7 @@ static int __init mio_init(void)
             if (IS_ERR(mio_dev.io_state->background.thread))
             {
                 mio_dev.io_state->background.thread = NULL;
-
-#ifndef TRANS_USING_WQ
                 if (mio_dev.io_state->transaction.thread) { kthread_stop(mio_dev.io_state->transaction.thread); mio_dev.io_state->transaction.thread = NULL; }
-#endif /* TRANS_USING_WQ */
 
                 blk_cleanup_queue(mio_dev.io_state->transaction.rq);
                 return -ENODEV;
@@ -1175,34 +952,6 @@ static int __init mio_init(void)
             mio_dev.io_state->transaction.rq->limits.max_discard_sectors = mio_dev.capacity;
             mio_dev.io_state->transaction.rq->limits.discard_zeroes_data = 1;
 
-            /******************************************************************
-             * Workqueue Setup
-             ******************************************************************/
-#ifdef TRANS_USING_WQ 
-#ifdef USING_WQ_THREAD
-			init_kthread_worker(&mio_dev.io_state->io_worker);
-
-			mio_dev.io_state->io_thread = kthread_run(kthread_worker_fn,
-					&mio_dev.io_state->io_worker, "mio_wq");
-			if (IS_ERR(mio_dev.io_state->io_thread)) {
-				int err = PTR_ERR(mio_dev.io_state->io_thread);
-				mio_dev.io_state->io_thread = NULL;
-
-				printk(KERN_ERR "failed to run io thread\n");
-				return err;
-			}
-			init_kthread_work(&mio_dev.io_state->io_work, mio_trans_work);
-#else
-			mio_dev.io_state->wq = alloc_workqueue("mio_wq", WQ_HIGHPRI | WQ_UNBOUND, 0);
-			if (!mio_dev.io_state->wq)
-			{
-				printk(KERN_ERR "MIO.BLOCK: alloc_workqueue() Fail\n");
-				return -ENODEV;
-			}
-			INIT_WORK(&mio_dev.io_state->work, mio_trans_work);
-#endif /* USING_WQ_THREAD */ 
-#endif /* TRANS_USING_WQ */
-
             add_disk(mio_dev.disk);
         }
     }
@@ -1224,13 +973,6 @@ static int __init mio_init(void)
     printk(KERN_INFO "MIO.BLOCK:  Init End: Capacity %xh(%d) Sectors = %d MB\n", mio_dev.capacity, mio_dev.capacity, ((mio_dev.capacity>>10)<<9)>>10);
     printk(KERN_INFO "MIO.BLOCK: --------------------------------------------------------------------------\n");
     printk(KERN_INFO "MIO.BLOCK:\n");
-
-    /**************************************************************************
-     * Create mio unit test thread
-     **************************************************************************/
-	#ifdef __MIO_UNIT_TEST_THREAD__
-	mio_unit_test_prepare();
-	#endif
 
     return 0;
 }
@@ -1259,9 +1001,7 @@ static void __exit mio_exit(void)
         put_disk(mio_dev.disk);
 
         if (mio_dev.io_state->background.thread) { kthread_stop(mio_dev.io_state->background.thread); mio_dev.io_state->background.thread = NULL; }
-#ifndef TRANS_USING_WQ
         if (mio_dev.io_state->transaction.thread) { kthread_stop(mio_dev.io_state->transaction.thread); mio_dev.io_state->transaction.thread = NULL; }
-#endif
 
         blk_cleanup_queue(mio_dev.io_state->transaction.rq);
         unregister_blkdev(mio_major, "mio");
@@ -1285,105 +1025,18 @@ static void __exit mio_exit(void)
  ******************************************************************************/
 static unsigned int nand_pm_verify = 0; // If Set, Can't Revert Power-On Time
 
-#define __SUPPORT_DEBUG_NAND_PM__
-
-#if !defined (__SUPPORT_DEBUG_NAND_PM__)
 static int nand_suspend(struct device * dev)
 {
     mio_dev.io_state->power.suspending = 1;
 
     while (1)
     {
-		if ((MIO_SCHEDULED == mio_dev.io_state->transaction.status) &&
-				((MIO_BG_SCHEDULED == mio_dev.io_state->background.status) ||
-				 (MIO_BG_SLEEP     == mio_dev.io_state->background.status)) )
-		{
-			break;
-		}
-
-        usleep_range(1,1);
-    }
-
-    nand_pm_verify = media_suspend();
-
-    return 0;
-}
-
-static int nand_resume(struct device * dev)
-{
-    unsigned int resume = media_resume();
-
-    if (resume != nand_pm_verify)
-    {
-        printk(KERN_ERR "nand_resume : mio mpool verify fail (%x != %x)\n", nand_pm_verify, resume);
-        mio_dev.io_state->power.pm_verify_fault = 1;
-        return -1;
-    }
-
-    mio_dev.io_state->power.suspending = 0;
-    return 0;
-}
-
-#else
-extern void lldebugout(const char *fmt, ...);
-
-static int nand_suspend(struct device * dev)
-{
-    ktime_t t1, t2;
-    unsigned int dt = 0;
-    unsigned int step = 0;
-    unsigned int tout = 0;
-    unsigned long long lcnt = 0;
-
-    t1 = ktime_get();
-
-    mio_dev.io_state->power.suspending = 1;
-
-    while (1)
-    {
-		if ((MIO_SCHEDULED == mio_dev.io_state->transaction.status) &&
-				((MIO_BG_SCHEDULED == mio_dev.io_state->background.status) ||
-				 (MIO_BG_SLEEP     == mio_dev.io_state->background.status)) )
+        if ((MIO_SCHEDULED == mio_dev.io_state->transaction.status) && (MIO_BG_SCHEDULED == mio_dev.io_state->background.status))
         {
             break;
         }
 
         usleep_range(1,1);
-
-        t2 = ktime_get();
-        dt = (unsigned int)ktime_to_us(ktime_sub(t2, t1));
-        lcnt += 1;
-
-        switch (step)
-        {
-            case 0:  { if (dt >=  1*1000*1000) { step += 1; /*1 */ } } break;
-            case 2:  { if (dt >=  2*1000*1000) { step += 1; /*3 */ } } break;
-            case 4:  { if (dt >=  3*1000*1000) { step += 1; /*5 */ } } break;
-            case 6:  { if (dt >=  4*1000*1000) { step += 1; /*7 */ } } break;
-            case 8:  { if (dt >=  5*1000*1000) { step += 1; /*9 */ } } break;
-            case 10: { if (dt >=  6*1000*1000) { step += 1; /*11*/ } } break;
-            case 12: { if (dt >=  7*1000*1000) { step += 1; /*13*/ } } break;
-            case 14: { if (dt >=  8*1000*1000) { step += 1; /*15*/ } } break;
-            case 16: { if (dt >=  9*1000*1000) { step += 1; /*17*/ } } break;
-            case 18: { if (dt >= 10*1000*1000) { step += 1; /*19*/ } } break;
-
-            case 1:  { tout = 1;  step += 1; /*2 */ } break;
-            case 3:  { tout = 2;  step += 1; /*4 */ } break;
-            case 5:  { tout = 3;  step += 1; /*6 */ } break;
-            case 7:  { tout = 4;  step += 1; /*8 */ } break;
-            case 9:  { tout = 5;  step += 1; /*10*/ } break;
-            case 11: { tout = 6;  step += 1; /*12*/ } break;
-            case 13: { tout = 7;  step += 1; /*14*/ } break;
-            case 15: { tout = 8;  step += 1; /*16*/ } break;
-            case 17: { tout = 9;  step += 1; /*18*/ } break;
-            case 19: { tout = 10; step += 1; /*20*/ } break;
-        }
-
-        if (tout)
-        {
-          //lldebugout("nand_suspend : elapsed %d sec, loop %lld times, thread status (tr:%d, bg:%d) \n", tout, lcnt, mio_dev.io_state->transaction.status, mio_dev.io_state->background.status);
-            tout = 0;
-        }
     }
 
     nand_pm_verify = media_suspend();
@@ -1393,11 +1046,8 @@ static int nand_suspend(struct device * dev)
 
 static int nand_resume(struct device * dev)
 {
-    unsigned int resume = media_resume();
-
-    if (resume != nand_pm_verify)
+    if (media_resume() != nand_pm_verify)
     {
-        printk(KERN_ERR "nand_resume : mio mpool verify fail (%x != %x)\n", nand_pm_verify, resume);
         mio_dev.io_state->power.pm_verify_fault = 1;
         return -1;
     }
@@ -1405,105 +1055,12 @@ static int nand_resume(struct device * dev)
     mio_dev.io_state->power.suspending = 0;
     return 0;
 }
-
-#endif
 
 /******************************************************************************
  *
  ******************************************************************************/
 static SIMPLE_DEV_PM_OPS(nand_pmops, nand_suspend, nand_resume);
 
-#if defined (__COMPILE_MODE_X64__)
-#ifdef CONFIG_OF
-static int ftl_probe_config_dt(struct platform_device *pdev)
-{
-	struct device_node *np = pdev->dev.of_node;
-	//struct device *dev = &pdev->dev;
-
-	if (!np)
-		return -ENODEV;
-
-	if (of_property_read_u32(np, "ftl-start-block", &nxp_nand.nxp_ftl_start_block)) {
-		pr_warn("FTL start block address does not supplied. assuming to 0x0.\n");
-	}
-
-	return 0;
-}
-#else
-static int ftl_probe_config_dt(struct platform_device *pdev)
-{
-	return -ENOSYS;
-}
-#endif /* CONFIG_OF */
-
-static int ftl_pltfr_probe(struct platform_device *pdev)
-{
-	//struct nxp_ftl_nand  *nxp_nand;
-	struct resource *rs_ctrl, *rs_intf;
-	int ret;
-
-
-	rs_ctrl = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	nxp_nand.io_ctrl = devm_ioremap_resource(&pdev->dev, rs_ctrl);
-
-	rs_intf = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-	nxp_nand.io_intf = devm_ioremap_resource(&pdev->dev, rs_intf);
-
-	if(!nxp_nand.io_ctrl || !nxp_nand.io_intf) {
-		dev_err(&pdev->dev, "failed to ioremap registers\n");
-		ret = -ENOENT;
-		goto err_out;
-	}
-
-
-	#if 0
-	/* Get NAND clock */
-	nxp_nand.clk = clk_get(&pdev->dev, DEV_NAME_NAND);
-	if (IS_ERR(nxp_nand.clk)) {
-		dev_err(&pdev->dev, "Fail: getting clock for NAND !!!\n");
-		ret = -ENOENT;
-		goto err_out;
-	}
-	#endif
-
-
-	ret = ftl_probe_config_dt(pdev);
-	if (ret) {
-		pr_err("%s: main dt probe failed\n", __func__);
-		return ret;
-	}
-
-    miosys_init();
-    mio_init();
-
-
-	return 0;
-
-err_out:
-	//devm_kfree(&pdev->dev, nxp_nand);
-	return ret;
-}
-
-static const struct of_device_id nand_dt_ids[] = {
-	{ .compatible = "nexell,nxp-nand"},
-	{ /* sentinel */ }
-};
-MODULE_DEVICE_TABLE(of, nand_dt_ids);
-#endif
-
-#if defined (__COMPILE_MODE_X64__)
-static struct platform_driver nand_driver =
-{
-	.probe = ftl_pltfr_probe,
-	//.remove = ftl_pltfr_remove,
-    .driver = {
-        .name  = DEV_NAME_NAND,
-        .pm    = &nand_pmops,
-        .owner = THIS_MODULE,
-		.of_match_table = of_match_ptr(nand_dt_ids),
-    },
-};
-#else
 static struct platform_driver nand_driver =
 {
     .driver = {
@@ -1512,7 +1069,6 @@ static struct platform_driver nand_driver =
         .owner = THIS_MODULE,
     },
 };
-#endif
 
 /******************************************************************************
  *
@@ -1522,14 +1078,8 @@ static int __init nand_init(void)
     memset((void *)&Exchange, 0, sizeof(EXCHANGES));
 
     platform_driver_register(&nand_driver);
-#if defined (__COMPILE_MODE_X64__)
-	// move to .probe
-    //miosys_init();
-    //mio_init();
-#else
     miosys_init();
     mio_init();
-#endif
 
     return 0;
 }
@@ -1554,5 +1104,5 @@ MODULE_ALIAS_BLOCKDEV_MAJOR(mio_major);
  * Optimize Restore
  ******************************************************************************/
 #if defined (__COMPILE_MODE_BEST_DEBUGGING__)
-//#pragma GCC pop_options
+#pragma GCC pop_options
 #endif

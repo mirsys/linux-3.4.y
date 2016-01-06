@@ -80,8 +80,8 @@ U32		NX_RTC_GetNumberOfModule( void );
 //@{
 U32		NX_RTC_GetPhysicalAddress( void );
 U32		NX_RTC_GetSizeOfRegisterSet( void );
-void	NX_RTC_SetBaseAddress( void* BaseAddress );
-void*	NX_RTC_GetBaseAddress( void );
+void	NX_RTC_SetBaseAddress( U32 BaseAddress );
+U32		NX_RTC_GetBaseAddress( void );
 CBOOL	NX_RTC_OpenModule( void );
 CBOOL	NX_RTC_CloseModule( void );
 CBOOL	NX_RTC_CheckBusy( void );

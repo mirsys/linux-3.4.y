@@ -56,9 +56,9 @@ static nxp_deinterlace *_deinterlace	=	NULL;
 
 #define	TIMEOUT_NEVER	-1
 
-#define DATA_QUEUE_SIZE		1024
-#define DST_QUEUE_SIZE		1024
-#define QUEUE_SIZE				1024
+#define DATA_QUEUE_SIZE		1024	
+#define DST_QUEUE_SIZE		1024	
+#define QUEUE_SIZE				1024	
 
 #define MINIMUM_INQUEUE_COUNT	SRC_BUFFER_COUNT
 
@@ -156,7 +156,7 @@ static long read_file(char *FileName, char *data)
 		printk("File isn't Exitentace\n");
 	}
 
-	set_fs(old_fs);
+	set_fs(old_fs);	
 
 	return lRtn;
 }
@@ -188,12 +188,12 @@ void write_file(char *filename, char *data, long lFileSize)
 static int wait_for_end_of_work(wait_queue_head_t *wq, atomic_t *status, int init_status, int end_work_status, int elapse)
 {
 	long timeout = 0;
-
+	
 	if (atomic_read(status) == init_status) {
 		timeout = wait_event_interruptible_timeout(*wq, atomic_read(status) == end_work_status, elapse);
 		if(timeout <= 0)
 		{
-			printk(KERN_INFO "The timeout elapsed before the condition evaluated to true!! Condition Status = %d, timeout : %ld\n", atomic_read(status), timeout);
+			printk(KERN_INFO "The timeout elapsed before the condition evaluated to true!! Condition Status = %d, timeout : %ld\n", atomic_read(status), timeout);		
 			return -EBUSY;
 		}
 	}
@@ -234,9 +234,9 @@ static void _initialize(void)
 	tag_msg(KERN_INFO "%s++>\n", __func__);
 
 	NX_DEINTERLACE_Initialize();
-  NX_DEINTERLACE_SetBaseAddress( (void*)IO_ADDRESS(NX_DEINTERLACE_GetPhysicalAddress()) );
+  NX_DEINTERLACE_SetBaseAddress( IO_ADDRESS(NX_DEINTERLACE_GetPhysicalAddress()) );
 
-	NX_CLKGEN_SetBaseAddress( NX_DEINTERLACE_GetClockNumber(), (void*)IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(NX_DEINTERLACE_GetClockNumber())));
+	NX_CLKGEN_SetBaseAddress( NX_DEINTERLACE_GetClockNumber(), IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(NX_DEINTERLACE_GetClockNumber())));
 	NX_CLKGEN_SetClockBClkMode( NX_DEINTERLACE_GetClockNumber(), NX_BCLKMODE_ALWAYS );
 
 #if 0
@@ -394,7 +394,7 @@ static int alloc_app_data(unsigned char **dst, unsigned char **src, dma_addr_t *
 	unsigned char **src_buf_vir;
 	dma_addr_t *dst_buf_phy;
 	int buf_len=0;
-
+	
 	dst_buf_vir = dst;
 	src_buf_vir = src;
 	dst_buf_phy	=	dst_phy;
@@ -405,9 +405,9 @@ static int alloc_app_data(unsigned char **dst, unsigned char **src, dma_addr_t *
 		pr_err("%s: src buffer error!!!\n", __func__);
 		return -1;
 	}
-
+	
 	*dst_buf_vir = dma_alloc_coherent(NULL, buf_len, dst_buf_phy, GFP_KERNEL);
-	if(dst_buf_vir == NULL)
+	if(dst_buf_vir == NULL) 
 	{
 		pr_err("%s: failed to allocate command buffer!!!\n", __func__);
 		return -1;
@@ -427,11 +427,11 @@ static int dealloc_app_data(unsigned char **release_buf, dma_addr_t *release_buf
 {
 	unsigned char **dst_buf;
 	dma_addr_t *dst_buf_phy;
-
+	
 	dst_buf = release_buf;
 	dst_buf_phy = release_buf_phy;
 
-	if( dst_buf_phy )
+	if( dst_buf_phy ) 
 	{
 		dma_free_coherent(NULL, buf_size, *dst_buf, *dst_buf_phy);
 		*dst_buf = NULL;
@@ -495,12 +495,12 @@ struct sw_sync_timeline *sw_sync_timeline_fdget(int fd)
 {
 	struct file *file = fget(fd);
 
-	tag_msg(KERN_INFO "[%s++>]fd1 : %d\n", __func__, fd);
+	tag_msg(KERN_INFO "[%s++>]fd1 : %d\n", __func__, fd); 
 
 	if(file == NULL)
 		return NULL;
 
-	tag_msg(KERN_INFO "[%s<--]fd2 : %d\n", __func__, fd);
+	tag_msg(KERN_INFO "[%s<--]fd2 : %d\n", __func__, fd); 
 
 	return file->private_data;
 }
@@ -554,7 +554,7 @@ static long create_fence(DQ_BUF *dqbuf)
 	int new_fence_fd=-1;
 	int old_fence_fd=-1;
 	int fd_idx=0;
-
+	
   tag_msg(KERN_INFO "%s++>\n", __func__);
 
   if(_deinterlace->dq_timeline == NULL)
@@ -588,7 +588,7 @@ static long create_fence(DQ_BUF *dqbuf)
     fence_t = sync_fence_merge(str_t, dqbuf->fence, fence);
     sync_fence_put(dqbuf->fence);
     sync_fence_put(fence);
-
+  
 		sys_close(old_fence_fd);
 
 		new_fence_fd = get_unused_fd();
@@ -601,7 +601,7 @@ static long create_fence(DQ_BUF *dqbuf)
 
     dqbuf->pt = pt;
     dqbuf->fence = fence_t;
-		dqbuf->fence_fd = new_fence_fd;
+		dqbuf->fence_fd = new_fence_fd;	
 
 		fd_idx = _deinterlace->fd_idx;
 		if(fd_idx == _deinterlace->dqset.buf_cnt) _deinterlace->fd_idx = 0;
@@ -617,7 +617,7 @@ static long create_fence(DQ_BUF *dqbuf)
 		new_fence_fd = get_unused_fd();
   	if( new_fence_fd<0 ) goto fd_err;
 
-		dqbuf->fence_fd = new_fence_fd;
+		dqbuf->fence_fd = new_fence_fd;	
 		memcpy(((_deinterlace->dst_dqbuf_all)+(_deinterlace->fd_idx++)),  dqbuf, sizeof(DQ_BUF));
 
 		dbg_msg(KERN_INFO "[%s]0  fd_idx : %d, dqbuf->fence_fd : %d, dst_dqbuf_all fence fd : %d\n", __func__, new_fence_fd, (_deinterlace->fd_idx)-1, ((_deinterlace->dst_dqbuf_all)+((_deinterlace->fd_idx)-1))->fence_fd);
@@ -643,7 +643,7 @@ err:
 static long pending_processing(DQ_BUF *dqbuf)
 {
 	int err=0;
-
+	
 	tag_msg(KERN_INFO "%s++>\n", __func__);
 
 	if(sync_fence_fdget(dqbuf->fence_fd)){
@@ -665,7 +665,7 @@ static long pending_processing(DQ_BUF *dqbuf)
 
 static int get_phy_addr_from_fd(int fd, unsigned long *phyaddr)
 {
-
+	
 	struct dma_buf *dmabuf;
 	struct ion_buffer *buffer;
 	unsigned long result;
@@ -674,7 +674,7 @@ static int get_phy_addr_from_fd(int fd, unsigned long *phyaddr)
 	fdesc = fd;
 
 	dmabuf = dma_buf_get(fd);
-	if( IS_ERR_OR_NULL(dmabuf))
+	if( IS_ERR_OR_NULL(dmabuf)) 
 	{
 		pr_err("%s: can't get dmabuf : fd{%d)\n", __func__, fd);
 		return -EINVAL;
@@ -750,10 +750,10 @@ static int set_process_status(int status, bool forced)
 	{
 		if(atomic_read(&_deinterlace->status) != PROCESSING_FINISH)
 			atomic_set(&_deinterlace->status, status);
-	}
+	}	
 	else
 		atomic_set(&_deinterlace->status, status);
-
+	
 	ret_status = status;
 
 	return ret_status;
@@ -773,9 +773,9 @@ static void init_state(void)
 
 	for(i=0; i<MAX_BUFFER_PLANES ; i++)
 	{
-		_deinterlace->qbuf_temp[i].src_phys[0] = 0;
-		_deinterlace->qbuf_temp[i].src_phys[1] = 0;
-		_deinterlace->qbuf_temp[i].src_phys[2] = 0;
+		_deinterlace->qbuf_temp[i].src_phys[0] = 0;	
+		_deinterlace->qbuf_temp[i].src_phys[1] = 0;	
+		_deinterlace->qbuf_temp[i].src_phys[2] = 0;	
 	}
 
 	tag_msg(KERN_INFO "%s<--\n", __func__);
@@ -794,13 +794,13 @@ static int check_exit_data(Q_BUF *qbuf)
 
 		return -1;
 	}
-
+			
 	return 0;
 }
 
 static void dealloc_dst_buf(void)
 {
-	if( _deinterlace->dst_dqbuf_all != NULL)
+	if( _deinterlace->dst_dqbuf_all != NULL) 
 	{
 		kfree(_deinterlace->dst_dqbuf_all);
 		_deinterlace->dst_dqbuf_all = NULL;
@@ -811,7 +811,7 @@ static int alloc_dst_buf(DQ_SET *dqset)
 {
 	int size=0;
 	DQ_BUF  *dst_dqbuf;
-
+	
 	tag_msg(KERN_INFO "%s++>\n", __func__);
 
 	if(_deinterlace==NULL)
@@ -844,7 +844,7 @@ static int alloc_dst_buf(DQ_SET *dqset)
 	}
 
 	_deinterlace->dst_dqbuf_all = dst_dqbuf;
-
+		
 	mutex_unlock(&_deinterlace->read_lock);
 
 	tag_msg(KERN_INFO "%s<--\n", __func__);
@@ -914,7 +914,7 @@ static void sw_stop(void)
 	tag_msg(KERN_INFO "%s++\n", __func__);
 
 	//*. release item
-	//*. flush_workqueue, timeline, fence(timeline max value), queue, dequeue,
+	//*. flush_workqueue, timeline, fence(timeline max value), queue, dequeue, 
 	set_process_status(PROCESSING_FINISH, true);
 	disable_irq(_deinterlace->irq);
 	//disable_irq_nosync(_deinterlace->irq);
@@ -958,7 +958,7 @@ static int get_next_dstbuf(DQ_BUF *dqbuf)
 	{
 		printk(KERN_ERR "unused queue kfifo out error\n");
 		return -1;
-	}
+	}	
 
 	tag_msg(KERN_INFO "%s--\n", __func__);
 
@@ -1001,7 +1001,7 @@ static int _queue_frame_data(Q_BUF *qbuf)
 
 	qbuf_t = *qbuf;
 
-	ret = insert_queue_frame(&qbuf_t);
+	ret = insert_queue_frame(&qbuf_t); 
 	if(ret != 0) return ret;
 
   _deinterlace->q_timeline_max++;
@@ -1033,7 +1033,7 @@ static int _dequeue_frame_data(DQ_BUF *dqbuf)
 		if( (atomic_read(&_deinterlace->exit_flag)>0) || kfifo_is_empty(&_deinterlace->data_dequeue))
 		{
 			atomic_set(&_deinterlace->exit_flag, 0);
-			return -1;
+			return -1; 	
 		}
 	}
 
@@ -1047,7 +1047,7 @@ static int _dequeue_frame_data(DQ_BUF *dqbuf)
 	}
 
 	if(_deinterlace->ctx.format_type == FORMAT_NV21)
-		dqbuf_t.dst_phys[2] = 0x0;
+		dqbuf_t.dst_phys[2] = 0x0;			
 
 	*dqbuf = dqbuf_t;
 
@@ -1072,7 +1072,7 @@ static int  get_out_data_target(int frame_kind)
 			case FORMAT_NV21:
 				frame_y = _deinterlace->qbuf_temp[frame_kind].src_phys[0];
 				frame_cbcr = _deinterlace->qbuf_temp[frame_kind].src_phys[1];
-
+	
 				if( frame_y > 0 && frame_cbcr > 0)
 					ret = BUFFER_DATA;
 				break;
@@ -1080,7 +1080,7 @@ static int  get_out_data_target(int frame_kind)
 				frame_y = _deinterlace->qbuf_temp[frame_kind].src_phys[0];
 				frame_cb = _deinterlace->qbuf_temp[frame_kind].src_phys[1];
 				frame_cr = _deinterlace->qbuf_temp[frame_kind].src_phys[2];
-
+	
 				if( frame_y > 0 && frame_cb > 0 && frame_cr > 0)
 					ret = BUFFER_DATA;
 				break;
@@ -1089,7 +1089,7 @@ static int  get_out_data_target(int frame_kind)
 
 	tag_msg(KERN_INFO "%s--\n", __func__);
 
-	return ret;
+	return ret;	
 }
 
 static int get_queue_data(Q_BUF *qbuf, int frame_kind)
@@ -1132,16 +1132,16 @@ static bool process_next_item(wait_queue_head_t *wq_start, bool *is_waitting)
 static int processing_2plane(DQ_BUF *dqbuf)
 {
 	unsigned long src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy;
-	unsigned long src_prev_cbcr_data_phy, src_curr_cbcr_data_phy, src_next_cbcr_data_phy;
+	unsigned long src_prev_cbcr_data_phy, src_curr_cbcr_data_phy, src_next_cbcr_data_phy; 
 
 	unsigned long dst_y_data_phy, dst_cbcr_data_phy;
 	int width, height, src_y_stride, src_c_stride, dst_y_stride, dst_c_stride;
 
 	tag_msg(KERN_INFO "%s++\n", __func__);
 
-	if( get_queue_data(&_deinterlace->qbuf_temp[0], FRAME_PREV) < 0 ||
-			get_queue_data(&_deinterlace->qbuf_temp[1], FRAME_CURR) < 0 ||
-			get_queue_data(&_deinterlace->qbuf_temp[2], FRAME_NEXT) < 0 )
+	if( get_queue_data(&_deinterlace->qbuf_temp[0], FRAME_PREV) < 0 || 
+			get_queue_data(&_deinterlace->qbuf_temp[1], FRAME_CURR) < 0 || 
+			get_queue_data(&_deinterlace->qbuf_temp[2], FRAME_NEXT) < 0 ) 
 	{
 		printk(KERN_INFO "[%s]get queue data error!!\n", __func__);
 		return -1;
@@ -1160,12 +1160,12 @@ static int processing_2plane(DQ_BUF *dqbuf)
 
 	width = _deinterlace->ctx.width;
 	height = _deinterlace->ctx.height;
-
+	
 	src_y_stride = ALIGN(width, _deinterlace->ctx.src_stride_factor);
 	src_c_stride = ALIGN(width, _deinterlace->ctx.src_stride_factor)/2;
-
+	
 	dst_y_stride = ALIGN(width, _deinterlace->ctx.dst_stride_factor);
-	dst_c_stride = ALIGN(width, _deinterlace->ctx.dst_stride_factor)/2;
+	dst_c_stride = ALIGN(width, _deinterlace->ctx.dst_stride_factor)/2; 
 
 	dst_y_data_phy	=	dqbuf->dst_phys[0];
 	dst_cbcr_data_phy	=	dqbuf->dst_phys[1];
@@ -1188,17 +1188,17 @@ static int processing_2plane(DQ_BUF *dqbuf)
 static int processing_3plane(DQ_BUF *dqbuf)
 {
 	unsigned long src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy;
-	unsigned long src_prev_cb_data_phy, src_curr_cb_data_phy, src_next_cb_data_phy;
-	unsigned long src_prev_cr_data_phy, src_curr_cr_data_phy, src_next_cr_data_phy;
+	unsigned long src_prev_cb_data_phy, src_curr_cb_data_phy, src_next_cb_data_phy; 
+	unsigned long src_prev_cr_data_phy, src_curr_cr_data_phy, src_next_cr_data_phy; 
 
 	unsigned long dst_y_data_phy, dst_cb_data_phy, dst_cr_data_phy;
 	int width, height, src_y_stride, src_c_stride, dst_y_stride, dst_c_stride;
 
 	tag_msg(KERN_INFO "%s++\n", __func__);
 
-	if( get_queue_data(&_deinterlace->qbuf_temp[0], FRAME_PREV) < 0 ||
-			get_queue_data(&_deinterlace->qbuf_temp[1], FRAME_CURR) < 0 ||
-			get_queue_data(&_deinterlace->qbuf_temp[2], FRAME_NEXT) < 0 )
+	if( get_queue_data(&_deinterlace->qbuf_temp[0], FRAME_PREV) < 0 || 
+			get_queue_data(&_deinterlace->qbuf_temp[1], FRAME_CURR) < 0 || 
+			get_queue_data(&_deinterlace->qbuf_temp[2], FRAME_NEXT) < 0 ) 
 	{
 		return -1;
 	}
@@ -1219,12 +1219,12 @@ static int processing_3plane(DQ_BUF *dqbuf)
 
 	width = _deinterlace->ctx.width;
 	height = _deinterlace->ctx.height;
-
+	
 	src_y_stride = ALIGN(width, _deinterlace->ctx.src_stride_factor);
 	src_c_stride = ALIGN(width, _deinterlace->ctx.src_stride_factor)/2;
-
+	
 	dst_y_stride = ALIGN(width, _deinterlace->ctx.dst_stride_factor);
-	dst_c_stride = ALIGN(width, _deinterlace->ctx.dst_stride_factor)/2;
+	dst_c_stride = ALIGN(width, _deinterlace->ctx.dst_stride_factor)/2; 
 
 	dst_y_data_phy	=	dqbuf->dst_phys[0];
 	dst_cb_data_phy	=	dqbuf->dst_phys[1];
@@ -1255,13 +1255,13 @@ static int start_deinterlacing(nxp_deinterlace *m_ctx)
 
 	tag_msg(KERN_INFO "%s++>\n", __func__);
 
-	if(get_status() == PROCESSING_FINISH)
+	if(get_status() == PROCESSING_FINISH) 
 	{
 		dst_dqbuf = _deinterlace->dst_dqbuf_all;
 
 		dbg_msg(KERN_INFO "[%s] DQueue Buffer Count : %d\n", __func__, _deinterlace->dqset.buf_cnt);
 
-		for( i=0; i<_deinterlace->dqset.buf_cnt; i++)
+		for( i=0; i<_deinterlace->dqset.buf_cnt; i++) 	
 		{
 			if( ((dst_dqbuf+i)->fence_fd != -1) && (dst_dqbuf+i)->fence)
 			{
@@ -1315,7 +1315,7 @@ static int start_deinterlacing(nxp_deinterlace *m_ctx)
   if( dqbuf->fence_fd != -1 )
   {
 		pending_processing(dqbuf);
-  }
+  } 
 
 	create_fence(dqbuf);
 	tag_msg(KERN_INFO "[%s] : format_type : %d\n", __func__, m_ctx->ctx.format_type);
@@ -1328,12 +1328,12 @@ static int start_deinterlacing(nxp_deinterlace *m_ctx)
 		case FORMAT_NV21: //2
 			ret = processing_2plane(dqbuf);
 			break;
-	}
+	}	
 
 	if( ret<0 )
 	{
 		printk(KERN_INFO "[%s] : start deinterlace processing ret : %d\n", __func__, ret);
-
+		
 		wake_up_interruptible(&_deinterlace->wq_dst);
 		set_hw_status(DEINTERLACING_STOP);
 		process_next_item(&_deinterlace->wq_start, &_deinterlace->is_waitting);
@@ -1384,12 +1384,12 @@ static int _onetime_test_2plane_direction_from_fd(frame_data_info *frame)
 	unsigned long src_phys[SRC_BUFFER_COUNT * MAX_BUFFER_PLANES];
 	unsigned long dst_phys[DST_BUFFER_COUNT * MAX_BUFFER_PLANES];
 
-	unsigned long src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_curr_cbcr_data_phy;
+	unsigned long src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_curr_cbcr_data_phy; 
 	unsigned long dst_y_data_phy, dst_cbcr_data_phy;
 	int width, height, src_y_stride, src_c_stride, dst_y_stride, dst_c_stride;
 
-	int dst_y_data_size		=	0;
-	int dst_cbcr_data_size	=	0;
+	int dst_y_data_size		=	0; 
+	int dst_cbcr_data_size	=	0; 
 
 	int i=0, j=0;
 	int idx = 0;
@@ -1399,17 +1399,17 @@ static int _onetime_test_2plane_direction_from_fd(frame_data_info *frame)
 	{
 		for(j=0; j<frame->plane_mode ; j++)
 		{
-			get_phy_addr_from_fd(frame->src_bufs[i].plane2.fds[j], &src_phys[idx]);
+			get_phy_addr_from_fd(frame->src_bufs[i].plane2.fds[j], &src_phys[idx]); 
 			idx++;
 		}
 	}
-
+	
 	idx = 0;
 	for(i=0; i<DST_BUFFER_COUNT ; i++)
 	{
 		for(j=0; j<frame->plane_mode ; j++)
 		{
-			get_phy_addr_from_fd(frame->dst_bufs[i].plane2.fds[j], &dst_phys[idx]);
+			get_phy_addr_from_fd(frame->dst_bufs[i].plane2.fds[j], &dst_phys[idx]); 
 			idx++;
 		}
 	}
@@ -1425,12 +1425,12 @@ static int _onetime_test_2plane_direction_from_fd(frame_data_info *frame)
 
 	dst_y_stride	=	frame->dst_bufs[0].plane2.dst_stride[0];
 	dst_c_stride	=	frame->dst_bufs[0].plane2.dst_stride[1];
-
-	src_prev_y_data_phy		=	src_phys[0];
+	
+	src_prev_y_data_phy		=	src_phys[0];	
 	src_curr_y_data_phy		=	src_phys[2];
-	src_next_y_data_phy		=	src_phys[4];
+	src_next_y_data_phy		=	src_phys[4];	
 
-	src_curr_cbcr_data_phy	=	src_phys[3];
+	src_curr_cbcr_data_phy	=	src_phys[3];	
 
 	dst_y_data_phy	=	dst_phys[0];
 	dst_cbcr_data_phy	=	dst_phys[1];
@@ -1438,7 +1438,7 @@ static int _onetime_test_2plane_direction_from_fd(frame_data_info *frame)
 	dst_y_data_size = frame->dst_bufs[0].plane2.sizes[0];
 	dst_cbcr_data_size = frame->dst_bufs[0].plane2.sizes[1];
 
-#if 1
+#if 1	
 	SetDeInterlaceCbCr(height, width,
                  		src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_y_stride, dst_y_data_phy, dst_y_stride,
                  		src_curr_cbcr_data_phy, src_y_stride, dst_cbcr_data_phy, dst_y_stride,
@@ -1448,7 +1448,7 @@ static int _onetime_test_2plane_direction_from_fd(frame_data_info *frame)
                    0x7FFF0000, 0x7FFC0000, 0x7FF90000, SOURCE_Y_STRIDE, dst_y_data_phy, DEST_Y_STRIDE,
                    0x7FFB0000, SOURCE_C_STRIDE, dst_cb_data_phy, DEST_C_STRIDE,
                    0x7FFA0000, SOURCE_C_STRIDE, dst_cr_data_phy, DEST_C_STRIDE,
-                   frame_num % 2);
+                   frame_num % 2); 
 #endif
 
 	//dump_deinterlace_register(0);
@@ -1456,7 +1456,7 @@ static int _onetime_test_2plane_direction_from_fd(frame_data_info *frame)
 	NX_DEINTERLACE_DeinterlaceStart();
 
 	ret =	wait_for_end_of_work(&_deinterlace->wq_end, &_deinterlace->status, PROCESSING_START, PROCESSING_STOP, HZ/10);
-	if( ret<0 ) return ret;
+	if( ret<0 ) return ret;	
 
 	//write_file("/mnt/mmc/dst_y_data.bin", frame->dst_bufs[0].virt[0], frame->dst_bufs[0].sizes[0]);
 	//write_file("/mnt/mmc/dst_y_data.bin", frame->dst_bufs[0].virt[1], frame->dst_bufs[0].sizes[1]);
@@ -1470,13 +1470,13 @@ static int _onetime_test_3plane_direction_from_fd(frame_data_info *frame)
 	unsigned long src_phys[SRC_BUFFER_COUNT * MAX_BUFFER_PLANES];
 	unsigned long dst_phys[DST_BUFFER_COUNT * MAX_BUFFER_PLANES];
 
-	unsigned long src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_curr_cb_data_phy, src_curr_cr_data_phy;
+	unsigned long src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_curr_cb_data_phy, src_curr_cr_data_phy; 
 	unsigned long dst_y_data_phy, dst_cb_data_phy, dst_cr_data_phy;
 	int width, height, src_y_stride, src_c_stride, dst_y_stride, dst_c_stride;
 
-	int dst_y_data_size		=	0;
-	int dst_cb_data_size	=	0;
-	int dst_cr_data_size	=	0;
+	int dst_y_data_size		=	0; 
+	int dst_cb_data_size	=	0; 
+	int dst_cr_data_size	=	0; 
 
 	int i=0, j=0;
 	int idx = 0;
@@ -1486,21 +1486,21 @@ static int _onetime_test_3plane_direction_from_fd(frame_data_info *frame)
 	{
 		for(j=0 ; j<frame->plane_mode ; j++)
 		{
-			get_phy_addr_from_fd(frame->src_bufs[i].plane3.fds[j], &src_phys[idx]);
+			get_phy_addr_from_fd(frame->src_bufs[i].plane3.fds[j], &src_phys[idx]); 
 			idx++;
 		}
 	}
-
+	
 	idx = 0;
 	for(i=0; i<DST_BUFFER_COUNT ; i++)
 	{
 		for(j=0; j<frame->plane_mode; j++)
 		{
-			get_phy_addr_from_fd(frame->dst_bufs[i].plane3.fds[j], &dst_phys[idx]);
+			get_phy_addr_from_fd(frame->dst_bufs[i].plane3.fds[j], &dst_phys[idx]); 
 			idx++;
 		}
 	}
-
+	
 	ret = check_work_duplicating(&_deinterlace->wq_start, &_deinterlace->status, PROCESSING_START, PROCESSING_STOP, HZ/10);
 	if( ret<0 ) return ret;
 
@@ -1512,12 +1512,12 @@ static int _onetime_test_3plane_direction_from_fd(frame_data_info *frame)
 
 	dst_y_stride	=	frame->dst_bufs[0].plane3.dst_stride[0];
 	dst_c_stride	=	frame->dst_bufs[0].plane3.dst_stride[1];
-
-	src_prev_y_data_phy		=	src_phys[0];
+	
+	src_prev_y_data_phy		=	src_phys[0];	
 	src_curr_y_data_phy		=	src_phys[3];
-	src_next_y_data_phy		=	src_phys[6];
+	src_next_y_data_phy		=	src_phys[6];	
 
-	src_curr_cb_data_phy	=	src_phys[4];
+	src_curr_cb_data_phy	=	src_phys[4];	
 	src_curr_cr_data_phy	=	src_phys[5];
 
 	dst_y_data_phy	=	dst_phys[0];
@@ -1530,7 +1530,7 @@ static int _onetime_test_3plane_direction_from_fd(frame_data_info *frame)
 	dst_cr_data_size = frame->dst_bufs[0].plane3.sizes[2];
 
 
-#if 1
+#if 1	
 	SetDeInterlace(height, width,
                  src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_y_stride, dst_y_data_phy, dst_y_stride,
                  src_curr_cb_data_phy, src_c_stride, dst_cb_data_phy, dst_c_stride,
@@ -1542,7 +1542,7 @@ static int _onetime_test_3plane_direction_from_fd(frame_data_info *frame)
                    0x7FFF0000, 0x7FFC0000, 0x7FF90000, SOURCE_Y_STRIDE, dst_y_data_phy, DEST_Y_STRIDE,
                    0x7FFB0000, SOURCE_C_STRIDE, dst_cb_data_phy, DEST_C_STRIDE,
                    0x7FFA0000, SOURCE_C_STRIDE, dst_cr_data_phy, DEST_C_STRIDE,
-                   frame_num % 2);
+                   frame_num % 2); 
 #endif
 
 	//dump_deinterlace_register(0);
@@ -1550,7 +1550,7 @@ static int _onetime_test_3plane_direction_from_fd(frame_data_info *frame)
 	NX_DEINTERLACE_DeinterlaceStart();
 
 	ret =	wait_for_end_of_work(&_deinterlace->wq_end, &_deinterlace->status, PROCESSING_START, PROCESSING_STOP, HZ/10);
-	if( ret<0 ) return ret;
+	if( ret<0 ) return ret;	
 
 	//write_file("/mnt/mmc/dst_y_data.bin", frame->dst_bufs[0].virt[0], frame->dst_bufs[0].sizes[0]);
 	//write_file("/mnt/mmc/dst_y_data.bin", frame->dst_bufs[0].virt[1], frame->dst_bufs[0].sizes[1]);
@@ -1561,12 +1561,12 @@ static int _onetime_test_3plane_direction_from_fd(frame_data_info *frame)
 
 static int _onetime_test_2plane_direction(frame_data_info *frame)
 {
-	unsigned long src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_curr_cbcr_data_phy;
+	unsigned long src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_curr_cbcr_data_phy; 
 	unsigned long dst_y_data_phy, dst_cbcr_data_phy;
 	int width, height, src_y_stride, src_c_stride, dst_y_stride, dst_c_stride;
 
-	int dst_y_data_size		=	0;
-	int dst_cbcr_data_size	=	0;
+	int dst_y_data_size		=	0; 
+	int dst_cbcr_data_size	=	0; 
 	int ret=-1;
 
 	ret = check_work_duplicating(&_deinterlace->wq_start, &_deinterlace->status, PROCESSING_START, PROCESSING_STOP, HZ/10);
@@ -1580,10 +1580,10 @@ static int _onetime_test_2plane_direction(frame_data_info *frame)
 
 	dst_y_stride	=	frame->dst_bufs[0].plane2.dst_stride[0];
 	dst_c_stride	=	frame->dst_bufs[0].plane2.dst_stride[1];
-
+	
 	src_prev_y_data_phy		=	frame->src_bufs[0].plane2.phys[0];
-	src_curr_y_data_phy		=	frame->src_bufs[1].plane2.phys[0];
-	src_next_y_data_phy		=	frame->src_bufs[2].plane2.phys[0];
+	src_curr_y_data_phy		=	frame->src_bufs[1].plane2.phys[0];	
+	src_next_y_data_phy		=	frame->src_bufs[2].plane2.phys[0]; 	
 
 	src_curr_cbcr_data_phy	=	frame->src_bufs[1].plane2.phys[1];
 
@@ -1603,8 +1603,8 @@ static int _onetime_test_2plane_direction(frame_data_info *frame)
 	NX_DEINTERLACE_DeinterlaceStart();
 
 	ret =	wait_for_end_of_work(&_deinterlace->wq_end, &_deinterlace->status, PROCESSING_START, PROCESSING_STOP, HZ/10);
-	if( ret<0 ) return ret;
-
+	if( ret<0 ) return ret;	
+	
 	//write_file("/mnt/mmc/dst_y_data.bin", frame->dst_bufs[0].virt[0], frame->dst_bufs[0].sizes[0]);
 	//write_file("/mnt/mmc/dst_y_data.bin", frame->dst_bufs[0].virt[1], frame->dst_bufs[0].sizes[1]);
 
@@ -1613,13 +1613,13 @@ static int _onetime_test_2plane_direction(frame_data_info *frame)
 
 static int _onetime_test_3plane_direction(frame_data_info *frame)
 {
-	unsigned long src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_curr_cb_data_phy, src_curr_cr_data_phy;
+	unsigned long src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_curr_cb_data_phy, src_curr_cr_data_phy; 
 	unsigned long dst_y_data_phy, dst_cb_data_phy, dst_cr_data_phy;
 	int width, height, src_y_stride, src_c_stride, dst_y_stride, dst_c_stride;
 
-	int dst_y_data_size		=	0;
-	int dst_cb_data_size	=	0;
-	int dst_cr_data_size	=	0;
+	int dst_y_data_size		=	0; 
+	int dst_cb_data_size	=	0; 
+	int dst_cr_data_size	=	0; 
 
 	int ret=-1;
 
@@ -1634,10 +1634,10 @@ static int _onetime_test_3plane_direction(frame_data_info *frame)
 
 	dst_y_stride	=	frame->dst_bufs[0].plane3.dst_stride[0];
 	dst_c_stride	=	frame->dst_bufs[0].plane3.dst_stride[1];
-
+	
 	src_prev_y_data_phy		=	frame->src_bufs[0].plane3.phys[0];
-	src_curr_y_data_phy		=	frame->src_bufs[1].plane3.phys[0];
-	src_next_y_data_phy		=	frame->src_bufs[2].plane3.phys[0];
+	src_curr_y_data_phy		=	frame->src_bufs[1].plane3.phys[0];	
+	src_next_y_data_phy		=	frame->src_bufs[2].plane3.phys[0]; 	
 
 	src_curr_cb_data_phy	=	frame->src_bufs[1].plane3.phys[1];
 	src_curr_cr_data_phy	=	frame->src_bufs[1].plane3.phys[2];
@@ -1650,7 +1650,7 @@ static int _onetime_test_3plane_direction(frame_data_info *frame)
 	dst_cb_data_size = frame->dst_bufs[0].plane3.sizes[1];
 	dst_cr_data_size = frame->dst_bufs[0].plane3.sizes[2];
 
-#if 1
+#if 1	
 	SetDeInterlace(height, width,
                  src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, src_y_stride, dst_y_data_phy, dst_y_stride,
                  src_curr_cb_data_phy, src_c_stride, dst_cb_data_phy, dst_c_stride,
@@ -1662,7 +1662,7 @@ static int _onetime_test_3plane_direction(frame_data_info *frame)
                    0x7FFF0000, 0x7FFC0000, 0x7FF90000, SOURCE_Y_STRIDE, dst_y_data_phy, DEST_Y_STRIDE,
                    0x7FFB0000, SOURCE_C_STRIDE, dst_cb_data_phy, DEST_C_STRIDE,
                    0x7FFA0000, SOURCE_C_STRIDE, dst_cr_data_phy, DEST_C_STRIDE,
-                   frame_num % 2);
+                   frame_num % 2); 
 #endif
 
 	//dump_deinterlace_register(0);
@@ -1670,7 +1670,7 @@ static int _onetime_test_3plane_direction(frame_data_info *frame)
 	NX_DEINTERLACE_DeinterlaceStart();
 
 	ret = wait_for_end_of_work(&_deinterlace->wq_end, &_deinterlace->status, PROCESSING_START, PROCESSING_STOP, HZ/10);
-	if( ret<0 ) return ret;
+	if( ret<0 ) return ret;	
 
 	//write_file("/mnt/mmc/dst_y_data.bin", frame->dst_bufs[0].virt[0], frame->dst_bufs[0].sizes[0]);
 	//write_file("/mnt/mmc/dst_y_data.bin", frame->dst_bufs[0].virt[1], frame->dst_bufs[0].sizes[1]);
@@ -1707,8 +1707,8 @@ static int _onetime_test_2plane(frame_data_info *frame)
 	unsigned char *dst_y_real_data	= NULL;
 	unsigned char *dst_cbcr_real_data	= NULL;
 
-	int dst_y_data_size		=	0;
-	int dst_cbcr_data_size	=	0;
+	int dst_y_data_size		=	0; 
+	int dst_cbcr_data_size	=	0; 
 #endif
 
 	int err=0;
@@ -1749,7 +1749,7 @@ static int _onetime_test_2plane(frame_data_info *frame)
                  		src_curr_cbcr_data_phy, frame->src_bufs[1].plane2.src_stride[0], dst_cbcr_data_phy, frame->dst_bufs[0].plane2.dst_stride[0],
                  		frame->src_bufs[1].frame_num % 2);
 
-#if 0
+#if 0	
 	SetDeInterlaceCbCr(frame->height, frame->width,
                  		src_prev_y_data_phy, src_curr_y_data_phy, src_next_y_data_phy, frame->src_y_stride, dst_y_data_phy, frame->dst_y_stride,
                  		src_curr_cbcr_data_phy, frame->src_y_stride, dst_cbcr_data_phy, frame->dst_c_stride,
@@ -1761,7 +1761,7 @@ static int _onetime_test_2plane(frame_data_info *frame)
 	//dump_deinterlace_register(0);
 
 #if 0
-  // printk("dma_addr_t: %#llx\n", (u64)addr);
+  // printk("dma_addr_t: %#llx\n", (u64)addr); 
 
   printk(KERN_INFO "PREV - Y Virt : 0x%p, Y Phys : 0x%lX\n", src_prev_y_data, (unsigned long)src_prev_y_data_phy);
   printk(KERN_INFO "CURR - Y Virt : 0x%p, Y Phys : 0x%lX\n", src_curr_y_data, (unsigned long)src_curr_y_data_phy);
@@ -1781,8 +1781,8 @@ static int _onetime_test_2plane(frame_data_info *frame)
 #endif
 
 	ret =  	wait_for_end_of_work(&_deinterlace->wq_end, &_deinterlace->status, PROCESSING_START, PROCESSING_STOP, HZ/10);
-	if( ret<0 ) return ret;
-
+	if( ret<0 ) return ret;	
+	
 	//write_file("/mnt/mmc/dst_y_data_org.bin", dst_y_data, frame->dst_y_data_size);
 	//write_file("/mnt/mmc/dst_cbcr_data_org.bin", dst_cbcr_data, frame->dst_cbcr_data_size);
 
@@ -1867,9 +1867,9 @@ static int _onetime_test_3plane(frame_data_info *frame)
 	unsigned char *dst_cb_real_data	= NULL;
 	unsigned char *dst_cr_real_data	= NULL;
 
-	int dst_y_data_size		=	0;
-	int dst_cb_data_size	=	0;
-	int dst_cr_data_size	=	0;
+	int dst_y_data_size		=	0; 
+	int dst_cb_data_size	=	0; 
+	int dst_cr_data_size	=	0; 
 #endif
 
 	int err=0;
@@ -1923,11 +1923,11 @@ static int _onetime_test_3plane(frame_data_info *frame)
                    0x7FFF0000, 0x7FFC0000, 0x7FF90000, SOURCE_Y_STRIDE, dst_y_data_phy, DEST_Y_STRIDE,
                    0x7FFB0000, SOURCE_C_STRIDE, dst_cb_data_phy, DEST_C_STRIDE,
                    0x7FFA0000, SOURCE_C_STRIDE, dst_cr_data_phy, DEST_C_STRIDE,
-                   frame_num % 2);
+                   frame_num % 2); 
 #endif
 
 #if 0
-	// printk("dma_addr_t: %#llx\n", (u64)addr);
+	// printk("dma_addr_t: %#llx\n", (u64)addr); 
 
 	printk(KERN_INFO "PREV - Y Virt : 0x%p, Y Phys : 0x%lX\n", src_prev_y_data, (unsigned long)src_prev_y_data_phy);
 	printk(KERN_INFO "CURR - Y Virt : 0x%p, Y Phys : 0x%lX\n", src_curr_y_data, (unsigned long)src_curr_y_data_phy);
@@ -1948,7 +1948,7 @@ static int _onetime_test_3plane(frame_data_info *frame)
 	//dump_deinterlace_register(0);
 
 	ret = wait_for_end_of_work(&_deinterlace->wq_end, &_deinterlace->status, PROCESSING_START, PROCESSING_STOP, HZ/10);
-	if( ret<0 ) return ret;
+	if( ret<0 ) return ret;	
 
 #if 0
 	write_file("/mnt/mmc/p_src_prev_y_data.bin", src_prev_y_data, frame->src_bufs[0].plane3.sizes[0]);
@@ -2001,7 +2001,7 @@ static int _onetime_test_3plane(frame_data_info *frame)
 		printk(KERN_ERR "dst cr data copy to user error!\n");
 		return -EACCES;
 	}
-
+ 
 #if 0
 	dealloc_dst_data(&dst_y_real_data);
 	dealloc_dst_data(&dst_cb_real_data);
@@ -2054,7 +2054,7 @@ static int set_unused_dstuf(DQ_BUF *dqbuf)
 
 	tag_msg(KERN_INFO "%s++\n", __func__);
 
-	memcpy(&dqbuf_t, dqbuf, sizeof(DQ_BUF));
+	memcpy(&dqbuf_t, dqbuf, sizeof(DQ_BUF));		
 
 	ret = kfifo_in_spinlocked(&_deinterlace->data_dequeue_unused, &dqbuf_t, sizeof(DQ_BUF), &_deinterlace->dequeue_unused_lock);
 	if(ret != sizeof(DQ_BUF))
@@ -2110,12 +2110,12 @@ static irqreturn_t _irq_handler_deinterlace(int irq, void *param)
 			wake_up_interruptible(&me->wq_end);
 
 			printk(KERN_INFO "ACT MODE : %d\n", mode);
-			break;
+			break;		
 		case ACT_THREAD:
 			set_hw_status(DEINTERLACING_STOP);
 			wake_up_interruptible(&me->wq_end);
 
-			if( get_count_data_queue() >= MINIMUM_INQUEUE_COUNT )
+			if( get_count_data_queue() >= MINIMUM_INQUEUE_COUNT ) 
 			{
 				queue_work(me->wq_proc, &me->w_proc);
 			}
@@ -2153,7 +2153,7 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 	{
 		case IOCTL_DEINTERLACE_SET_AND_RUN:
 		{
-			act_mode	= ACT_COPY;
+			act_mode	= ACT_COPY;	
 
 			frame_info = (frame_data_info *)kzalloc(sizeof(frame_data_info), GFP_KERNEL);
 
@@ -2164,7 +2164,7 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 			}
 
 			printk(KERN_INFO "command : %d\n", frame_info->command);
-
+			
 			enable_irq(_deinterlace->irq);
 			switch( frame_info->command )
 			{
@@ -2172,11 +2172,11 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 				switch( frame_info->plane_mode )
 				{
 				case PLANE3:
-					 _onetime_test_3plane(frame_info);
+					 _onetime_test_3plane(frame_info);						
 					break;
 				case PLANE2:
-					 _onetime_test_2plane(frame_info);
-					break;
+					 _onetime_test_2plane(frame_info);						
+					break;	
 				}
 				break;
 			case ACT_DIRECT:
@@ -2204,7 +2204,7 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 			}
 			disable_irq(_deinterlace->irq);
 
-			if( frame_info )
+			if( frame_info ) 
 			{
 				kfree(frame_info);
 				frame_info = NULL;
@@ -2214,7 +2214,7 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 #if 0
 		case IOCTL_DEINTERLACE_DIRECTION_SET_AND_RUN:
 		{
-			act_mode	= ACT_DIRECT;
+			act_mode	= ACT_DIRECT;	
 
 			if(copy_from_user(&frame_direction_info, (frame_data_direct_info *)arg, sizeof(frame_data_direct_info)))
 			{
@@ -2235,7 +2235,7 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 		break;
 		case IOCTL_DEINTERLACE_DIRECTION_FROM_FD_SET_AND_RUN:
 		{
-			act_mode	= ACT_DIRECT_FD;
+			act_mode	= ACT_DIRECT_FD;	
 
 			if(copy_from_user(&frame_direction_info_from_fd, (frame_data_direct_info_from_fd *)arg, sizeof(frame_data_direct_info_from_fd)))
 			{
@@ -2256,7 +2256,7 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 		break;
 #endif
 		case IOCTL_SET_CONTEXT:
-			act_mode	= ACT_THREAD;
+			act_mode	= ACT_THREAD;	
 
 			if( mutex_lock_interruptible(&_deinterlace->read_lock))
 				return -EINTR;
@@ -2281,7 +2281,7 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 				mutex_unlock(&_deinterlace->read_lock);
 				return -EFAULT;
 			}
-			mutex_unlock(&_deinterlace->read_lock);
+			mutex_unlock(&_deinterlace->read_lock);			
 
 			alloc_dst_buf(&_deinterlace->dqset);
 		break;
@@ -2293,22 +2293,22 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 			if(copy_from_user(&qbuf, (Q_BUF *)arg, sizeof(Q_BUF)))
 			{
 				printk(KERN_ERR "%s: failed to copy_from_user()\n", __func__);
-				mutex_unlock(&_deinterlace->write_lock);
+				mutex_unlock(&_deinterlace->write_lock);			
 				return -EFAULT;
-			}
-			mutex_unlock(&_deinterlace->write_lock);
+			}	
+			mutex_unlock(&_deinterlace->write_lock);			
 
 			ret = check_exit_data(&qbuf);
-			if(ret == -1)
+			if(ret == -1)	
 			{
-				printk(KERN_INFO "[%s]queue error......!!\n", __func__);
+				printk(KERN_INFO "[%s]queue error......!!\n", __func__);		
 				return -1;
 			}
 
 			ret = _queue_frame_data(&qbuf);
-			if(ret == -1)
+			if(ret == -1)	
 			{
-				printk(KERN_INFO "[%s]queue error......!!\n", __func__);
+				printk(KERN_INFO "[%s]queue error......!!\n", __func__);		
 				return -1;
 			}
 
@@ -2318,15 +2318,15 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 			ret = _dequeue_frame_data(&dqbuf);
 
 			if( ret < 0 )
-			{
-				dbg_msg(KERN_INFO "[%s]STOP Dequeue!\n", __func__);
+			{	
+				dbg_msg(KERN_INFO "[%s]STOP Dequeue!\n", __func__);		
 				return ret;
 			}
-#if 0
-	printk(KERN_INFO "[%s] phys y : 0x%lX, phys cb : 0x%lX, phys cr : 0x%lX\n",
+#if 0	
+	printk(KERN_INFO "[%s] phys y : 0x%lX, phys cb : 0x%lX, phys cr : 0x%lX\n", 
 										__func__, dqbuf.dst_phys[0], dqbuf.dst_phys[1], dqbuf.dst_phys[2]);
 #endif
-			dqbuf_t = dqbuf;
+			dqbuf_t = dqbuf;	
 
 			if(mutex_lock_interruptible(&_deinterlace->read_lock))
 				return -EINTR;
@@ -2342,7 +2342,7 @@ static long deinterlace_ioctl(struct file *file, unsigned int cmd, unsigned long
 			set_unused_dstuf(&dqbuf_t);
 			break;
 		case IOCTL_START:
-			act_mode	= ACT_THREAD;
+			act_mode	= ACT_THREAD;	
 
 			if(copy_from_user(&_deinterlace->e_ctx, (EXE_CONTEXT *)arg, sizeof(EXE_CONTEXT)))
 			{
@@ -2377,7 +2377,7 @@ static int deinterlace_open(struct inode *inode, struct file *file)
 	{
 		atomic_inc(&me->open_count);
 		printk("%s: oepn count %d\n", __func__, atomic_read(&me->open_count));
-		return 0;
+		return 0; 
 	}
 
 	_initialize();
@@ -2442,7 +2442,7 @@ static int deinterlace_open(struct inode *inode, struct file *file)
 	mutex_init(&me->mtx_proc);
 	mutex_init(&me->read_lock);
 	mutex_init(&me->write_lock);
-
+	
 	seqlock_init(&_deinterlace->wq_lock);
 
 	atomic_inc(&me->open_count);
@@ -2485,7 +2485,7 @@ static int deinterlace_close(struct inode *inode, struct file *file)
 		kfifo_free(&me->data_dequeue_unused);
 		kfifo_free(&me->fd_queue);
 
-		if( me->dst_dqbuf )
+		if( me->dst_dqbuf ) 
 		{
 			 kfree(me->dst_dqbuf);
 			 me->dst_dqbuf = NULL;
@@ -2501,14 +2501,14 @@ static int deinterlace_close(struct inode *inode, struct file *file)
 	return 0;
 }
 
-static struct file_operations deinterlace_fops =
+static struct file_operations deinterlace_fops = 
 {
 	.open						=	deinterlace_open,
 	.release				=	deinterlace_close,
 	.unlocked_ioctl	=	deinterlace_ioctl
 };
 
-static struct miscdevice nxp_deinterlace_misc_device =
+static struct miscdevice nxp_deinterlace_misc_device = 
 {
 		.minor			=	MISC_DYNAMIC_MINOR,
 		.name				=	DEVICE_NAME,
@@ -2526,13 +2526,13 @@ static int deinterlace_probe(struct platform_device *dev)
 	{
 		pr_err("%s: failed to alloc nxp_deinterlace\n", __func__);
 		return -1;
-	}
+	} 
 
 	_deinterlace = me;
 
 	init_waitqueue_head(&(_deinterlace->wq_start));
 	init_waitqueue_head(&(_deinterlace->wq_end));
-
+	
 	init_waitqueue_head(&_deinterlace->wq_dst);
 
 	spin_lock_init(&_deinterlace->irq_lock);
@@ -2576,7 +2576,7 @@ static struct platform_device deinterlace_device = {
 static int __init deinterlace_init(void)
 {
 	int ret;
-
+	
 	ret = misc_register(&nxp_deinterlace_misc_device);
 	if( ret )
 	{

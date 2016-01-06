@@ -22,7 +22,7 @@
 //------------------------------------------------------------------------------
 //  includes
 //------------------------------------------------------------------------------
-#include "../base/nx_prototype.h"
+#include "nx_prototype.h"
 
 #ifdef	__cplusplus
 extern "C"
@@ -32,8 +32,8 @@ extern "C"
 //------------------------------------------------------------------------------
 //  defines
 //------------------------------------------------------------------------------
-#define NUMBER_OF_TIMER_CHANNEL	5
-#define NX_TIMER_INT		    4
+#define NX_TIMER_CHANNEL	5
+#define NX_TIMER_INT		4
 
 //------------------------------------------------------------------------------
 /// @brief  TIMER register set structure
@@ -91,10 +91,11 @@ U32		NX_TIMER_GetNumberOfChannel( void );
 ///	@name	Basic Interface
 //@{
 U32		NX_TIMER_GetPhysicalAddress( U32 ModuleIndex );
-
+//U32		NX_TIMER_GetResetNumber( U32 ModuleIndex, U32 ChannelIndex );
+//U32		NX_TIMER_GetNumberOfReset( void );
 U32		NX_TIMER_GetSizeOfRegisterSet( void );
-void	NX_TIMER_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*	NX_TIMER_GetBaseAddress( U32 ModuleIndex );
+void	NX_TIMER_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32		NX_TIMER_GetBaseAddress( U32 ModuleIndex );
 CBOOL	NX_TIMER_OpenModule( U32 ModuleIndex );
 CBOOL	NX_TIMER_CloseModule( U32 ModuleIndex );
 CBOOL	NX_TIMER_CheckBusy( U32 ModuleIndex );
@@ -158,7 +159,7 @@ CBOOL	NX_TIMER_GetOutInvert(U32 Channel);
 void	NX_TIMER_SetShotMode(U32 Channel, NX_TIMER_LOADMODE ShotMode);
 NX_TIMER_LOADMODE	NX_TIMER_GetShotMode(U32 Channel);
 
-void	NX_TIMER_UpdateCounter(U32 Channel );
+void	NX_TIMER_UpdateCounter(U32 Channel);
 
 void	NX_TIMER_Run(U32 Channel);
 void	NX_TIMER_Stop(U32 Channel);

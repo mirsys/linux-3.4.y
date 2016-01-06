@@ -221,8 +221,8 @@ U32		NX_DPC_GetNumberOfModule( void );
 //@{
 U32		NX_DPC_GetPhysicalAddress( U32 ModuleIndex );
 U32		NX_DPC_GetSizeOfRegisterSet( void );
-void	NX_DPC_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*	NX_DPC_GetBaseAddress( U32 ModuleIndex );
+void	NX_DPC_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32		NX_DPC_GetBaseAddress( U32 ModuleIndex );
 CBOOL	NX_DPC_OpenModule( U32 ModuleIndex );
 CBOOL	NX_DPC_CloseModule( U32 ModuleIndex );
 CBOOL	NX_DPC_CheckBusy( U32 ModuleIndex );

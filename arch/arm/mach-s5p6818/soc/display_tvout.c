@@ -506,60 +506,10 @@ static struct disp_process_ops tvout_ops = {
     .enable = tvout_enable,
 };
 
-static struct switch_dev tvout_switch;
-static ssize_t _enable_tvout(struct device *pdev,
-        struct device_attribute *attr, const char *buf, size_t n)
-{
-    if (!strncmp(buf, "1", 1)) {
-        printk("%s: enable tvout\n", __func__);
-        if (!switch_get_state(&tvout_switch)) {
-            nxp_soc_disp_device_connect_to(DISP_DEVICE_TVOUT, DISP_DEVICE_SYNCGEN1, NULL);
-            switch_set_state(&tvout_switch, 1);
-        }
-    } else {
-        printk("%s: disable tvout\n", __func__);
-        if (switch_get_state(&tvout_switch)) {
-            switch_set_state(&tvout_switch, 0);
-        }
-    }
-    return n;
-}
-
-static struct device_attribute tvout_attr = __ATTR(enable, 0666, NULL, _enable_tvout);
-static struct attribute *attrs[] = {
-    &tvout_attr.attr,
-    NULL,
-};
-
-static struct attribute_group attr_group = {
-    .attrs = (struct attribute **)attrs,
-};
-
-static int _create_sysfs(void)
-{
-    struct kobject *kobj = NULL;
-    int ret = 0;
-
-    kobj = kobject_create_and_add("tvout", &platform_bus.kobj);
-    if (! kobj) {
-        printk(KERN_ERR "Fail, create kobject for tvout\n");
-        return -ret;
-    }
-
-    ret = sysfs_create_group(kobj, &attr_group);
-    if (ret) {
-        printk(KERN_ERR "Fail, create sysfs group for tvout\n");
-        kobject_del(kobj);
-        return -ret;
-    }
-
-    return 0;
-}
-
->>>>>>> 83322c7... [FIX] tvout dynamic enable/disable
 static int tvout_probe(struct platform_device *pdev)
 {
     nxp_soc_disp_register_proc_ops(DISP_DEVICE_TVOUT, &tvout_ops);
+    nxp_soc_disp_device_connect_to(DISP_DEVICE_TVOUT, DISP_DEVICE_SYNCGEN1, NULL);
     return 0;
 }
 

@@ -110,9 +110,9 @@ static void _hw_run(struct nxp_csi *me)
     NX_TIEOFF_Set(TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAA, 3);
     NX_TIEOFF_Set(TIEOFFINDEX_OF_MIPI0_NX_DPSRAM_1R1W_EMAA, 3);
 
-    NX_MIPI_SetBaseAddress(me->module, (void*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(me->module)));
+    NX_MIPI_SetBaseAddress(me->module, (U32)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(me->module)));
     NX_CLKGEN_SetBaseAddress(NX_MIPI_GetClockNumber(me->module),
-            (void*)IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(NX_MIPI_GetClockNumber(me->module))));
+            (u32)IO_ADDRESS(NX_CLKGEN_GetPhysicalAddress(NX_MIPI_GetClockNumber(me->module))));
     NX_CLKGEN_SetClockDivisorEnable(NX_MIPI_GetClockNumber(me->module), CTRUE);
 
     nxp_soc_peri_reset_enter(RESET_ID_MIPI);

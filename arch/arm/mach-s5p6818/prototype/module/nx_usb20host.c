@@ -15,8 +15,9 @@
 //------------------------------------------------------------------------------
 #include <nx_chip.h>
 #include "nx_usb20host.h"
+#include <linux/string.h> // for memset
 
-static	NX_USB20HOST_RegisterSet *__g_pRegister[NUMBER_OF_USB20HOST_MODULE];
+static	NX_USB20HOST_RegisterSet *__g_pRegister[0];
 static	NX_USB20HOST_OHCI_RegisterSet *__g_pOhciRegister[0];
 static	NX_USB20HOST_APB_RegisterSet *__g_pApbRegister[0];
 
@@ -29,21 +30,17 @@ static	NX_USB20HOST_APB_RegisterSet *__g_pApbRegister[0];
 //------------------------------------------------------------------------------
 /**
  *	@brief	Initialize of prototype enviroment & local variables.
- *	@return  CTRUE	indicate that Initialize is successed.
- *			CFALSE	indicate that Initialize is failed.
+ *	@return \b CTRUE	indicate that Initialize is successed.\n
+ *			\b CFALSE	indicate that Initialize is failed.
  *	@see	NX_USB20HOST_GetNumberOfModule
  */
 CBOOL	NX_USB20HOST_Initialize( void )
 {
 	static CBOOL bInit = CFALSE;
-    int i;
 
 	if( CFALSE == bInit )
 	{
-        for(i = 0; i < NUMBER_OF_USB20HOST_MODULE; i++ )
-        {
-		    __g_pRegister[i] = CNULL;
-        }
+		memset( __g_pRegister, 0, sizeof(__g_pRegister) );
 		bInit = CTRUE;
 	}
 
@@ -53,7 +50,7 @@ CBOOL	NX_USB20HOST_Initialize( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get number of modules in the chip.
- *	@return		Module's number. 
+ *	@return		Module's number. \n
  *				It is equal to NUMBER_OF_USB20HOST_MODULE in <nx_chip.h>.
  *	@see		NX_USB20HOST_Initialize
  */
@@ -78,13 +75,13 @@ U32		NX_USB20HOST_GetSizeOfRegisterSet( void )
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
  */
-void	NX_USB20HOST_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
+void	NX_USB20HOST_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
     //NX_ASSERT( NUMBER_OF_USB20HOST_MODULE > ModuleIndex );
-    if( ModuleIndex == 0 ) { __g_pRegister[0]       = (NX_USB20HOST_RegisterSet *)BaseAddress; }
-    if( ModuleIndex == 1 ) { __g_pOhciRegister[0]   = (NX_USB20HOST_OHCI_RegisterSet *)BaseAddress; }
-    if( ModuleIndex == 2 ) { __g_pApbRegister[0]    = (NX_USB20HOST_APB_RegisterSet *)BaseAddress; }
+    if( ModuleIndex == 0 ) { __g_pRegister[0] = (NX_USB20HOST_RegisterSet *)BaseAddress; }
+    if( ModuleIndex == 1 ) { __g_pOhciRegister[0] = (NX_USB20HOST_RegisterSet *)BaseAddress; }
+    if( ModuleIndex == 2 ) { __g_pApbRegister[0] = (NX_USB20HOST_RegisterSet *)BaseAddress; }
 }
 
 //------------------------------------------------------------------------------
@@ -92,16 +89,16 @@ void	NX_USB20HOST_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
  *	@brief		Get a base address of register set
  *	@return		Module's base address.
  */
-void*	NX_USB20HOST_GetBaseAddress( U32 ModuleIndex )
+U32		NX_USB20HOST_GetBaseAddress( U32 ModuleIndex )
 {
     //NX_ASSERT( NUMBER_OF_USB20HOST_MODULE > ModuleIndex );
-	return (void*)__g_pRegister[ModuleIndex];
+	return (U32)__g_pRegister[ModuleIndex];
 }
 
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's physical address.
- *	@return		Module's physical address. 
+ *	@return		Module's physical address. \n
  *				It is equal to PHY_BASEADDR_USB20HOST?_MODULE in <nx_chip.h>.
  */
 //@TODO : ehci, apb
@@ -117,8 +114,8 @@ U32		NX_USB20HOST_GetPhysicalAddress( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize selected modules with default value.
- *	@return		 CTRUE	indicate that Initialize is successed. 
- *				 CFALSE	indicate that Initialize is failed.
+ *	@return		\b CTRUE	indicate that Initialize is successed. \n
+ *				\b CFALSE	indicate that Initialize is failed.
  */
 CBOOL	NX_USB20HOST_OpenModule( U32 ModuleIndex )
 {
@@ -131,8 +128,8 @@ CBOOL	NX_USB20HOST_OpenModule( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Deinitialize selected module to the proper stage.
- *	@return		 CTRUE	indicate that Deinitialize is successed. 
- *				 CFALSE	indicate that Deinitialize is failed.
+ *	@return		\b CTRUE	indicate that Deinitialize is successed. \n
+ *				\b CFALSE	indicate that Deinitialize is failed.
  */
 CBOOL	NX_USB20HOST_CloseModule( U32 ModuleIndex )
 {
@@ -145,8 +142,8 @@ CBOOL	NX_USB20HOST_CloseModule( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether the selected modules is busy or not.
- *	@return		 CTRUE	indicate that Module is Busy. 
- *				 CFALSE	indicate that Module is NOT Busy.
+ *	@return		\b CTRUE	indicate that Module is Busy. \n
+ *				\b CFALSE	indicate that Module is NOT Busy.
  */
 CBOOL	NX_USB20HOST_CheckBusy( U32 ModuleIndex )
 {
@@ -162,8 +159,14 @@ CBOOL	NX_USB20HOST_CheckBusy( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's clock index.
- *	@return		Module's clock index.
+ *	@return		Module's clock index.\n
  *				It is equal to CLOCKINDEX_OF_USB20HOST?_MODULE in <nx_chip.h>.
+ *	@see		NX_CLKGEN_SetClockDivisorEnable,
+ *				NX_CLKGEN_GetClockDivisorEnable,
+ *				NX_CLKGEN_SetClockSource,
+ *				NX_CLKGEN_GetClockSource,
+ *				NX_CLKGEN_SetClockDivisor,
+ *				NX_CLKGEN_GetClockDivisor
  */
 U32 NX_USB20HOST_GetClockNumber ( U32 ModuleIndex )
 {
@@ -179,8 +182,11 @@ U32 NX_USB20HOST_GetClockNumber ( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's reset index.
- *	@return		Module's reset index.
+ *	@return		Module's reset index.\n
  *				It is equal to RESETINDEX_OF_USB20HOST?_MODULE_i_nRST in <nx_chip.h>.
+ *	@see		NX_RSTCON_Enter,
+ *				NX_RSTCON_Leave,
+ *				NX_RSTCON_GetStatus
  */
 U32 NX_USB20HOST_GetResetNumber ( U32 ModuleIndex )
 {
@@ -191,64 +197,6 @@ U32 NX_USB20HOST_GetResetNumber ( U32 ModuleIndex )
 	NX_CASSERT( NUMBER_OF_USB20HOST_MODULE == (sizeof(ResetNumber)/sizeof(ResetNumber[0])) );
     //NX_ASSERT( NUMBER_OF_USB20HOST_MODULE > ModuleIndex );
 	return	ResetNumber[ModuleIndex];
-}
-
-
-//------------------------------------------------------------------------------
-//	PAD Interface
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-/**
- *	@brief		Get number of PAD mode
- *	@param[in]	ModuleIndex	an index of module.
- *	@return		number of PAD mode.
- */
-U32 NX_USB20HOST_GetNumberOfPADMode ( U32 ModuleIndex )
-{
-	NX_DISABLE_UNUSED_VAR_WARNING(ModuleIndex);
-	return 1;
-}
-
-void NX_PAD_SetPadFunctionEnable( U32 PADIndex, U32 ModeIndex )
-{	
-    // Warrning prevention.
-    PADIndex = PADIndex;
-    ModeIndex = ModeIndex;
-    
-	NX_DISABLE_UNUSED_VAR_WARNING(ModeIndex);
-	NX_GPIO_SetPadFunctionEnable( PADIndex );		
-}
-
-//------------------------------------------------------------------------------
-/**
- *	@brief		Enable PAD for a module. 
- *	@param[in]	ModuleIndex	an index of module.
- *	@see		NX_USB20HOST_GetNumberOfPADMode
- */
-U32 NX_USB20HOST_EnablePAD ( U32 ModuleIndex, U32 ModeIndex )
-{
-	U32 i;
-	const U32  PADNumber[][NUMBER_OF_USB20HOST_MODULE] =	{
-	     { PADINDEX_WITH_CHANNEL_LIST( USB20HOST, io_DP0    ) },
-	     { PADINDEX_WITH_CHANNEL_LIST( USB20HOST, io_DM0    ) },
-	     { PADINDEX_WITH_CHANNEL_LIST( USB20HOST, io_RKELVIN) },
-	     { PADINDEX_WITH_CHANNEL_LIST( USB20HOST, io_STROBE1) },
-	     { PADINDEX_WITH_CHANNEL_LIST( USB20HOST, io_DATA1  ) }
-	};
-	NX_CASSERT( NUMBER_OF_USB20HOST_MODULE == (sizeof(PADNumber[0])/sizeof(PADNumber[0][0])) ); 
-	NX_ASSERT( NUMBER_OF_USB20HOST_MODULE > 0 );
-	
-	for(i=0; i<sizeof( PADNumber)/sizeof(PADNumber[0]); i++)
-	{
-//		NX_SWITCHDEVICE_Set_Switch_Enable ( PADNumber[i][0] );
-		NX_PAD_SetPadFunctionEnable       ( PADNumber[i][0], ModeIndex );		
-	}
-	
-	//for(i=7; i<sizeof( PADNumber)/sizeof(PADNumber[0]); i++)
-	//{
-	//	NX_SWITCHDEVICE_Set_Switch_Enable ( PADNumber[i][0] );
-	//	NX_PAD_SetPadFunctionEnable       ( PADNumber[i][0], 0 );		
-	//}
 }
 
 

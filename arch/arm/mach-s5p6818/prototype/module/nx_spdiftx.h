@@ -20,7 +20,7 @@
 //------------------------------------------------------------------------------
 //  includes
 //------------------------------------------------------------------------------
-#include "../base/nx_prototype.h"
+#include "nx_prototype.h"
 
 #ifdef	__cplusplus
 extern "C"
@@ -52,47 +52,6 @@ struct NX_SPDIFTX_RegisterSet
 //------------------------------------------------------------------------------
 /// enum
 //------------------------------------------------------------------------------
-
-typedef enum
-{
-	NX_SPDIFTX_INTERNAL_CLK = 0,
-	NX_SPDIFTX_EXTERNAL_CLK = 1
-} NX_SPDIFTX_MCLK;;
-
-typedef enum
-{
-	NX_SPDIFTX_TRIGGER_0DEPTH  = 0,
-	NX_SPDIFTX_TRIGGER_1DEPTH  = 1,
-	NX_SPDIFTX_TRIGGER_4DEPTH  = 2,
-	NX_SPDIFTX_TRIGGER_6DEPTH  = 3,
-	NX_SPDIFTX_TRIGGER_10DEPTH = 4,
-	NX_SPDIFTX_TRIGGER_12DEPTH = 5,
-	NX_SPDIFTX_TRIGGER_14DEPTH = 6,
-	NX_SPDIFTX_TRIGGER_15DEPTH	= 7
-
-} NX_SPDIFTX_TRIGGER_LEVEL;
-
-typedef enum
-{
-	NX_SPDIFTX_MODE_DMA			= 0,
-	NX_SPDIFTX_MODE_POLLING		= 1,
-	NX_SPDIFTX_MODE_INTERRUPT	= 2
-} NX_SPDIFTX_TRANSFER_MODE;
-
-typedef enum
-{
-	NX_SPDIFTX_SAMPLE_256FS = 0,
-	NX_SPDIFTX_SAMPLE_384FS = 1,
-	NX_SPDIFTX_SAMPLE_512FS = 2
-} NX_SPIDFTX_MCLK_SAMPLE;
-
-typedef enum
-{
-	NX_SPDIFTX_DATA_BIT_16	= 0,
-	NX_SPDIFTX_DATA_BIT_20	= 1,
-	NX_SPDIFTX_DATA_BIT_24	= 2
-} NX_SPDIFTX_DATA_BIT;
-
 enum
 {
 	NX_SPDIFTX_FFLV_INTR_EN			= 15,	///< FIFO_level interrupt enable bitnum
@@ -109,14 +68,13 @@ enum
 	NX_SPDIFTX_STED_INTR_PD			= 7		///< Stream end interrupt pending bitnum
 };
 
-typedef enum
+enum
 {
 	NX_SPDIFTX_BIG_ENDIAN			= 0,	///< big_endian
 	NX_SPDIFTX_4BYTE_SWAP			= 1,	///< 4byte_swap
 	NX_SPDIFTX_3BYTE_SWAP			= 2,	///< 3byte_swap
 	NX_SPDIFTX_2BYTE_SWAP			= 3 	///< 2byte_swap
-	
-} NX_SPDIFTX_SWAP;
+};
 
 //------------------------------------------------------------------------------
 /// @name	Module Interface
@@ -130,8 +88,8 @@ U32		NX_SPDIFTX_GetNumberOfModule( void );
 //@{
 U32		NX_SPDIFTX_GetPhysicalAddress( U32 ModuleIndex );
 U32		NX_SPDIFTX_GetSizeOfRegisterSet( void );
-void	NX_SPDIFTX_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*	NX_SPDIFTX_GetBaseAddress( U32 ModuleIndex );
+void	NX_SPDIFTX_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32		NX_SPDIFTX_GetBaseAddress( U32 ModuleIndex );
 CBOOL	NX_SPDIFTX_OpenModule( U32 ModuleIndex );
 CBOOL	NX_SPDIFTX_CloseModule( U32 ModuleIndex );
 CBOOL	NX_SPDIFTX_CheckBusy( U32 ModuleIndex );
@@ -182,50 +140,6 @@ U32		NX_SPDIFTX_GetDMABusWidth( U32 ModuleIndex );
 /// @name	Configuration operations
 //--------------------------------------------------------------------------
 //@{
-
-void				NX_SPDIFTX_SetMCLK( U32 ModuleIndex, NX_SPDIFTX_MCLK MainClk );
-NX_SPDIFTX_MCLK		NX_SPDIFTX_GetMCLK( U32 ModuleIndex );
-
-
-CBOOL	NX_SPDIF_GetClockDownReady( U32 ModuleIndex );
-void	NX_SPDIFTX_SetPowerOn( U32 ModuleIndex, CBOOL PowerOn );
-CBOOL	NX_SPDIFTX_GetPowerOn( U32 ModuleIndex );
-
-
-
-CBOOL	NX_SPDIFTX_IsFIFOEmpty(U32 ModuleIndex);
-CBOOL	NX_SPDIFTX_IsFIFOFull(U32 ModuleIndex);
-U32		NX_SPDIFTX_GetFIFOLVL(U32 ModuleIndex);
-
-void	NX_SPDIFTX_SetTriggerLevel( U32 ModuleIndex, NX_SPDIFTX_TRIGGER_LEVEL TX_RDY_LVL );
-NX_SPDIFTX_TRIGGER_LEVEL  	NX_SPDIFTX_GetTriggerLevel( U32 ModuleIndex );
-
-//--------------------------------------------------------------------------
-//@{
-void	NX_SPDIFTX_SetTransferMode( U32 ModuleIndex, NX_SPDIFTX_TRANSFER_MODE Mode );
-NX_SPDIFTX_TRANSFER_MODE  	NX_SPDIFTX_GetTransferMode( U32 ModuleIndex );
-void	NX_SPDIFTX_SetEndianFormat( U32 ModuleIndex, NX_SPDIFTX_SWAP Swap );
-NX_SPDIFTX_SWAP  NX_SPDIFTX_GetEndianFormat( U32 ModuleIndex );
-
-void	NX_SPDIFTX_SetUserData( U32 ModuleIndex, CBOOL UserData );
-CBOOL  NX_SPDIFTX_GetUserData( U32 ModuleIndex );
-
-
-void	NX_SPDIFTX_SetSoftwareReset( U32 ModuleIndex, CBOOL Enable );
-CBOOL  	NX_SPDIFTX_GetSoftwareReset( U32 ModuleIndex );
-
-void					NX_SPDIFTX_SetMCLKSamplingSel( U32 ModuleIndex, NX_SPIDFTX_MCLK_SAMPLE Sample );
-NX_SPIDFTX_MCLK_SAMPLE  NX_SPDIFTX_GetMCLKSamplingSel( U32 ModuleIndex );
-
-
-void	NX_SPDIFTX_SetBitWidth( U32 ModuleIndex, NX_SPDIFTX_DATA_BIT DataBit );
-NX_SPDIFTX_DATA_BIT  NX_SPDIFTX_GetBitWidth( U32 ModuleIndex );
-void	NX_SPDIFTX_SetTransferType( U32 ModuleIndex, CBOOL Type );
-CBOOL  NX_SPDIFTX_GetTransferType( U32 ModuleIndex );
-//@}
-
-
-//--------------------------------------------------------------------------
 void	NX_SPDIFTX_SetSPDCLKCON( U32 ModuleIndex, U32 value );
 U32		NX_SPDIFTX_GetSPDCLKCON( U32 ModuleIndex );
 

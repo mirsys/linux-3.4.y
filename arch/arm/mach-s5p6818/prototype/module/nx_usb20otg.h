@@ -150,7 +150,7 @@ typedef struct
 ///	@name	USB20OTG Interface
 //------------------------------------------------------------------------------
 //@{
-U32   NX_USB20OTG_GetTEMP( void );
+U32   NX_USB20OTG_GetTEMP(  );
 //@}
 
 //------------------------------------------------------------------------------
@@ -161,9 +161,9 @@ CBOOL NX_USB20OTG_Initialize( void );
 U32   NX_USB20OTG_GetNumberOfModule( void );
 
 U32   NX_USB20OTG_GetSizeOfRegisterSet( void );
-void  NX_USB20OTG_SetBaseAddress(  U32 ModuleIndex, void* BaseAddress );
-void*  NX_USB20OTG_GetBaseAddress( U32 ModuleIndex );
-U32   NX_USB20OTG_GetPhysicalAddress ( U32 ModuleIndex );
+void  NX_USB20OTG_SetBaseAddress(  U32 aa, U32 BaseAddress );
+U32   NX_USB20OTG_GetBaseAddress( U32 aa );
+U32   NX_USB20OTG_GetPhysicalAddress ( U32 aa );
 CBOOL NX_USB20OTG_OpenModule(  );
 CBOOL NX_USB20OTG_CloseModule(  );
 CBOOL NX_USB20OTG_CheckBusy(  );
@@ -173,14 +173,14 @@ CBOOL NX_USB20OTG_CheckBusy(  );
 ///	@name	clock Interface
 //------------------------------------------------------------------------------
 //@{
-U32 NX_USB20OTG_GetClockNumber ( void );
+U32 NX_USB20OTG_GetClockNumber (  );
 //@}
 
 //------------------------------------------------------------------------------
 ///	@name	reset Interface
 //------------------------------------------------------------------------------
 //@{
-U32 NX_USB20OTG_GetResetNumber ( void );
+U32 NX_USB20OTG_GetResetNumber (  );
 //@}
 
 //------------------------------------------------------------------------------
@@ -195,10 +195,10 @@ typedef enum
     NX_USB20OTG_INT_TEST2 = 2, ///< test2 interrupt
 } NX_USB20OTG_INT;
 void  NX_USB20OTG_SetInterruptEnableAll(  CBOOL Enable );
-CBOOL NX_USB20OTG_GetInterruptEnableAll( void );
-CBOOL NX_USB20OTG_GetInterruptPendingAll( void );
-void  NX_USB20OTG_ClearInterruptPendingAll( void );
-S32   NX_USB20OTG_GetInterruptPendingNumber( void );
+CBOOL NX_USB20OTG_GetInterruptEnableAll(  );
+CBOOL NX_USB20OTG_GetInterruptPendingAll(  );
+void  NX_USB20OTG_ClearInterruptPendingAll(  );
+S32   NX_USB20OTG_GetInterruptPendingNumber(  );
 //@}
 
 //------------------------------------------------------------------------------
@@ -287,50 +287,50 @@ void OTG_SetDOEPINT	    ( U32 tNo, U32 tDOEPINT	);
 void OTG_SetDOEPTSIZ	( U32 tNo, U32 tDOEPTSIZ	);
 void OTG_SetDOEPDMA	    ( U32 tNo, U32 tDOEPDMA	);
 
-U32 OTG_GetGOTGCTL      ( void );
-U32 OTG_GetGOTGINT      ( void );
-U32 OTG_GetGAHBCFG      ( void );
-U32 OTG_GetGUSBCFG      ( void );
-U32 OTG_GetGRSTCTL      ( void );
-U32 OTG_GetGINTSTS      ( void );
-U32 OTG_GetGINTMSK      ( void );
-U32 OTG_GetGRXSTSR      ( void );
-U32 OTG_GetGRXSTSP      ( void );
-U32 OTG_GetGRXFSIZ      ( void );
-U32 OTG_GetGNPTXFSIZ    ( void );
-U32 OTG_GetGNPTXSTS     ( void );
-U32 OTG_GetGI2CCTL      ( void );
-U32 OTG_GetGPVNDCTL     ( void );
-U32 OTG_GetGGPIO        ( void );
-U32 OTG_GetGUID         ( void );
-U32 OTG_GetGSNPSID      ( void );
-U32 OTG_GetGHWCFG1      ( void );
-U32 OTG_GetGHWCFG2      ( void );
-U32 OTG_GetGHWCFG3      ( void );
-U32 OTG_GetGHWCFG4      ( void );
-U32 OTG_GetGLPMCFG      ( void );
-U32 OTG_GetHPTXFSIZ     ( void );
-U32 OTG_GetHCFG         ( void );
-U32 OTG_GetHFIR         ( void );
-U32 OTG_GetHFNUM        ( void );
-U32 OTG_GetHPTXSTS      ( void );
-U32 OTG_GetHAINT        ( void );
-U32 OTG_GetHAINTMSK     ( void );
-U32 OTG_GetHPRT         ( void );
-U32 OTG_GetDCFG         ( void );
-U32 OTG_GetDCTL         ( void );
-U32 OTG_GetDSTS         ( void );
-U32 OTG_GetDIEPMSK      ( void );
-U32 OTG_GetDOEPMSK      ( void );
-U32 OTG_GetDAINT        ( void );
-U32 OTG_GetDAINTMSK     ( void );
-U32 OTG_GetDTKNQR1      ( void );
-U32 OTG_GetDTKNQR2      ( void );
-U32 OTG_GetDVBUSDIS     ( void );
-U32 OTG_GetDVBUSPULSE   ( void );
-U32 OTG_GetDTKNQR3      ( void );
-U32 OTG_GetDTKNQR4      ( void );
-U32 OTG_GetPCGCCTL      ( void );
+U32 OTG_GetGOTGCTL      ();
+U32 OTG_GetGOTGINT      ();
+U32 OTG_GetGAHBCFG      ();
+U32 OTG_GetGUSBCFG      ();
+U32 OTG_GetGRSTCTL      ();
+U32 OTG_GetGINTSTS      ();
+U32 OTG_GetGINTMSK      ();
+U32 OTG_GetGRXSTSR      ();
+U32 OTG_GetGRXSTSP      ();
+U32 OTG_GetGRXFSIZ      ();
+U32 OTG_GetGNPTXFSIZ    ();
+U32 OTG_GetGNPTXSTS     ();
+U32 OTG_GetGI2CCTL      ();
+U32 OTG_GetGPVNDCTL     ();
+U32 OTG_GetGGPIO        ();
+U32 OTG_GetGUID         ();
+U32 OTG_GetGSNPSID      ();
+U32 OTG_GetGHWCFG1      ();
+U32 OTG_GetGHWCFG2      ();
+U32 OTG_GetGHWCFG3      ();
+U32 OTG_GetGHWCFG4      ();
+U32 OTG_GetGLPMCFG      ();
+U32 OTG_GetHPTXFSIZ     ();
+U32 OTG_GetHCFG         ();
+U32 OTG_GetHFIR         ();
+U32 OTG_GetHFNUM        ();
+U32 OTG_GetHPTXSTS      ();
+U32 OTG_GetHAINT        ();
+U32 OTG_GetHAINTMSK     ();
+U32 OTG_GetHPRT         ();
+U32 OTG_GetDCFG         ();
+U32 OTG_GetDCTL         ();
+U32 OTG_GetDSTS         ();
+U32 OTG_GetDIEPMSK      ();
+U32 OTG_GetDOEPMSK      ();
+U32 OTG_GetDAINT        ();
+U32 OTG_GetDAINTMSK     ();
+U32 OTG_GetDTKNQR1      ();
+U32 OTG_GetDTKNQR2      ();
+U32 OTG_GetDVBUSDIS     ();
+U32 OTG_GetDVBUSPULSE   ();
+U32 OTG_GetDTKNQR3      ();
+U32 OTG_GetDTKNQR4      ();
+U32 OTG_GetPCGCCTL      ();
 //U32 OTG_GetTESTPARM0    ();
 //U32 OTG_GetTESTPARM1    ();
 //U32 OTG_GetTESTPARM2    ();
@@ -368,11 +368,11 @@ void OTG_SetGDFIFOCFG 	( U32 tGDFIFOCFG 	);
 void OTG_SetGADPCTL 	( U32 tGADPCTL 	    );
 void OTG_SetDEACHINT 	( U32 tDEACHINT 	);
 void OTG_SetDEACHINTMSK ( U32 tDEACHINTMSK	);
-U32 OTG_GetGPWRDN 		( void );
-U32 OTG_GetGDFIFOCFG 	( void );
-U32 OTG_GetGADPCTL 		( void );
-U32 OTG_GetDEACHINT 	( void );
-U32 OTG_GetDEACHINTMSK 	( void );
+U32 OTG_GetGPWRDN 		();
+U32 OTG_GetGDFIFOCFG 	();
+U32 OTG_GetGADPCTL 		();
+U32 OTG_GetDEACHINT 	();
+U32 OTG_GetDEACHINTMSK 	();
 
 void OTG_SetDIEPEACHMSK	( U32 tNo, U32 tDIEPEACHMSK	);
 void OTG_SetDOEPEACHMSK	( U32 tNo, U32 tDOEPEACHMSK	);
@@ -496,50 +496,50 @@ typedef struct
 	void (*SetDOEPTSIZ		) ( U32 tNo, U32 tDOEPTSIZ	);
 	void (*SetDOEPDMA	    ) ( U32 tNo, U32 tDOEPDMA	);
 
-	U32 (*GetGOTGCTL      	) ( void );
-	U32 (*GetGOTGINT      	) ( void );
-	U32 (*GetGAHBCFG      	) ( void );
-	U32 (*GetGUSBCFG      	) ( void );
-	U32 (*GetGRSTCTL      	) ( void );
-	U32 (*GetGINTSTS      	) ( void );
-	U32 (*GetGINTMSK      	) ( void );
-	U32 (*GetGRXSTSR      	) ( void );
-	U32 (*GetGRXSTSP      	) ( void );
-	U32 (*GetGRXFSIZ      	) ( void );
-	U32 (*GetGNPTXFSIZ    	) ( void );
-	U32 (*GetGNPTXSTS     	) ( void );
-	U32 (*GetGI2CCTL      	) ( void );
-	U32 (*GetGPVNDCTL     	) ( void );
-	U32 (*GetGGPIO        	) ( void );
-	U32 (*GetGUID         	) ( void );
-	U32 (*GetGSNPSID      	) ( void );
-	U32 (*GetGHWCFG1      	) ( void );
-	U32 (*GetGHWCFG2      	) ( void );
-	U32 (*GetGHWCFG3      	) ( void );
-	U32 (*GetGHWCFG4      	) ( void );
-	U32 (*GetGLPMCFG      	) ( void );
-	U32 (*GetHPTXFSIZ     	) ( void );
-	U32 (*GetHCFG         	) ( void );
-	U32 (*GetHFIR         	) ( void );
-	U32 (*GetHFNUM        	) ( void );
-	U32 (*GetHPTXSTS      	) ( void );
-	U32 (*GetHAINT        	) ( void );
-	U32 (*GetHAINTMSK     	) ( void );
-	U32 (*GetHPRT         	) ( void );
-	U32 (*GetDCFG         	) ( void );
-	U32 (*GetDCTL         	) ( void );
-	U32 (*GetDSTS         	) ( void );
-	U32 (*GetDIEPMSK      	) ( void );
-	U32 (*GetDOEPMSK      	) ( void );
-	U32 (*GetDAINT        	) ( void );
-	U32 (*GetDAINTMSK     	) ( void );
-	U32 (*GetDTKNQR1      	) ( void );
-	U32 (*GetDTKNQR2      	) ( void );
-	U32 (*GetDVBUSDIS     	) ( void );
-	U32 (*GetDVBUSPULSE   	) ( void );
-	U32 (*GetDTKNQR3      	) ( void );
-	U32 (*GetDTKNQR4      	) ( void );
-	U32 (*GetPCGCCTL      	) ( void );
+	U32 (*GetGOTGCTL      	) ();
+	U32 (*GetGOTGINT      	) ();
+	U32 (*GetGAHBCFG      	) ();
+	U32 (*GetGUSBCFG      	) ();
+	U32 (*GetGRSTCTL      	) ();
+	U32 (*GetGINTSTS      	) ();
+	U32 (*GetGINTMSK      	) ();
+	U32 (*GetGRXSTSR      	) ();
+	U32 (*GetGRXSTSP      	) ();
+	U32 (*GetGRXFSIZ      	) ();
+	U32 (*GetGNPTXFSIZ    	) ();
+	U32 (*GetGNPTXSTS     	) ();
+	U32 (*GetGI2CCTL      	) ();
+	U32 (*GetGPVNDCTL     	) ();
+	U32 (*GetGGPIO        	) ();
+	U32 (*GetGUID         	) ();
+	U32 (*GetGSNPSID      	) ();
+	U32 (*GetGHWCFG1      	) ();
+	U32 (*GetGHWCFG2      	) ();
+	U32 (*GetGHWCFG3      	) ();
+	U32 (*GetGHWCFG4      	) ();
+	U32 (*GetGLPMCFG      	) ();
+	U32 (*GetHPTXFSIZ     	) ();
+	U32 (*GetHCFG         	) ();
+	U32 (*GetHFIR         	) ();
+	U32 (*GetHFNUM        	) ();
+	U32 (*GetHPTXSTS      	) ();
+	U32 (*GetHAINT        	) ();
+	U32 (*GetHAINTMSK     	) ();
+	U32 (*GetHPRT         	) ();
+	U32 (*GetDCFG         	) ();
+	U32 (*GetDCTL         	) ();
+	U32 (*GetDSTS         	) ();
+	U32 (*GetDIEPMSK      	) ();
+	U32 (*GetDOEPMSK      	) ();
+	U32 (*GetDAINT        	) ();
+	U32 (*GetDAINTMSK     	) ();
+	U32 (*GetDTKNQR1      	) ();
+	U32 (*GetDTKNQR2      	) ();
+	U32 (*GetDVBUSDIS     	) ();
+	U32 (*GetDVBUSPULSE   	) ();
+	U32 (*GetDTKNQR3      	) ();
+	U32 (*GetDTKNQR4      	) ();
+	U32 (*GetPCGCCTL      	) ();
 
 	U32 (*GetDPTXFSIZ    	) ( U32 tNo);
 

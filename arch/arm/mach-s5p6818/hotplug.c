@@ -134,12 +134,12 @@ int platform_cpu_kill(unsigned int cpu)
 	return 1;
 }
 
+static void *do_suspend[NR_CPUS-1] = { 0 };
 extern bool pm_suspend_enter;
-extern void (*core_do_suspend)(ulong, ulong);
 
 static inline void platform_cpu_lowpower(int cpu)
 {
-	void (*power_down)(ulong, ulong) = (void*)(core_do_suspend + 0x220);
+	void (*power_down)(ulong, ulong) = NULL;
 	int spurious = 0;
 
 	/*
@@ -154,8 +154,12 @@ static inline void platform_cpu_lowpower(int cpu)
 	/*
 	 * enter SRAM text when suspend
 	 */
-	if (NULL == core_do_suspend)
-		lldebugout("SMP: Fail, cpu.%d ioremap for suspend callee\n", cpu);
+	if (NULL == do_suspend[cpu-1]) {
+		do_suspend[cpu-1] = __arm_ioremap_exec(0xffff0000, 0x10000, 0);
+		if (NULL == do_suspend[cpu-1])
+			printk("SMP: Fail, cpu.%d ioremap for suspend callee\n", cpu);
+	}
+	power_down = (void (*)(ulong, ulong))((ulong)do_suspend[cpu-1] + 0x220);
 
 	dmb();
 	power_down(IO_ADDRESS(PHY_BASEADDR_ALIVE), IO_ADDRESS(PHY_BASEADDR_DREX));

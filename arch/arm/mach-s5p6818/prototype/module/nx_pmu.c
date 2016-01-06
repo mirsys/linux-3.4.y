@@ -28,8 +28,8 @@ static	struct NX_PMU_RegisterSet *__g_pRegister = CNULL;
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize of prototype enviroment & local variables.
- *	@return		 CTRUE	indicates that Initialize is succeeded.\n
- *				 CFALSE	indicates that Initialize is failed.\n
+ *	@return		\b CTRUE	indicates that Initialize is succeeded.\n
+ *				\b CFALSE	indicates that Initialize is failed.\n
  *	@see									NX_PMU_GetNumberOfModule
  */
 CBOOL	NX_PMU_Initialize( void )
@@ -63,6 +63,10 @@ U32		NX_PMU_GetNumberOfModule( void )
 /**
  *	@brief		Get module's physical address.
  *	@return		Module's physical address
+ *	@see											NX_PMU_GetSizeOfRegisterSet,
+ *				NX_PMU_SetBaseAddress,			NX_PMU_GetBaseAddress,
+ *				NX_PMU_OpenModule,				NX_PMU_CloseModule,
+ *				NX_PMU_CheckBusy,				NX_PMU_CanPowerDown
  */
 U32		NX_PMU_GetPhysicalAddress( void )
 {
@@ -73,6 +77,10 @@ U32		NX_PMU_GetPhysicalAddress( void )
 /**
  *	@brief		Get a size, in byte, of register set.
  *	@return		Size of module's register set.
+ *	@see		NX_PMU_GetPhysicalAddress,
+ *				NX_PMU_SetBaseAddress,			NX_PMU_GetBaseAddress,
+ *				NX_PMU_OpenModule,				NX_PMU_CloseModule,
+ *				NX_PMU_CheckBusy,				NX_PMU_CanPowerDown
  */
 U32		NX_PMU_GetSizeOfRegisterSet( void )
 {
@@ -84,8 +92,12 @@ U32		NX_PMU_GetSizeOfRegisterSet( void )
  *	@brief		Set a base address of register set.
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
+ *	@see		NX_PMU_GetPhysicalAddress,		NX_PMU_GetSizeOfRegisterSet,
+ *													NX_PMU_GetBaseAddress,
+ *				NX_PMU_OpenModule,				NX_PMU_CloseModule,
+ *				NX_PMU_CheckBusy,				NX_PMU_CanPowerDown
  */
-void	NX_PMU_SetBaseAddress( void* BaseAddress )
+void	NX_PMU_SetBaseAddress( U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
 
@@ -96,17 +108,25 @@ void	NX_PMU_SetBaseAddress( void* BaseAddress )
 /**
  *	@brief		Get a base address of register set
  *	@return		Module's base address.
+ *	@see		NX_PMU_GetPhysicalAddress,		NX_PMU_GetSizeOfRegisterSet,
+ *				NX_PMU_SetBaseAddress,
+ *				NX_PMU_OpenModule,				NX_PMU_CloseModule,
+ *				NX_PMU_CheckBusy,				NX_PMU_CanPowerDown
  */
-void*	NX_PMU_GetBaseAddress( void )
+U32		NX_PMU_GetBaseAddress( void )
 {
-	return (void*)__g_pRegister;
+	return (U32)__g_pRegister;
 }
 
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize selected modules with default value.
- *	@return		 CTRUE	indicates that Initialize is succeeded. 
- *				 CFALSE	indicates that Initialize is failed.
+ *	@return		\b CTRUE	indicates that Initialize is succeeded. \n
+ *				\b CFALSE	indicates that Initialize is failed.
+ *	@see		NX_PMU_GetPhysicalAddress,		NX_PMU_GetSizeOfRegisterSet,
+ *				NX_PMU_SetBaseAddress,			NX_PMU_GetBaseAddress,
+ *													NX_PMU_CloseModule,
+ *				NX_PMU_CheckBusy,				NX_PMU_CanPowerDown
  */
 CBOOL	NX_PMU_OpenModule( void )
 {
@@ -116,8 +136,12 @@ CBOOL	NX_PMU_OpenModule( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Deinitialize selected module to the proper stage.
- *	@return		 CTRUE	indicates that Deinitialize is succeeded. 
- *				 CFALSE	indicates that Deinitialize is failed.
+ *	@return		\b CTRUE	indicates that Deinitialize is succeeded. \n
+ *				\b CFALSE	indicates that Deinitialize is failed.
+ *	@see		NX_PMU_GetPhysicalAddress,		NX_PMU_GetSizeOfRegisterSet,
+ *				NX_PMU_SetBaseAddress,			NX_PMU_GetBaseAddress,
+ *				NX_PMU_OpenModule,
+ *				NX_PMU_CheckBusy,				NX_PMU_CanPowerDown
  */
 CBOOL	NX_PMU_CloseModule( void )
 {
@@ -127,8 +151,12 @@ CBOOL	NX_PMU_CloseModule( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether the selected modules is busy or not.
- *	@return		 CTRUE	indicates that Module is Busy. 
- *				 CFALSE	indicates that Module is NOT Busy.
+ *	@return		\b CTRUE	indicates that Module is Busy. \n
+ *				\b CFALSE	indicates that Module is NOT Busy.
+ *	@see		NX_PMU_GetPhysicalAddress,		NX_PMU_GetSizeOfRegisterSet,
+ *				NX_PMU_SetBaseAddress,			NX_PMU_GetBaseAddress,
+ *				NX_PMU_OpenModule,				NX_PMU_CloseModule,
+ *													NX_PMU_CanPowerDown
  */
 CBOOL	NX_PMU_CheckBusy( void )
 {
@@ -138,8 +166,12 @@ CBOOL	NX_PMU_CheckBusy( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicaes whether the selected modules is ready to enter power-down stage
- *	@return		 CTRUE	indicates that Ready to enter power-down stage. 
- *				 CFALSE	indicates that This module can't enter to power-down stage.
+ *	@return		\b CTRUE	indicates that Ready to enter power-down stage. \n
+ *				\b CFALSE	indicates that This module can't enter to power-down stage.
+ *	@see		NX_PMU_GetPhysicalAddress,		NX_PMU_GetSizeOfRegisterSet,
+ *				NX_PMU_SetBaseAddress,			NX_PMU_GetBaseAddress,
+ *				NX_PMU_OpenModule,				NX_PMU_CloseModule,
+ *				NX_PMU_CheckBusy
  */
 CBOOL	NX_PMU_CanPowerDown( void )
 {

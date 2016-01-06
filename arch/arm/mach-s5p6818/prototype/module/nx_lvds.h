@@ -95,10 +95,8 @@ CBOOL NX_LVDS_Initialize( void );
 U32   NX_LVDS_GetNumberOfModule( void );
 
 U32   NX_LVDS_GetSizeOfRegisterSet( void );
-
-void  NX_LVDS_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void* NX_LVDS_GetBaseAddress( U32 ModuleIndex );
-
+void  NX_LVDS_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_LVDS_GetBaseAddress( U32 ModuleIndex );
 U32   NX_LVDS_GetPhysicalAddress ( U32 ModuleIndex );
 CBOOL NX_LVDS_OpenModule( U32 ModuleIndex );
 CBOOL NX_LVDS_CloseModule( U32 ModuleIndex );

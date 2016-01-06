@@ -75,7 +75,7 @@ static void NX_HDMI_ConfigPHY(U32 Mode)
 {
 	// Set BaseAddr
 	U32 BaseAddr = NX_HDMI_GetPhysicalAddress( 0 );
-	NX_HDMI_SetBaseAddress( 0 , (void*)IO_ADDRESS(BaseAddr));
+	NX_HDMI_SetBaseAddress( 0 , (U32)IO_ADDRESS(BaseAddr));
 
 	if( Mode == HDMI_148MHZ )
 	{
@@ -182,7 +182,7 @@ static void NX_HDMI_ConfigPHY(U32 Mode)
 #if 0
 static void dump_hdmi(void)
 {
-    U32 addr = (void*)IO_ADDRESS(HDMI_ADDR_OFFSET);
+    U32 addr = (U32)IO_ADDRESS(HDMI_ADDR_OFFSET);
     int i;
     int size = 0x50/4;
     printk("==========================================\n");
@@ -216,7 +216,7 @@ int test_hdmi(void)
 
 	// HDMI PCLK Enable
     U32 BaseAddr = NX_DISPTOP_CLKGEN_GetPhysicalAddress( HDMI_CLKGEN );
-	NX_DISPTOP_CLKGEN_SetBaseAddress        ( HDMI_CLKGEN, (void*)IO_ADDRESS(BaseAddr));
+	NX_DISPTOP_CLKGEN_SetBaseAddress        ( HDMI_CLKGEN, (u32)IO_ADDRESS(BaseAddr));
     NX_DISPTOP_CLKGEN_SetClockPClkMode      ( HDMI_CLKGEN, NX_PCLKMODE_ALWAYS );
 
     printk("%s: %d\n", __func__, __LINE__);
@@ -342,7 +342,7 @@ int test_hdmi(void)
 //===========
 void Set_ECID()
 {
-	NX_ECID_SetBaseAddress( (void*)IO_ADDRESS(NX_ECID_GetPhysicalAddress()));
+	NX_ECID_SetBaseAddress( (U32)IO_ADDRESS(NX_ECID_GetPhysicalAddress()));
 
 }
 
@@ -690,7 +690,7 @@ void Set_DisplayCLK()
 {
     // DisplayTop Set BaseAddr
     U32 BaseAddr = NX_DISPLAYTOP_GetPhysicalAddress();
-	NX_DISPLAYTOP_SetBaseAddress((void*)IO_ADDRESS(BaseAddr));
+	NX_DISPLAYTOP_SetBaseAddress((U32)IO_ADDRESS(BaseAddr));
 
 	//-------------------
 	// DisplayTop MUX Enable : Primary
@@ -714,13 +714,13 @@ void Set_DisplayCLK()
 	};
 
     BaseAddr = NX_DISPTOP_CLKGEN_GetPhysicalAddress( HDMI_CLKGEN );
-	NX_DISPTOP_CLKGEN_SetBaseAddress               ( HDMI_CLKGEN, (void*)IO_ADDRESS(BaseAddr));
+	NX_DISPTOP_CLKGEN_SetBaseAddress               ( HDMI_CLKGEN, (U32)IO_ADDRESS(BaseAddr));
 
 	NX_DISPTOP_CLKGEN_SetClockDivisorEnable ( HDMI_CLKGEN, CFALSE);
     NX_DISPTOP_CLKGEN_SetClockPClkMode      ( HDMI_CLKGEN, NX_PCLKMODE_ALWAYS );
 
     BaseAddr = NX_DISPTOP_CLKGEN_GetPhysicalAddress( ToMIPI_CLKGEN );
-	NX_DISPTOP_CLKGEN_SetBaseAddress               ( ToMIPI_CLKGEN, (void*)IO_ADDRESS(BaseAddr));
+	NX_DISPTOP_CLKGEN_SetBaseAddress               ( ToMIPI_CLKGEN, (U32)IO_ADDRESS(BaseAddr));
 
 	NX_DISPTOP_CLKGEN_SetClockDivisorEnable ( ToMIPI_CLKGEN, CFALSE);
     NX_DISPTOP_CLKGEN_SetClockPClkMode      ( ToMIPI_CLKGEN, NX_PCLKMODE_ALWAYS );
@@ -815,9 +815,9 @@ void Set_Prim_DualDisplay()
 	// Set BaseAddr
 	//-----------
 	U32 BaseAddr = NX_MLC_GetPhysicalAddress(ModuleIndex);
-	NX_MLC_SetBaseAddress(ModuleIndex, (void*)IO_ADDRESS(BaseAddr));
+	NX_MLC_SetBaseAddress(ModuleIndex, (U32)IO_ADDRESS(BaseAddr));
 	BaseAddr = NX_DPC_GetPhysicalAddress(ModuleIndex);
-	NX_DPC_SetBaseAddress(ModuleIndex, (void*)IO_ADDRESS(BaseAddr));
+	NX_DPC_SetBaseAddress(ModuleIndex, (U32)IO_ADDRESS(BaseAddr));
 
 	//------------
 	// Clock Config.
@@ -1187,7 +1187,7 @@ void Set_HDMI()
 
 	// Set BaseAddr
 	U32 BaseAddr = NX_HDMI_GetPhysicalAddress(ModuleIndex);
-	NX_HDMI_SetBaseAddress(ModuleIndex, (void*)IO_ADDRESS(BaseAddr));
+	NX_HDMI_SetBaseAddress(ModuleIndex, (U32)IO_ADDRESS(BaseAddr));
 
 
 	//-----------------------------

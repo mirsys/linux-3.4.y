@@ -23,7 +23,7 @@
 #include <media/v4l2-ctrls.h>
 // psw0523 for debugging sleep
 #include <mach/platform.h>
-#include <mach/s5p6818.h>
+#include <mach/s5p4418.h>
 #include "mt9d111-nx-preset.h"
 
 
@@ -829,26 +829,15 @@ static int mt9d111_connected_check(struct i2c_client *client)
 	mt9d111_i2c_write_word(client, 0x65, 0xE000);
 #endif// ]-- end
 	mt9d111_i2c_write_word(client, 0xf0, 0x0000);
-	mdelay(5);
-
 	mt9d111_i2c_read_word(client, 0x00, &val);
-	mdelay(5);
-
 	mt9d111_i2c_read_word(client, 0xFF, &val1);
-	mdelay(5);
-
 	v4l_info(client,"################################## \n");
 	v4l_info(client,"#  Check for mt9d111 \n");
 	v4l_info(client,"#  Read ID : 0x00:0x%04x, 0x%04x \n", val, val1);
 	v4l_info(client,"################################## \n");
 
-	v4l_info(client,"value 0x%4X or 0x%4X\n", val, val1);
-
 	if(val != 0x1519 || val1 != 0x1519 )
 	{
-
-		v4l_info(client,"Doesn't match value 0x%4X or 0x%4X\n", val, val1);
-
 		return -1;
 	}
 	return 0;
@@ -884,8 +873,6 @@ static int mt9d111_init(struct v4l2_subdev *sd, u32 val)
 	if (!state->inited) {
 		v4l_info(client,"mt9d111_init\n");
 
-		printk(KERN_INFO "mt9d111_init\n");
-
 		start_time = get_jiffies_64(); /* read the current time */
 #if 0
 		client->addr = (0xBA>>1);
@@ -893,7 +880,6 @@ static int mt9d111_init(struct v4l2_subdev *sd, u32 val)
 
 		if(mt9d111_connected_check(client) < 0) {
 			v4l_info(client, "%s: camera not connected..\n", __func__);
-			printk(KERN_INFO "%s: camera not connected..\n", __func__);
 			return -1;
 		}
 
@@ -902,15 +888,12 @@ static int mt9d111_init(struct v4l2_subdev *sd, u32 val)
 		//err = mt9d111_write_regs(client, mt9d111_reg_init_rotate, ARRAY_SIZE(mt9d111_reg_init_rotate));
 		//err = mt9d111_write_regs(client, mt9d111_reg_init_1285x725, ARRAY_SIZE(mt9d111_reg_init_1285x725));
 
-		mdelay(60); //keun 2015.04.28
-
 		end_time = get_jiffies_64(); /* read the current time */
 		delta_jiffies = end_time - start_time;
 		printk(KERN_ERR "%s() = \e[32m%d[ms]\e[0m \n", __func__, jiffies_to_msecs(delta_jiffies));
 
 		if (err < 0) {
 			pr_err("%s: write reg error(err: %d)\n", __func__, err);
-			printk(KERN_INFO "%s: write reg error(err: %d)\n", __func__, err); 
 			return err;
 		}
 		state->inited = true;
@@ -990,13 +973,11 @@ static void mt9d111_set_power(struct v4l2_subdev *sd, int on)
     switch (i2c_id) {
 		case 1:
 			pwm_ch = 0;
-			//reset_en = CFG_IO_CAM0_RESET;
-			reset_en = CFG_IO_CAMERA_FRONT_RESET;
+			reset_en = CFG_IO_CAM0_RESET;
 			break;
 		case 2:
 			pwm_ch = 1;
-			//reset_en = CFG_IO_CAM1_RESET;
-			reset_en = CFG_IO_CAMERA_FRONT_RESET;
+			reset_en = CFG_IO_CAM1_RESET;
 			break;
 		default:
 			v4l_info(client,"%s() id:%d, unkown id!!!\n", __func__, i2c_id);
@@ -1005,23 +986,17 @@ static void mt9d111_set_power(struct v4l2_subdev *sd, int on)
 
 	if (on)
 	{
-		//nxp_soc_gpio_set_io_dir(reset_en, 1);
-		nxp_soc_gpio_set_io_dir(reset_en, 0);
+		nxp_soc_gpio_set_io_dir(reset_en, 1);
 		nxp_soc_gpio_set_io_func(reset_en, nxp_soc_gpio_get_altnum(reset_en));
-
-		nxp_soc_gpio_set_out_value(reset_en, 1);
-		mdelay(10);
-
 		nxp_soc_gpio_set_out_value(reset_en, 0);
 		mdelay(10);
-
 		nxp_soc_gpio_set_out_value(reset_en, 1);
 		mdelay(1);
-		//nxp_soc_pwm_set_frequency(pwm_ch, 24000000, 50);
+		nxp_soc_pwm_set_frequency(pwm_ch, 24000000, 50);
 	}
 	else
 	{
-	//	nxp_soc_pwm_set_frequency(pwm_ch, 0, 0);
+		nxp_soc_pwm_set_frequency(pwm_ch, 0, 0);
 		mdelay(1);
 		nxp_soc_gpio_set_out_value(reset_en, 0);
 		state->inited = false;
@@ -1040,13 +1015,12 @@ static int mt9d111_s_stream(struct v4l2_subdev *sd, int enable)
 		v4l_info(client,"%s: \e[31mi2c_id=%d, enable=%d +++++\e[0m\n", __func__, i2c_id, enable);
 	else
 		v4l_info(client,"%s: \e[32mi2c_id=%d, enable=%d +++++\e[0m\n", __func__, i2c_id, enable);
-
 	if (enable) {
-		//mt9d111_set_power(sd, 1);
+		mt9d111_set_power(sd, 1);
 		mt9d111_init(sd, enable);
 		mt9d111_set_frame_size(sd, state->mode, state->width, state->height);
 	} else {
-		//mt9d111_set_power(sd, 0);
+		mt9d111_set_power(sd, 0);
 		//mt9d111_write_regs(client, mt9d111_reg_disable, ARRAY_SIZE(mt9d111_reg_disable));
 	}
 

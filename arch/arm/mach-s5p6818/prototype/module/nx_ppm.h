@@ -42,10 +42,12 @@ typedef struct
 	volatile U32	PPM_HIGHPERIOD;				///< 0x08 : High Period Register
 } NX_PPM_RegisterSet;
 
-//------------------------------------------------------------------------------
-///	@name	PPM Interface
-//------------------------------------------------------------------------------
-//@{
+typedef enum
+{
+	NX_PPM_INT_RISEEDGE = 0,	///< Rising edge detect interrupt.
+	NX_PPM_INT_FALLEDGE = 1,	///< Falling edge detect interrupt.
+	NX_PPM_INT_OVERFLOW = 2		///< Overflow interrupt.
+} NX_PPM_INT;
 
 /// @brief	Set Polarity of Input Signal
 typedef enum
@@ -53,19 +55,6 @@ typedef enum
 	NX_PPM_INPUTPOL_INVERT		= 0UL,	///< Input Signal Invert
 	NX_PPM_INPUTPOL_BYPASS		= 1UL	///< Input Signal Bypass
 }	NX_PPM_INPUTPOL;
-
-void		NX_PPM_SetPPMEnable ( U32 ModuleIndex, CBOOL enable );
-CBOOL		NX_PPM_GetPPMEnable ( U32 ModuleIndex );
-
-void			NX_PPM_SetInputSignalPolarity( U32 ModuleIndex, NX_PPM_INPUTPOL polarity );
-NX_PPM_INPUTPOL	NX_PPM_GetInputSignalPolarity( U32 ModuleIndex );
-
-CBOOL		NX_PPM_IsHighOverflow( U32 ModuleIndex );
-CBOOL		NX_PPM_IsLowOverflow( U32 ModuleIndex );
-
-U32			NX_PPM_GetPPMLowPeriodValue ( U32 ModuleIndex );
-U32			NX_PPM_GetPPMHighPeriodValue ( U32 ModuleIndex );
-//@}
 
 //------------------------------------------------------------------------------
 ///	@name	Basic Interface
@@ -75,8 +64,8 @@ CBOOL NX_PPM_Initialize( void );
 U32   NX_PPM_GetNumberOfModule( void );
 
 U32   NX_PPM_GetSizeOfRegisterSet( void );
-void  NX_PPM_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void* NX_PPM_GetBaseAddress( U32 ModuleIndex );
+void  NX_PPM_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_PPM_GetBaseAddress( U32 ModuleIndex );
 U32   NX_PPM_GetPhysicalAddress ( U32 ModuleIndex );
 CBOOL NX_PPM_OpenModule( U32 ModuleIndex );
 CBOOL NX_PPM_CloseModule( U32 ModuleIndex );
@@ -102,12 +91,6 @@ U32 NX_PPM_GetResetNumber ( U32 ModuleIndex );
 //------------------------------------------------------------------------------
 //@{
 /// @brief	interrupt index for IntNum
-typedef enum
-{
-	NX_PPM_INT_RISEEDGE = 0,	///< Rising edge detect interrupt.
-	NX_PPM_INT_FALLEDGE = 1,	///< Falling edge detect interrupt.
-	NX_PPM_INT_OVERFLOW = 2		///< Overflow interrupt.
-} NX_PPM_INT;
 U32   NX_PPM_GetInterruptNumber ( U32 ModuleIndex );
 void  NX_PPM_SetInterruptEnable( U32 ModuleIndex, U32 IntNum, CBOOL Enable );
 CBOOL NX_PPM_GetInterruptEnable( U32 ModuleIndex, U32 IntNum );
@@ -118,6 +101,23 @@ CBOOL NX_PPM_GetInterruptEnableAll( U32 ModuleIndex );
 CBOOL NX_PPM_GetInterruptPendingAll( U32 ModuleIndex );
 void  NX_PPM_ClearInterruptPendingAll( U32 ModuleIndex );
 S32   NX_PPM_GetInterruptPendingNumber( U32 ModuleIndex );
+//@}
+
+//------------------------------------------------------------------------------
+///	@name	PPM Interface
+//------------------------------------------------------------------------------
+//@{
+void		NX_PPM_SetPPMEnable ( U32 ModuleIndex, CBOOL enable );
+CBOOL		NX_PPM_GetPPMEnable ( U32 ModuleIndex );
+
+void			NX_PPM_SetInputSignalPolarity( U32 ModuleIndex, NX_PPM_INPUTPOL polarity );
+NX_PPM_INPUTPOL	NX_PPM_GetInputSignalPolarity( U32 ModuleIndex );
+
+CBOOL		NX_PPM_IsHighOverflow( U32 ModuleIndex );
+CBOOL		NX_PPM_IsLowOverflow( U32 ModuleIndex );
+
+U32			NX_PPM_GetPPMLowPeriodValue ( U32 ModuleIndex );
+U32			NX_PPM_GetPPMHighPeriodValue ( U32 ModuleIndex );
 //@}
 
 

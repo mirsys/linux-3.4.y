@@ -112,10 +112,8 @@ U32		NX_HPM_GetNumberOfModule( void );
 //@{
 U32		NX_HPM_GetPhysicalAddress( void );
 U32		NX_HPM_GetSizeOfRegisterSet( void );
-
-void	NX_HPM_SetBaseAddress( void* BaseAddress );
-void*	NX_HPM_GetBaseAddress( void );
-
+void	NX_HPM_SetBaseAddress( U32 BaseAddress );
+U32		NX_HPM_GetBaseAddress( void );
 CBOOL	NX_HPM_OpenModule( void );
 CBOOL	NX_HPM_CloseModule( void );
 CBOOL	NX_HPM_CheckBusy( void );

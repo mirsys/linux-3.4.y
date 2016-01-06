@@ -151,8 +151,8 @@ U32		NX_DDRPHY_GetNumberOfModule( void );
 //@{
 U32		NX_DDRPHY_GetPhysicalAddress( void );
 U32		NX_DDRPHY_GetSizeOfRegisterSet( void );
-void	NX_DDRPHY_SetBaseAddress( void* BaseAddress );
-void*	NX_DDRPHY_GetBaseAddress( void );
+void	NX_DDRPHY_SetBaseAddress( U32 BaseAddress );
+U32		NX_DDRPHY_GetBaseAddress( void );
 CBOOL	NX_DDRPHY_OpenModule( void );
 CBOOL	NX_DDRPHY_CloseModule( void );
 CBOOL	NX_DDRPHY_CheckBusy( void );

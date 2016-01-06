@@ -33,7 +33,7 @@
 #include <linux/irq.h>
 #include "es8316.h"
 
-#if	0
+#if	1
 #define DBG(x...) printk(x)
 #else
 #define DBG(x...) do { } while (0)
@@ -872,47 +872,28 @@ static int es8316_set_bias_level(struct snd_soc_codec *codec,
 		}
 		snd_soc_write(codec, ES8316_DAC_PDN_REG2F, 0x00);
 		snd_soc_write(codec, ES8316_HPMIX_SWITCH_REG14, 0x88);
-		snd_soc_write(codec, ES8316_HPMIX_PDN_REG15, 0x88);
+		snd_soc_write(codec, ES8316_HPMIX_PDN_REG15, 0x00);//0x88);
 		snd_soc_write(codec, ES8316_HPMIX_VOL_REG16, 0xBB);
 		snd_soc_write(codec, ES8316_CPHP_PDN2_REG1A, 0x10);
-		snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x30);
+		snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x40);//0x00);// 0x30);
 		snd_soc_write(codec, ES8316_CPHP_PDN1_REG19, 0x03);
 		snd_soc_write(codec, ES8316_CPHP_ICAL_VOL_REG18, 0x00);
 		snd_soc_write(codec, ES8316_RESET_REG00, 0xC0);
+
+		//snd_soc_write(codec, ES8316_DAC_VOLL_REG33, 0x06); //LDAC VOL=0DB, MIN=0XC0(-96DB),STEP=0.5DB
+		//snd_soc_write(codec, ES8316_DAC_VOLR_REG34, 0x06); //RDAC VOL=0DB, MIN=0XC0(-96DB),STEP=0.5DB
+
 		if (es8316_jack_insert) {
 			snd_soc_write(codec, ES8316_CPHP_OUTEN_REG17, 0x66); // L/R OUTEN
 		} else {
-			snd_soc_write(codec, ES8316_CPHP_OUTEN_REG17, 0x06); // R OUTEN
 			es8316_spk_on(1);
+			snd_soc_write(codec, ES8316_CPHP_OUTEN_REG17, 0x06); // R OUTEN
 		}
 		DBG("%s: jack_insert %d\n", __func__, es8316_jack_insert);
 		break;
 	case SND_SOC_BIAS_STANDBY:
 		dev_dbg(codec->dev, "%s standby\n", __func__);
-		#if 0
-		snd_soc_write(codec, ES8316_CPHP_ICAL_VOL_REG18, 0x33);
-		snd_soc_write(codec, ES8316_CPHP_OUTEN_REG17, 0x00);
-		snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x03);
-		snd_soc_write(codec, ES8316_CPHP_PDN2_REG1A, 0x22);
-		snd_soc_write(codec, ES8316_CPHP_PDN1_REG19, 0x06);
-		snd_soc_write(codec, ES8316_HPMIX_SWITCH_REG14, 0x00);
-		snd_soc_write(codec, ES8316_HPMIX_PDN_REG15, 0x33);
-		snd_soc_write(codec, ES8316_HPMIX_VOL_REG16, 0x00);
-		snd_soc_write(codec, ES8316_ADC_PDN_LINSEL_REG22, 0xC0);
-		snd_soc_write(codec, ES8316_DAC_PDN_REG2F, 0x11);
-		snd_soc_write(codec, ES8316_SYS_PDN_REG0D, 0x3F);
-		snd_soc_write(codec, ES8316_CLKMGR_CLKSW_REG01, 0x03);
-		snd_soc_write(codec, ES8316_RESET_REG00, 0x7F);
-		/*
-		if (codec->dapm.bias_level == SND_SOC_BIAS_OFF)
-		{
-			snd_soc_write(codec, ES8316_SYS_LP1_REG0E, 0xFF);
-			snd_soc_write(codec, ES8316_SYS_LP1_REG0E, 0xFF);
-		}
-		*/
-			#else
 
-			//dev_dbg(codec->dev, "%s prepare\n", __func__);
 		snd_soc_write(codec, ES8316_CLKMGR_CLKSW_REG01, 0x7F);
 		snd_soc_write(codec, ES8316_SYS_PDN_REG0D, 0x00);
 		snd_soc_write(codec, ES8316_ADC_PDN_LINSEL_REG22, 0x20);
@@ -923,13 +904,17 @@ static int es8316_set_bias_level(struct snd_soc_codec *codec,
 		}
 		snd_soc_write(codec, ES8316_DAC_PDN_REG2F, 0x00);
 		snd_soc_write(codec, ES8316_HPMIX_SWITCH_REG14, 0x88);
-		snd_soc_write(codec, ES8316_HPMIX_PDN_REG15, 0x88);
+		snd_soc_write(codec, ES8316_HPMIX_PDN_REG15, 0x00);//0x88);
 		snd_soc_write(codec, ES8316_HPMIX_VOL_REG16, 0xBB);
 		snd_soc_write(codec, ES8316_CPHP_PDN2_REG1A, 0x10);
-		snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x30);
+		snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x03);//0x00);// 0x30);
 		snd_soc_write(codec, ES8316_CPHP_PDN1_REG19, 0x03);
 		snd_soc_write(codec, ES8316_CPHP_ICAL_VOL_REG18, 0x00);
 		snd_soc_write(codec, ES8316_RESET_REG00, 0xC0);
+
+		//snd_soc_write(codec, ES8316_DAC_VOLL_REG33, 0x06); //LDAC VOL=0DB, MIN=0XC0(-96DB),STEP=0.5DB
+		//sasnd_soc_write(codec, ES8316_DAC_VOLR_REG34, 0x06); //RDAC VOL=0DB, MIN=0XC0(-96DB),STEP=0.5DB
+
 		if (es8316_jack_insert) {
 			snd_soc_write(codec, ES8316_CPHP_OUTEN_REG17, 0x66); // L/R OUTEN
 		} else {
@@ -937,13 +922,13 @@ static int es8316_set_bias_level(struct snd_soc_codec *codec,
 			snd_soc_write(codec, ES8316_CPHP_OUTEN_REG17, 0x06); // R OUTEN
 		}
 		DBG("%s: jack_insert %d\n", __func__, es8316_jack_insert);
-		#endif
+
 		break;
 	case SND_SOC_BIAS_OFF:
 		dev_dbg(codec->dev, "%s off\n", __func__);
 		snd_soc_write(codec, ES8316_CPHP_ICAL_VOL_REG18, 0x33);
 		snd_soc_write(codec, ES8316_CPHP_OUTEN_REG17, 0x00);
-		snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x03);
+		snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x03);//0x03);
 		snd_soc_write(codec, ES8316_CPHP_PDN2_REG1A, 0x22);
 		snd_soc_write(codec, ES8316_CPHP_PDN1_REG19, 0x06);
 		snd_soc_write(codec, ES8316_HPMIX_SWITCH_REG14, 0x00);
@@ -1008,8 +993,8 @@ static int es8316_init_regs(struct snd_soc_codec *codec)
 	snd_soc_write(codec, ES8316_ADC_VOLUME_REG27,0x00);//ADC VOL=0DB, MIN=0XC0(-96DB),STEP=0.5DB
 	snd_soc_write(codec, ES8316_DAC_SET2_REG31,0x00);  //DAC double speed,auto mute disable
 	snd_soc_write(codec, ES8316_DAC_SET3_REG32,0x00);  //VPP SET AND ZERO L/R, STEREO SET
-	snd_soc_write(codec, ES8316_DAC_VOLL_REG33, 0x09); //LDAC VOL=0DB, MIN=0XC0(-96DB),STEP=0.5DB
-	snd_soc_write(codec, ES8316_DAC_VOLR_REG34, 0x09); //RDAC VOL=0DB, MIN=0XC0(-96DB),STEP=0.5DB
+	snd_soc_write(codec, ES8316_DAC_VOLL_REG33, 0x0A);//0x09); //LDAC VOL=0DB, MIN=0XC0(-96DB),STEP=0.5DB
+	snd_soc_write(codec, ES8316_DAC_VOLR_REG34, 0x0A);//0x09); //RDAC VOL=0DB, MIN=0XC0(-96DB),STEP=0.5DB
 	snd_soc_write(codec, ES8316_SDP_ADCFMT_REG0A, 0x0C);//ADC FORMAT
 	snd_soc_write(codec, ES8316_SDP_DACFMT_REG0B, 0x0C);//DAC FORMAT
 	snd_soc_write(codec, ES8316_SDP_MS_BCKDIV_REG09,0x04);  //CODEC IN SLAVE,
@@ -1029,10 +1014,10 @@ static int es8316_init_regs(struct snd_soc_codec *codec)
 	snd_soc_write(codec, ES8316_DAC_PDN_REG2F, 0x00); //POWER UP DACPOWER
 	snd_soc_write(codec, ES8316_HPMIX_SEL_REG13, 0x00); //L,R MIXER SET
 	snd_soc_write(codec, ES8316_HPMIX_SWITCH_REG14,0x88);  //MIXER
-	snd_soc_write(codec, ES8316_HPMIX_PDN_REG15,0x88);  //MIXER
+	snd_soc_write(codec, ES8316_HPMIX_PDN_REG15,0x00);//0x88);  //MIXER
 	snd_soc_write(codec, ES8316_HPMIX_VOL_REG16,0xBB);  //MIXER
 	snd_soc_write(codec, ES8316_CPHP_PDN2_REG1A,0x10);  //CHARGE PUMP
-	snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B,0x00);  //CHARGE PUMP
+	snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B,0x40);  //CHARGE PUMP
 	snd_soc_write(codec, ES8316_CPHP_PDN1_REG19, 0x03); //CHARGE PUMP
 	snd_soc_write(codec, ES8316_CPHP_ICAL_VOL_REG18, 0x00); //CHARGE PUMP
 	snd_soc_write(codec, ES8316_CPHP_OUTEN_REG17, 0x33); //CHARGE PUMP
@@ -1063,7 +1048,7 @@ static int es8316_suspend(struct snd_soc_codec *codec)
 	es8316_off_amp(true);
 	snd_soc_write(codec, ES8316_CPHP_ICAL_VOL_REG18, 0x33);
 	snd_soc_write(codec, ES8316_CPHP_OUTEN_REG17, 0x00);
-	snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x03);
+	snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x03);//0x03);
 	snd_soc_write(codec, ES8316_CPHP_PDN2_REG1A, 0x22);
 	snd_soc_write(codec, ES8316_CPHP_PDN1_REG19, 0x06);
 	snd_soc_write(codec, ES8316_HPMIX_SWITCH_REG14, 0x00);
@@ -1083,7 +1068,7 @@ static int es8316_resume(struct snd_soc_codec *codec)
 	es8316_set_bias_level(codec, SND_SOC_BIAS_STANDBY);
 #else
 	snd_soc_write(codec, ES8316_CPHP_ICAL_VOL_REG18, 0x00);
-	snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x30);
+	snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x40);
 	snd_soc_write(codec, ES8316_CPHP_PDN2_REG1A, 0x10);
 	snd_soc_write(codec, ES8316_CPHP_PDN1_REG19, 0x02);
 	snd_soc_write(codec, ES8316_HPMIX_SWITCH_REG14, 0x88);
@@ -1261,7 +1246,7 @@ static void es8316_i2c_shutdown(struct i2c_client *i2c)
 		codec = es8316_codec;
 		snd_soc_write(codec, ES8316_CPHP_ICAL_VOL_REG18, 0x33);
 		snd_soc_write(codec, ES8316_CPHP_OUTEN_REG17, 0x00);
-		snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x03);
+		snd_soc_write(codec, ES8316_CPHP_LDOCTL_REG1B, 0x03);// 0x03);
 		snd_soc_write(codec, ES8316_CPHP_PDN2_REG1A, 0x22);
 		snd_soc_write(codec, ES8316_CPHP_PDN1_REG19, 0x06);
 		snd_soc_write(codec, ES8316_HPMIX_SWITCH_REG14, 0x00);
@@ -1460,3 +1445,4 @@ module_exit(es8316_exit);
 MODULE_DESCRIPTION("ASoC es8316 driver");
 MODULE_AUTHOR("Mark Brown <will@everset-semi.com>");
 MODULE_LICENSE("GPL");
+

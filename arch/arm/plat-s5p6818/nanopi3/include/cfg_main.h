@@ -40,10 +40,10 @@
 #define CFG_BUS_RECONFIG_ENB					1			/* if want bus reconfig, select this first */
 
 #define CFG_BUS_RECONFIG_DREXQOS				1
-#define CFG_BUS_RECONFIG_TOPBUSSI				1
-#define CFG_BUS_RECONFIG_TOPBUSQOS				1
-#define CFG_BUS_RECONFIG_BOTTOMBUSSI			1
-#define CFG_BUS_RECONFIG_BOTTOMBUSQOS			1
+#define CFG_BUS_RECONFIG_TOPBUSSI				0
+#define CFG_BUS_RECONFIG_TOPBUSQOS				0
+#define CFG_BUS_RECONFIG_BOTTOMBUSSI			0
+#define CFG_BUS_RECONFIG_BOTTOMBUSQOS			0
 #define CFG_BUS_RECONFIG_DISPBUSSI				1
 
 /*------------------------------------------------------------------------------

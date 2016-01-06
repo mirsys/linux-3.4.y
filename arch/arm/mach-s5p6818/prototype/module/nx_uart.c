@@ -117,7 +117,7 @@ U32		NX_UART_GetSizeOfRegisterSet( void )
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
  */
-void	NX_UART_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
+void	NX_UART_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
 	NX_ASSERT( NUMBER_OF_UART_CHANNEL > ModuleIndex );
@@ -131,11 +131,11 @@ void	NX_UART_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
  *	@return		Module's base address.
  */
-void*	NX_UART_GetBaseAddress( U32 ModuleIndex )
+U32		NX_UART_GetBaseAddress( U32 ModuleIndex )
 {
 	NX_ASSERT( NUMBER_OF_UART_CHANNEL > ModuleIndex );
 
-	return (void*)__g_ModuleVariables[ModuleIndex].pRegister;
+	return (U32)__g_ModuleVariables[ModuleIndex].pRegister;
 }
 
 //------------------------------------------------------------------------------
@@ -315,13 +315,13 @@ CBOOL NX_UART_GetInterruptPending( U32 ModuleIndex, U32 IntNum )
 /**
  *	@brief		Indicates current setting value of interrupt pending bit.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
- *	@return		Current setting value of pending bit. 
- *				"1" means pend bit is occured.
- *				"0" means pend bitis NOT occured. 
- *				- Return Value[0] : Rx pending state. 
- *				- Return Value[1] : Error pending state. 
- *				- Return Value[2] : Tx pending state. 
- *				- Return Value[3] : Modem pending state. 
+ *	@return		Current setting value of pending bit. \r\n
+ *				"1" means pend bit is occured. \r\n
+ *				"0" means pend bitis NOT occured. \r\n
+ *				- Return Value[0] : Rx pending state. \r\n
+ *				- Return Value[1] : Error pending state. \r\n
+ *				- Return Value[2] : Tx pending state. \r\n
+ *				- Return Value[3] : Modem pending state. \r\n
  */
 U32		NX_UART_GetInterruptPending32( U32 ModuleIndex )
 {
@@ -385,7 +385,7 @@ void	NX_UART_ClearInterruptPending32( U32 ModuleIndex, U32 PendingFlag )
 /**
  *	@brief		Set all interrupts to be enables or disables.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
- *	@param[in]	Enable	CTRUE	indicates that Set to all interrupt enable. 
+ *	@param[in]	Enable	CTRUE	indicates that Set to all interrupt enable. \r\n
  *						CFALSE	indicates that Set to all interrupt disable.
  *	@return		None.
  */
@@ -410,7 +410,7 @@ void	NX_UART_SetInterruptEnableAll( U32 ModuleIndex, CBOOL Enable )
 /**
  *	@brief		Indicates whether some of interrupts are enable or not.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
- *	@return		CTRUE			indicates that At least one( or more ) interrupt is enabled. 
+ *	@return		CTRUE			indicates that At least one( or more ) interrupt is enabled. \r\n
  *				CFALSE			indicates that All interrupt is disabled.
  */
 void	NX_UART_ClearInterruptPendingAll( U32 ModuleIndex )
@@ -706,7 +706,7 @@ NX_UART_DATA_BIT	NX_UART_GetDataWidth( U32 ModuleIndex )
  * 	@param[in] DataWidth ( 00:5bit, 01:6bit, 10:7bit, 11:8bit )
  *	@return		None
  */
-void	NX_UART_SetFrameConfiguration( U32 ModuleIndex, NX_UART_PARITY Parity,	NX_UART_DATA_BIT DataWidth,	NX_UART_STOP_BIT StopBit )
+void	NX_UART_SetFrameConfiguration( U32 ModuleIndex, NX_UART_PARITY Parity,	U32 DataWidth,	U32 StopBit )
 {
 	const U32 PARITYMODE_BITPOS		= 3;
 	const U32 STOPBIT_BITPOS		= 2;
@@ -742,7 +742,7 @@ void	NX_UART_SetFrameConfiguration( U32 ModuleIndex, NX_UART_PARITY Parity,	NX_U
  * 	@param[in] Word Length ( 00:5bit, 01:6bit, 10:7bit, 11:8bit )
  *	@return		None
  */
-void	NX_UART_GetFrameConfiguration( U32 ModuleIndex, NX_UART_PARITY* pParity, NX_UART_DATA_BIT* pDataWidth, NX_UART_STOP_BIT* pStopBit )
+void	NX_UART_GetFrameConfiguration( U32 ModuleIndex, NX_UART_PARITY* pParity, U32* pDataWidth, U32* pStopBit )
 {
 	const U32 PARITYMODE_BITPOS 	= 3;
 	const U32 STOPBIT_BITPOS		= 2;
@@ -1299,7 +1299,7 @@ void	NX_UART_SetTransmitMode( U32 ModuleIndex, NX_UART_OPMODE mode )
  *	@param[in]	ModuleIndex 	An index of module ( 0 ~ x ).
  *	@return		Mode (0: Disable, 1: UART, 2: DMA)
  */
-NX_UART_OPMODE	NX_UART_GetTransmitMode( U32 ModuleIndex )
+U8	NX_UART_GetTransmitMode( U32 ModuleIndex )
 {
 	const 	 U32 TRMODE_BITPOS	= 2;
 	const 	 U32 TRMODE_MASK	= (3<<TRMODE_BITPOS);
@@ -1320,7 +1320,7 @@ NX_UART_OPMODE	NX_UART_GetTransmitMode( U32 ModuleIndex )
  *   @param[in] 	Mode (0: Disable, 1: UART, 2: DMA)
  *	@return		None
  */
-void	NX_UART_SetRecieveMode( U32 ModuleIndex, NX_UART_OPMODE mode )
+void	NX_UART_SetRecieveMode( U32 ModuleIndex, U8 mode )
 {
 	const 	 U32 RCMODE_BITPOS	= 0;
 	const 	 U32 RCMODE_MASK	= (3<<RCMODE_BITPOS);
@@ -1343,7 +1343,7 @@ void	NX_UART_SetRecieveMode( U32 ModuleIndex, NX_UART_OPMODE mode )
  *	@param[in]	ModuleIndex 	An index of module ( 0 ~ x ).
  *	@return		Mode (0: Disable, 1: UART, 2: DMA)
  */
-NX_UART_OPMODE		NX_UART_GetRecieveMode( U32 ModuleIndex )
+U8		NX_UART_GetRecieveMode( U32 ModuleIndex )
 {
 	const	 U32 RCMODE_BITPOS	= 0;
 	const	 U32 RCMODE_MASK	= (3<<RCMODE_BITPOS);
@@ -2160,7 +2160,7 @@ void	NX_UART_SetBRD( U32 ModuleIndex, U16 BRD )
 {
 	NX_ASSERT( NUMBER_OF_UART_CHANNEL > ModuleIndex );
 	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( 0xFFFF > BRD );
+	NX_ASSERT( 0xFFFF >= BRD );
 
 	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->BRDR, BRD);
 }

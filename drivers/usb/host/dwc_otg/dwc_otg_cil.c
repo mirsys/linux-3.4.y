@@ -5193,7 +5193,7 @@ void dwc_otg_core_reset(dwc_otg_core_if_t * core_if)
 
     gotgctl.d32 = DWC_READ_REG32(&global_regs->gotgctl);
 
-	if (core_if->host_flag) {
+	if (core_if->host_flag && !gotgctl.b.conidsts) {
 		do {    
 			gintsts.d32 = DWC_READ_REG32(&global_regs->gintsts);
 			if (++count > 100) 

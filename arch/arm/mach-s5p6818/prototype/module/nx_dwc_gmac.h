@@ -907,8 +907,8 @@ U32   NX_DWC_GMAC_GetNumberOfModule( void );
 U32   NX_DWC_GMAC_GetNumberOfChennel( void );
 
 U32   NX_DWC_GMAC_GetSizeOfRegisterSet( void );
-void  NX_DWC_GMAC_SetBaseAddress( U32 ModuleIndex, U32 ChannelIndex, U32* BaseAddress );
-U32*  NX_DWC_GMAC_GetBaseAddress( U32 ModuleIndex, U32 ChannelIndex  );
+void  NX_DWC_GMAC_SetBaseAddress( U32 ModuleIndex, U32 ChannelIndex, U32 BaseAddress );
+U32   NX_DWC_GMAC_GetBaseAddress( U32 ModuleIndex, U32 ChannelIndex  );
 U32   NX_DWC_GMAC_GetPhysicalAddress ( U32 ModuleIndex, U32 ChannelIndex );
 CBOOL NX_DWC_GMAC_OpenModule( U32 ModuleIndex );
 CBOOL NX_DWC_GMAC_CloseModule( U32 ModuleIndex );

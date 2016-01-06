@@ -186,8 +186,8 @@ U32		NX_MLC_GetNumberOfModule( void );
 //@{
 U32		NX_MLC_GetPhysicalAddress( U32 ModuleIndex );
 U32		NX_MLC_GetSizeOfRegisterSet( void );
-void	NX_MLC_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void*	NX_MLC_GetBaseAddress( U32 ModuleIndex );
+void	NX_MLC_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32		NX_MLC_GetBaseAddress( U32 ModuleIndex );
 CBOOL	NX_MLC_OpenModule( U32 ModuleIndex );
 CBOOL	NX_MLC_CloseModule( U32 ModuleIndex );
 CBOOL	NX_MLC_CheckBusy( U32 ModuleIndex );
@@ -512,25 +512,6 @@ void NX_MLC_SetGammaControlParameter
 void NX_MLC_SetLayerAlpha256(U32 ModuleIndex, U32 Layer, U32 Alpha);
 
 CBOOL	NX_MLC_IsUnderFlow( U32 ModuleIndex );
-
-
-//------------------------------------------------------------------------------
-// Gamma Table Configuration function & structure 
-//
-struct NX_MLC_GammaTable_Parameter {
-	U32 R_TABLE[256];	
-	U32 G_TABLE[256];	
-	U32 B_TABLE[256];
-
-	U32 DITHERENB  ;
-
-	U32 ALPHASELECT;
-
-	U32 YUVGAMMAENB;
-	U32 RGBGAMMAENB;
-	U32 ALLGAMMAENB;
-};
-void NX_MLC_SetGammaTable( U32 ModuleIndex, CBOOL Enb, struct NX_MLC_GammaTable_Parameter * p_nx_mlc_gammatable );
 
 
 

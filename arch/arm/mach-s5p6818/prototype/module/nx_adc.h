@@ -8,7 +8,7 @@
 //  may only be made to the extent permitted by a licensing agreement from Nexell Co.
 //
 //	Module		: ADC
-//	File		: nx_adc.c
+//	File			: nx_adc.c
 //	Description	: 
 //	Author		: Deoks
 //	History		: 2014.10.13 First implementation. (Deoks)
@@ -58,10 +58,8 @@ CBOOL NX_ADC_Initialize( void );
 U32   NX_ADC_GetNumberOfModule( void );
 
 U32   NX_ADC_GetSizeOfRegisterSet( void );
-
-void  NX_ADC_SetBaseAddress( U32 ModuleIndex, void* BaseAddress );
-void* NX_ADC_GetBaseAddress( U32 ModuleIndex );
-
+void  NX_ADC_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress );
+U32   NX_ADC_GetBaseAddress( U32 ModuleIndex );
 U32   NX_ADC_GetPhysicalAddress ( U32 ModuleIndex );
 CBOOL NX_ADC_OpenModule( U32 ModuleIndex );
 CBOOL NX_ADC_CloseModule( U32 ModuleIndex );

@@ -28,8 +28,8 @@ static	struct
 //------------------------------------------------------------------------------
 /**
  *	@brief	Initialize of prototype enviroment & local variables.
- *	@return CTRUE	indicates that Initialize is successed.
- *			CFALSE indicates that Initialize is failed.
+ *	@return \b CTRUE	indicates that Initialize is successed.\r\n
+ *			\b CFALSE indicates that Initialize is failed.\r\n
  *	@see	NX_SPDIFRX_GetNumberOfModule
  */
 CBOOL	NX_SPDIFRX_Initialize( void )
@@ -68,6 +68,10 @@ U32		NX_SPDIFRX_GetNumberOfModule( void )
  *	@brief		Get module's physical address.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
  *	@return		Module's physical address
+ *	@see		NX_SPDIFRX_GetSizeOfRegisterSet,
+ *				NX_SPDIFRX_SetBaseAddress,		NX_SPDIFRX_GetBaseAddress,
+ *				NX_SPDIFRX_OpenModule,			NX_SPDIFRX_CloseModule,
+ *				NX_SPDIFRX_CheckBusy,			NX_SPDIFRX_CanPowerDown
  */
 U32		NX_SPDIFRX_GetPhysicalAddress( U32 ModuleIndex )
 {
@@ -107,6 +111,10 @@ U32 NX_SPDIFRX_GetNumberOfReset()
 /**
  *	@brief		Get a size, in byte, of register set.
  *	@return		Size of module's register set.
+ *	@see		NX_SPDIFRX_GetPhysicalAddress,
+ *				NX_SPDIFRX_SetBaseAddress,		NX_SPDIFRX_GetBaseAddress,
+ *				NX_SPDIFRX_OpenModule,			NX_SPDIFRX_CloseModule,
+ *				NX_SPDIFRX_CheckBusy,			NX_SPDIFRX_CanPowerDown
  */
 U32		NX_SPDIFRX_GetSizeOfRegisterSet( void )
 {
@@ -119,8 +127,12 @@ U32		NX_SPDIFRX_GetSizeOfRegisterSet( void )
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
+ *	@see		NX_SPDIFRX_GetPhysicalAddress,	NX_SPDIFRX_GetSizeOfRegisterSet,
+ *				NX_SPDIFRX_GetBaseAddress,
+ *				NX_SPDIFRX_OpenModule,			NX_SPDIFRX_CloseModule,
+ *				NX_SPDIFRX_CheckBusy,			NX_SPDIFRX_CanPowerDown
  */
-void	NX_SPDIFRX_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
+void	NX_SPDIFRX_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
 	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
@@ -133,20 +145,28 @@ void	NX_SPDIFRX_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
  *	@brief		Get a base address of register set
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
  *	@return		Module's base address.
+ *	@see		NX_SPDIFRX_GetPhysicalAddress,	NX_SPDIFRX_GetSizeOfRegisterSet,
+ *				NX_SPDIFRX_SetBaseAddress,
+ *				NX_SPDIFRX_OpenModule,			NX_SPDIFRX_CloseModule,
+ *				NX_SPDIFRX_CheckBusy,			NX_SPDIFRX_CanPowerDown
  */
-void*	NX_SPDIFRX_GetBaseAddress( U32 ModuleIndex )
+U32		NX_SPDIFRX_GetBaseAddress( U32 ModuleIndex )
 {
 	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
 
-	return (void*)__g_ModuleVariables[ModuleIndex].pRegister;
+	return (U32)__g_ModuleVariables[ModuleIndex].pRegister;
 }
 
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize selected modules with default value.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
- *	@return		CTRUE	indicates that Initialize is successed. 
- *				CFALSE	indicates that Initialize is failed.
+ *	@return		\b CTRUE	indicates that Initialize is successed. \r\n
+ *				\b CFALSE	indicates that Initialize is failed.
+ *	@see		NX_SPDIFRX_GetPhysicalAddress,	NX_SPDIFRX_GetSizeOfRegisterSet,
+ *				NX_SPDIFRX_SetBaseAddress,		NX_SPDIFRX_GetBaseAddress,
+ *				NX_SPDIFRX_CloseModule,
+ *				NX_SPDIFRX_CheckBusy,			NX_SPDIFRX_CanPowerDown
  */
 CBOOL	NX_SPDIFRX_OpenModule( U32 ModuleIndex )
 {
@@ -168,8 +188,12 @@ CBOOL	NX_SPDIFRX_OpenModule( U32 ModuleIndex )
 /**
  *	@brief		Deinitialize selected module to the proper stage.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
- *	@return		CTRUE	indicates that Deinitialize is successed. 
- *				CFALSE	indicates that Deinitialize is failed.
+ *	@return		\b CTRUE	indicates that Deinitialize is successed. \r\n
+ *				\b CFALSE	indicates that Deinitialize is failed.
+ *	@see		NX_SPDIFRX_GetPhysicalAddress,	NX_SPDIFRX_GetSizeOfRegisterSet,
+ *				NX_SPDIFRX_SetBaseAddress,		NX_SPDIFRX_GetBaseAddress,
+ *				NX_SPDIFRX_OpenModule,
+ *				NX_SPDIFRX_CheckBusy,			NX_SPDIFRX_CanPowerDown
  */
 CBOOL	NX_SPDIFRX_CloseModule( U32 ModuleIndex )
 {
@@ -191,8 +215,12 @@ CBOOL	NX_SPDIFRX_CloseModule( U32 ModuleIndex )
 /**
  *	@brief		Indicates whether the selected modules is busy or not.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
- *	@return		CTRUE	indicates that Module is Busy.
- *				CFALSE	indicates that Module is NOT Busy.
+ *	@return		\b CTRUE	indicates that Module is Busy. \r\n
+ *				\b CFALSE	indicates that Module is NOT Busy.
+ *	@see		NX_SPDIFRX_GetPhysicalAddress,	NX_SPDIFRX_GetSizeOfRegisterSet,
+ *				NX_SPDIFRX_SetBaseAddress,		NX_SPDIFRX_GetBaseAddress,
+ *				NX_SPDIFRX_OpenModule,			NX_SPDIFRX_CloseModule,
+ *				NX_SPDIFRX_CanPowerDown
  */
 CBOOL	NX_SPDIFRX_CheckBusy( U32 ModuleIndex )
 {
@@ -205,8 +233,12 @@ CBOOL	NX_SPDIFRX_CheckBusy( U32 ModuleIndex )
 /**
  *	@brief		Indicaes whether the selected modules is ready to enter power-down stage
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
- *	@return		CTRUE	indicates that Ready to enter power-down stage. 
- *				CFALSE	indicates that This module can't enter to power-down stage.
+ *	@return		\b CTRUE	indicates that Ready to enter power-down stage. \r\n
+ *				\b CFALSE	indicates that This module can't enter to power-down stage.
+ *	@see		NX_SPDIFRX_GetPhysicalAddress,	NX_SPDIFRX_GetSizeOfRegisterSet,
+ *				NX_SPDIFRX_SetBaseAddress,		NX_SPDIFRX_GetBaseAddress,
+ *				NX_SPDIFRX_OpenModule,			NX_SPDIFRX_CloseModule,
+ *				NX_SPDIFRX_CheckBusy
  */
 CBOOL	NX_SPDIFRX_CanPowerDown( U32 ModuleIndex )
 {
@@ -222,6 +254,11 @@ CBOOL	NX_SPDIFRX_CanPowerDown( U32 ModuleIndex )
  *	@brief		Get a interrupt number for interrupt controller.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
  *	@return		Interrupt number
+ *	@see		NX_SPDIFRX_GetInterruptNumber,
+ *				NX_SPDIFRX_GetInterruptEnable,			NX_SPDIFRX_GetInterruptPending,
+ *				NX_SPDIFRX_ClearInterruptPending,		NX_SPDIFRX_SetInterruptEnableAll,
+ *				NX_SPDIFRX_GetInterruptEnableAll,		NX_SPDIFRX_GetInterruptPendingAll,
+ *				NX_SPDIFRX_ClearInterruptPendingAll,	NX_SPDIFRX_GetInterruptPendingNumber
  */
 U32		NX_SPDIFRX_GetInterruptNumber( U32 ModuleIndex )
 {
@@ -240,9 +277,14 @@ U32		NX_SPDIFRX_GetInterruptNumber( U32 ModuleIndex )
  *	@brief		Set a specified interrupt to be enable or disable.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
  *	@param[in]	IntNum	Interrupt Number.
- *	@param[in]	Enable	CTRUE	indicates that Interrupt Enable. 
- *						CFALSE	indicates that Interrupt Disable.
+ *	@param[in]	Enable	\b CTRUE	indicates that Interrupt Enable. \r\n
+ *						\b CFALSE	indicates that Interrupt Disable.
  *	@return		None.
+ *	@see		NX_SPDIFRX_GetInterruptNumber,
+ *				NX_SPDIFRX_GetInterruptEnable,			NX_SPDIFRX_GetInterruptPending,
+ *				NX_SPDIFRX_ClearInterruptPending,		NX_SPDIFRX_SetInterruptEnableAll,
+ *				NX_SPDIFRX_GetInterruptEnableAll,		NX_SPDIFRX_GetInterruptPendingAll,
+ *				NX_SPDIFRX_ClearInterruptPendingAll,	NX_SPDIFRX_GetInterruptPendingNumber
  */
 void	NX_SPDIFRX_SetInterruptEnable( U32 ModuleIndex, U32 IntNum, CBOOL Enable )
 {
@@ -272,8 +314,13 @@ void	NX_SPDIFRX_SetInterruptEnable( U32 ModuleIndex, U32 IntNum, CBOOL Enable )
  *	@brief		Indicates whether a specified interrupt is enabled or disabled.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
  *	@param[in]	IntNum	Interrupt Number.
- *	@return		CTRUE	indicates that Interrupt is enabled. 
- *				CFALSE	indicates that Interrupt is disabled.
+ *	@return		\b CTRUE	indicates that Interrupt is enabled. \r\n
+ *				\b CFALSE	indicates that Interrupt is disabled.
+ *	@see		NX_SPDIFRX_GetInterruptNumber,
+ *				NX_SPDIFRX_GetInterruptEnable,			NX_SPDIFRX_GetInterruptPending,
+ *				NX_SPDIFRX_ClearInterruptPending,		NX_SPDIFRX_SetInterruptEnableAll,
+ *				NX_SPDIFRX_GetInterruptEnableAll,		NX_SPDIFRX_GetInterruptPendingAll,
+ *				NX_SPDIFRX_ClearInterruptPendingAll,	NX_SPDIFRX_GetInterruptPendingNumber
  */
 CBOOL	NX_SPDIFRX_GetInterruptEnable( U32 ModuleIndex, U32 IntNum )
 {
@@ -291,8 +338,13 @@ CBOOL	NX_SPDIFRX_GetInterruptEnable( U32 ModuleIndex, U32 IntNum )
  *	@brief		Indicates whether a specified interrupt is pended or not
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
  *	@param[in]	IntNum	Interrupt Number.
- *	@return		CTRUE	indicates that Pending is seted. 
- *				CFALSE	indicates that Pending is Not Seted.
+ *	@return		\b CTRUE	indicates that Pending is seted. \r\n
+ *				\b CFALSE	indicates that Pending is Not Seted.
+ *	@see		NX_SPDIFRX_GetInterruptNumber,
+ *				NX_SPDIFRX_GetInterruptEnable,			NX_SPDIFRX_GetInterruptPending,
+ *				NX_SPDIFRX_ClearInterruptPending,		NX_SPDIFRX_SetInterruptEnableAll,
+ *				NX_SPDIFRX_GetInterruptEnableAll,		NX_SPDIFRX_GetInterruptPendingAll,
+ *				NX_SPDIFRX_ClearInterruptPendingAll,	NX_SPDIFRX_GetInterruptPendingNumber
  */
 CBOOL	NX_SPDIFRX_GetInterruptPending( U32 ModuleIndex, U32 IntNum )
 {
@@ -302,7 +354,7 @@ CBOOL	NX_SPDIFRX_GetInterruptPending( U32 ModuleIndex, U32 IntNum )
 	NX_ASSERT( 4 > IntNum );
 	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
 
-	return	(CBOOL)( (ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_ENBIRQ) >> (IntNum + PEND_POS)) & 0x01 );
+	return	(CBOOL)( (ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_ENBIRQ) >> (IntNum+PEND_POS)) & 0x01 );
 }
 
 //------------------------------------------------------------------------------
@@ -311,6 +363,11 @@ CBOOL	NX_SPDIFRX_GetInterruptPending( U32 ModuleIndex, U32 IntNum )
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ 5 ).
  *	@param[in]	IntNum	Interrupt number.
  *	@return		None.
+ *	@see		NX_SPDIFRX_GetInterruptNumber,
+ *				NX_SPDIFRX_GetInterruptEnable,			NX_SPDIFRX_GetInterruptPending,
+ *				NX_SPDIFRX_ClearInterruptPending,		NX_SPDIFRX_SetInterruptEnableAll,
+ *				NX_SPDIFRX_GetInterruptEnableAll,		NX_SPDIFRX_GetInterruptPendingAll,
+ *				NX_SPDIFRX_ClearInterruptPendingAll,	NX_SPDIFRX_GetInterruptPendingNumber
  */
 void	NX_SPDIFRX_ClearInterruptPending( U32 ModuleIndex, U32 IntNum )
 {
@@ -325,16 +382,21 @@ void	NX_SPDIFRX_ClearInterruptPending( U32 ModuleIndex, U32 IntNum )
 
 	pRegister	=	__g_ModuleVariables[ModuleIndex].pRegister;
 
-	WriteIO32(&pRegister->SPDIF_ENBIRQ, ((1 << (IntNum + PEND_POS)) & PEND_MASK) );
+	WriteIO32(&pRegister->SPDIF_ENBIRQ, ((1 << IntNum) & PEND_MASK) << PEND_POS );
 }
 
 //------------------------------------------------------------------------------
 /**
  *	@brief		Set all interrupts to be enables or disables.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
- *	@param[in]	Enable	CTRUE	indicates that Set to all interrupt enable. 
- *						CFALSE	indicates that Set to all interrupt disable.
+ *	@param[in]	Enable	\b CTRUE	indicates that Set to all interrupt enable. \r\n
+ *						\b CFALSE	indicates that Set to all interrupt disable.
  *	@return		None.
+ *	@see		NX_SPDIFRX_GetInterruptNumber,
+ *				NX_SPDIFRX_GetInterruptEnable,			NX_SPDIFRX_GetInterruptPending,
+ *				NX_SPDIFRX_ClearInterruptPending,		NX_SPDIFRX_SetInterruptEnableAll,
+ *				NX_SPDIFRX_GetInterruptEnableAll,		NX_SPDIFRX_GetInterruptPendingAll,
+ *				NX_SPDIFRX_ClearInterruptPendingAll,	NX_SPDIFRX_GetInterruptPendingNumber
  */
 void	NX_SPDIFRX_SetInterruptEnableAll( U32 ModuleIndex, CBOOL Enable )
 {
@@ -361,8 +423,13 @@ void	NX_SPDIFRX_SetInterruptEnableAll( U32 ModuleIndex, CBOOL Enable )
 /**
  *	@brief		Indicates whether some of interrupts are enable or not.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
- *	@return		CTRUE	indicates that At least one( or more ) interrupt is enabled. 
- *				CFALSE	indicates that All interrupt is disabled.
+ *	@return		\b CTRUE	indicates that At least one( or more ) interrupt is enabled. \r\n
+ *				\b CFALSE	indicates that All interrupt is disabled.
+ *	@see		NX_SPDIFRX_GetInterruptNumber,
+ *				NX_SPDIFRX_GetInterruptEnable,			NX_SPDIFRX_GetInterruptPending,
+ *				NX_SPDIFRX_ClearInterruptPending,		NX_SPDIFRX_SetInterruptEnableAll,
+ *				NX_SPDIFRX_GetInterruptEnableAll,		NX_SPDIFRX_GetInterruptPendingAll,
+ *				NX_SPDIFRX_ClearInterruptPendingAll,	NX_SPDIFRX_GetInterruptPendingNumber
  */
 CBOOL	NX_SPDIFRX_GetInterruptEnableAll( U32 ModuleIndex )
 {
@@ -384,8 +451,13 @@ CBOOL	NX_SPDIFRX_GetInterruptEnableAll( U32 ModuleIndex )
 /**
  *	@brief		Indicates whether some of interrupts are pended or not.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
- *	@return		CTRUE	indicates that At least one( or more ) pending is seted. 
- *				CFALSE	indicates that All pending is NOT seted.
+ *	@return		\b CTRUE	indicates that At least one( or more ) pending is seted. \r\n
+ *				\b CFALSE	indicates that All pending is NOT seted.
+ *	@see		NX_SPDIFRX_GetInterruptNumber,
+ *				NX_SPDIFRX_GetInterruptEnable,			NX_SPDIFRX_GetInterruptPending,
+ *				NX_SPDIFRX_ClearInterruptPending,		NX_SPDIFRX_SetInterruptEnableAll,
+ *				NX_SPDIFRX_GetInterruptEnableAll,		NX_SPDIFRX_GetInterruptPendingAll,
+ *				NX_SPDIFRX_ClearInterruptPendingAll,	NX_SPDIFRX_GetInterruptPendingNumber
  */
 CBOOL	NX_SPDIFRX_GetInterruptPendingAll( U32 ModuleIndex )
 {
@@ -408,6 +480,11 @@ CBOOL	NX_SPDIFRX_GetInterruptPendingAll( U32 ModuleIndex )
  *	@brief		Clear pending state of all interrupts.
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
  *	@return		None.
+ *	@see		NX_SPDIFRX_GetInterruptNumber,
+ *				NX_SPDIFRX_GetInterruptEnable,			NX_SPDIFRX_GetInterruptPending,
+ *				NX_SPDIFRX_ClearInterruptPending,		NX_SPDIFRX_SetInterruptEnableAll,
+ *				NX_SPDIFRX_GetInterruptEnableAll,		NX_SPDIFRX_GetInterruptPendingAll,
+ *				NX_SPDIFRX_ClearInterruptPendingAll,	NX_SPDIFRX_GetInterruptPendingNumber
  */
 void	NX_SPDIFRX_ClearInterruptPendingAll( U32 ModuleIndex )
 {
@@ -433,6 +510,11 @@ void	NX_SPDIFRX_ClearInterruptPendingAll( U32 ModuleIndex )
  *	@brief		Get a interrupt number which has the most prority of pended interrupts
  *	@param[in]	ModuleIndex		An index of module ( 0 ~ x ).
  *	@return		Pending Number( If all pending is not set then return -1 ).
+ *	@see		NX_SPDIFRX_GetInterruptNumber,
+ *				NX_SPDIFRX_GetInterruptEnable,			NX_SPDIFRX_GetInterruptPending,
+ *				NX_SPDIFRX_ClearInterruptPending,		NX_SPDIFRX_SetInterruptEnableAll,
+ *				NX_SPDIFRX_GetInterruptEnableAll,		NX_SPDIFRX_GetInterruptPendingAll,
+ *				NX_SPDIFRX_ClearInterruptPendingAll,	NX_SPDIFRX_GetInterruptPendingNumber
  */
 U32		NX_SPDIFRX_GetInterruptPendingNumber( U32 ModuleIndex )	// -1 if None
 {
@@ -465,7 +547,8 @@ U32		NX_SPDIFRX_GetInterruptPendingNumber( U32 ModuleIndex )	// -1 if None
 //------------------------------------------------------------------------------
 U32		NX_SPDIFRX_GetDMAIndex( U32 ModuleIndex )
 {
-	const U32 SPDIFRXDmaIndex[NUMBER_OF_SPDIFRX_MODULE] = { DMAINDEX_LIST(SPDIFRX)  };
+	const U32 SPDIFRXDmaIndex[NUMBER_OF_SPDIFRX_MODULE] =
+				{ DMAINDEX_LIST(SPDIFRX)  };
 
 	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
 
@@ -477,481 +560,6 @@ U32		NX_SPDIFRX_GetDMABusWidth( U32 ModuleIndex )
 	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
 
 	return 32;
-}
-//-----------------------------------------------------------------------------
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Set CPU Header
- *	@param[in]	ModuleIndex		An index of module.
- * 	@param[in] Enable			Setting Value [0] : Disable
- 								Setting Value [1] : Enable
- *	@return		None
- *	@remark	
- */
-void	NX_SPDIFRX_SetCPUHeader( U32 ModuleIndex, CBOOL Enable )
-{
-	const 	 U32 CPU_HEADER_BITPOS	= 16;
-	const 	 U32 CPU_HEADER_MASK	= (1UL << CPU_HEADER_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( (CTRUE == Enable) || (CFALSE == Enable) );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-	regvalue &= ~CPU_HEADER_MASK;
-	regvalue |= (Enable << CPU_HEADER_BITPOS);
-
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL, regvalue);
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Get CPU Header
- *	@param[in]	ModuleIndex		An index of module.
- * 	@return 	Return Value [0] : Disable
- 				Return Value [1] : Enable
- */
-CBOOL	NX_SPDIFRX_GetCPUHeader( U32 ModuleIndex )
-{
-	const 	 U32 CPU_HEADER_BITPOS	= 16;
-	const 	 U32 CPU_HEADER_MASK	= (1UL << CPU_HEADER_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-
-	return (CBOOL)(( regvalue & CPU_HEADER_MASK ) >> CPU_HEADER_BITPOS );
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Set Decrease Rate
- *	@param[in]	ModuleIndex		An index of module.
- * 	@param[in] Enable			Setting Value [0] : Disable
- 								Setting Value [1] : Enable
- *	@return		None
- *	@remark	
- */
-void	NX_SPDIFRX_SetDecreseRate( U32 ModuleIndex, U8 Rate )
-{
-	const 	 U32 DEC_BITPOS		= 12;
-	const 	 U32 DEC_MASK		= (0xF << DEC_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( 0xF >= Rate );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-	regvalue &= ~DEC_MASK;
-	regvalue |= (Rate << DEC_BITPOS);
-
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL, regvalue);
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Get Decrease Rate
- *	@param[in]	ModuleIndex		An index of module.
- * 	@return 	Return Value [0] : Disable
- 				Return Value [1] : Enable
- */
-U8		NX_SPDIFRX_GetDecreseRate( U32 ModuleIndex )
-{
-	const 	 U32 DEC_BITPOS		= 12;
-	const 	 U32 DEC_MASK		= (0xF << DEC_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-
-	return (U8)(( regvalue & DEC_MASK ) >> DEC_BITPOS );
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Set  User Data Fill
- *	@param[in]	ModuleIndex		An index of module.
- * 	@param[in] Enable			Setting Value [0] : Disable
- 								Setting Value [1] : Enable
- *	@return		None
- */
-void	NX_SPDIFRX_SetUserDataFill( U32 ModuleIndex, CBOOL Enable )
-{
-	const 	 U32 UDATA_BITPOS	= 11;
-	const 	 U32 UDATA_MASK		= (1UL << UDATA_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( (CTRUE == Enable) || (CFALSE == Enable) );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-	regvalue &= ~UDATA_MASK;
-	regvalue |= (Enable << UDATA_BITPOS);
-
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL, regvalue);
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Get  User Data Fill
- *	@param[in]	ModuleIndex		An index of module.
- * 	@return 	Return Value [0] : Disable
- 				Return Value [1] : Clear
- */
-CBOOL		NX_SPDIFRX_GetUserDataFill( U32 ModuleIndex )
-{
-	const 	 U32 UDATA_BITPOS	= 11;
-	const 	 U32 UDATA_MASK		= (1UL << UDATA_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-
-	return (CBOOL)(( regvalue & UDATA_MASK ) >> UDATA_BITPOS );
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Set  Capture User Data.
- *	@param[in]	ModuleIndex		An index of module.
- * 	@param[in]	Setting Value [0] : Disable
- 				Setting Value [1] : Enable
- *	@return		None
- *	@remark	When  start of block  pulse  is  TRUE,  RegUserA,  RegUserB, RegStatA, RegStatB 
- 				Detected Rx-Data can be captured.
- */
-void	NX_SPDIFRX_SetCaptureUserData( U32 ModuleIndex, CBOOL Enable )
-{
-	const 	 U32 CAP_UD_BITPOS	= 3;
-	const 	 U32 CAP_UD_MASK	= (1UL << CAP_UD_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( (CTRUE == Enable) || (CFALSE == Enable) );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-	regvalue &= ~CAP_UD_MASK;
-	regvalue |= (Enable << CAP_UD_BITPOS);
-
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL, regvalue);
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Get  Capture User Data.
- *	@param[in]	ModuleIndex		An index of module.
- * 	@return 	Return Value [0] : Disable
- 				Return Value [1] : Enable
- */
-CBOOL	NX_SPDIFRX_GetCaptureUserData( U32 ModuleIndex )
-{
-	const 	 U32 CAP_UD_BITPOS	= 3;
-	const 	 U32 CAP_UD_MASK	= (1UL << CAP_UD_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-
-	return (CBOOL)(( regvalue & CAP_UD_MASK ) >> CAP_UD_BITPOS );
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Set  Phase Detect
- *	@param[in]	ModuleIndex		An index of module.
- * 	@param[in]	Enable			Setting Value [0] : Disable
- 								Setting Value [1] : Enable
- *	@return		None
- */
-void	NX_SPDIFRX_SetPhaseDetect( U32 ModuleIndex, CBOOL Enable )
-{
-	const 	 U32 PHASE_BITPOS	= 8;
-	const 	 U32 PHASE_MASK		= (1UL << PHASE_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( (CTRUE == Enable) || (CFALSE == Enable) );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-	regvalue &= ~PHASE_MASK;
-	regvalue |= (Enable << PHASE_BITPOS);
-
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL, regvalue);
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Get  Phase Detect
- *	@param[in]	ModuleIndex		An index of module.
- * 	@return 	Return Value [0] : Disable
- 				Return Value [1] : Enable
- */
-CBOOL	NX_SPDIFRX_GetPhaseDetect( U32 ModuleIndex )
-{
-	const 	 U32 PHASE_BITPOS	= 8;
-	const 	 U32 PHASE_MASK		= (1UL << PHASE_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-
-	return (CBOOL)(( regvalue & PHASE_MASK ) >> PHASE_BITPOS );
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Set  Decode	Enable.
- *	@param[in]	ModuleIndex		An index of module.
- * 	@param[in]	Setting Value [0] : Disable
- 				Setting Value [1] : Enable
- *	@return		None
- */
-void	NX_SPDIFRX_SetDecodeEnable( U32 ModuleIndex, CBOOL Enable )
-{
-	const 	 U32 DEC_ENB_BITPOS		= 0;
-	const 	 U32 DEC_ENB_MASK		= (1UL << DEC_ENB_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( (CTRUE == Enable) || (CFALSE == Enable) );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-	regvalue &= ~DEC_ENB_MASK;
-	regvalue |= (Enable << DEC_ENB_BITPOS);
-
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL, regvalue);
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Get Decode Enable.
- *	@param[in]	ModuleIndex		An index of module.
- * 	@return 	Return Value [0] : Disable
- 				Return Value [1] : Enable				
- */
-CBOOL	NX_SPDIFRX_GetDecodeEnable( U32 ModuleIndex )
-{
-	const 	 U32 DEC_ENB_BITPOS		= 0;
-	const 	 U32 DEC_ENB_MASK		= (1UL << DEC_ENB_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-
-	return (CBOOL)(( regvalue & DEC_ENB_MASK ) >> DEC_ENB_BITPOS );
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Get  Lock
- *	@param[in]	ModuleIndex		An index of module.
- * 	@return 	Return Value [0] : UnLock
- 				Return Value [1] : Lock
- */
-CBOOL	NX_SPDIFRX_GetLock( U32 ModuleIndex )
-{
-	const U32 LOCK_BITPOS	= 10;
-	const U32 LOCK_MASK 	= 1UL << LOCK_BITPOS;
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-
-	return (CBOOL)(( regvalue & LOCK_MASK ) >> LOCK_BITPOS );
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Set  Write/Read Count Clear.
- *	@param[in]	ModuleIndex		An index of module.
- * 	@param[in] Enable			Setting Value [0] : Disable
- 								Setting Value [1] : Clear
- *	@return		None
- */
-void	NX_SPDIFRX_ResetFIFO( U32 ModuleIndex, CBOOL Enable )
-{
-	const 	 U32 RST_BITPOS		= 9;
-	const 	 U32 RST_MASK		= (1UL << RST_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( (CTRUE == Enable) || (CFALSE == Enable) );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-	regvalue &= ~RST_MASK;
-	regvalue |= (Enable << RST_BITPOS);
-
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL, regvalue);
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Set  Sample Offset
- *	@param[in]	ModuleIndex		An index of module.
- * 	@param[in]	Setting Value [0] : 8 Bit,	Setting Value [1] : 7 Bit
- 				Setting Value [2] : 6 Bit,	Setting Value [3] : 5 Bit
- 				Setting Value [4] : 4 Bit,	Setting Value [5] : 3 Bit
- 				Setting Value [6] : 2 Bit,	Setting Value [7] : 1 Bit
- 				Setting Value [8] : 0 Bit
- *	@return		None
- *	@remark	The vaild sampling bit.
- */
-void	NX_SPDIFRX_SetSampleOffset( U32 ModuleIndex, NX_SPDIFRX_SAMPLEOFFSET Offset )
-{
-	const 	 U32 OFFSET_BITPOS	= 4;
-	const 	 U32 OFFSET_MASK	= (0xF << OFFSET_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( 0xF >= Offset );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-	regvalue &= ~OFFSET_MASK;
-	regvalue |= (Offset << OFFSET_BITPOS);
-
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL, regvalue);
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Get  Sample Offset
- *	@param[in]	ModuleIndex		An index of module.
- * 	@return 	Return Value [0] : 8 Bit,	Return Value [1] : 7 Bit
- 				Return Value [2] : 6 Bit,	Return Value [3] : 5 Bit
- 				Return Value [4] : 4 Bit,	Return Value [5] : 3 Bit
- 				Return Value [6] : 2 Bit,	Return Value [7] : 1 Bit
- 				Return Value [8] : 0 Bit
- */
-NX_SPDIFRX_SAMPLEOFFSET		NX_SPDIFRX_GetSampleOffset( U32 ModuleIndex )
-{
-	const 	 U32 OFFSET_BITPOS	= 4;
-	const 	 U32 OFFSET_MASK	= (0xF << OFFSET_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-
-	return (NX_SPDIFRX_SAMPLEOFFSET)(( regvalue & OFFSET_MASK ) >> OFFSET_BITPOS );
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Set  DMA Data Only
- *	@param[in]	ModuleIndex		An index of module.
- * 	@param[in]	Setting Value [0] : Disable
- 				Setting Value [1] : Enable
- *	@return		None
- */
-void	NX_SPDIFRX_SetDMADataOnly( U32 ModuleIndex, CBOOL Enable )
-{
-	const 	 U32 DMA_DO_BITPOS	= 2;
-	const 	 U32 DMA_DO_MASK	= (1UL << DMA_DO_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( (CTRUE == Enable) || (CFALSE == Enable) );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-	regvalue &= ~DMA_DO_MASK;
-	regvalue |= (Enable << DMA_DO_BITPOS);
-
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL, regvalue);
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Get  DMA Data Only
- *	@param[in]	ModuleIndex		An index of module.
- * 	@return 	Return Value [0] : Data & Status
- 				Return Value [1] : Data Only
- */
-CBOOL	NX_SPDIFRX_GetDMADataOnly( U32 ModuleIndex )
-{
-	const 	 U32 DMA_DO_BITPOS	= 2;
-	const 	 U32 DMA_DO_MASK	= (1UL << DMA_DO_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-
-	return (CBOOL)(( regvalue & DMA_DO_MASK ) >> DMA_DO_BITPOS );
-}
-
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Set  DMA Data Swap
- *	@param[in]	ModuleIndex		An index of module.
- * 	@param[in]	Setting Value [0] : Channel A First
- 				Setting Value [1] : Channel B First
- *	@return		None
- *	@remark	The swap data of the channel A and channel B.
- */
-void	NX_SPDIFRX_SetDMADataSwap( U32 ModuleIndex, CBOOL Enable )
-{
-	const 	 U32 DMA_SWAP_BITPOS	= 1;
-	const 	 U32 DMA_SWAP_MASK		= (1UL << DMA_SWAP_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-	NX_ASSERT( (CTRUE == Enable) || (CFALSE == Enable) );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-	regvalue &= ~DMA_SWAP_MASK;
-	regvalue |= (Enable << DMA_SWAP_BITPOS);
-
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL, regvalue);
-}
-
-//-------------------------------------------------------------------
-/**
- *	@brief		Get  DMA Data Swap
- *	@param[in]	ModuleIndex		An index of module.
- * 	@return 	Return Value [0] : Channel A First
- 				Return Value [1] : Channel B First
- *	@remark	The swap data of the channel A and channel B. 				
- */
-CBOOL	NX_SPDIFRX_GetDMADataSwap( U32 ModuleIndex )
-{
-	const 	 U32 DMA_SWAP_BITPOS	= 1;
-	const 	 U32 DMA_SWAP_MASK		= (1UL << DMA_SWAP_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_SPDIFRX_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->SPDIF_CTRL);
-
-	return (CBOOL)(( regvalue & DMA_SWAP_MASK ) >> DMA_SWAP_BITPOS );
 }
 
 //--------------------------------------------------------------------------

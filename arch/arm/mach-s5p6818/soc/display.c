@@ -542,18 +542,18 @@ static void disp_syncgen_initialize(void)
 
 	for (; DISPLAY_SYNCGEN_NUM > i; i++) {
 		/* BASE : MLC, PCLK/BCLK */
-		NX_MLC_SetBaseAddress(i, (void*)IO_ADDRESS(NX_MLC_GetPhysicalAddress(i)));
+		NX_MLC_SetBaseAddress(i, (U32)IO_ADDRESS(NX_MLC_GetPhysicalAddress(i)));
 		NX_MLC_SetClockPClkMode(i, NX_PCLKMODE_ALWAYS);
 		NX_MLC_SetClockBClkMode(i, NX_BCLKMODE_ALWAYS);
 
 		/* BASE : DPC, PCLK */
-		NX_DPC_SetBaseAddress(i, (void*)IO_ADDRESS(NX_DPC_GetPhysicalAddress(i)));
+		NX_DPC_SetBaseAddress(i, (U32)IO_ADDRESS(NX_DPC_GetPhysicalAddress(i)));
 		NX_DPC_SetClockPClkMode(i, NX_PCLKMODE_ALWAYS);
 	}
 
 	/* Top is one, Top's devices  */
 	NX_DISPLAYTOP_Initialize();
-	NX_DISPLAYTOP_SetBaseAddress((void*)IO_ADDRESS(NX_DISPLAYTOP_GetPhysicalAddress()));
+	NX_DISPLAYTOP_SetBaseAddress((U32)IO_ADDRESS(NX_DISPLAYTOP_GetPhysicalAddress()));
 	NX_DISPLAYTOP_OpenModule();
 	NX_DISPTOP_CLKGEN_Initialize();
 }
@@ -1122,8 +1122,8 @@ int nxp_soc_disp_rgb_set_position(int module, int layer, int x, int y, int waitv
 	DISP_MULTILY_RGB(module, prgb, layer);
 	int left = prgb->pos_x = x;
 	int top = prgb->pos_y = y;
-	int right = x + prgb->right;
-	int bottom = y + prgb->bottom;
+	int right = prgb->right;
+	int bottom = prgb->bottom;
 	RET_ASSERT_VAL(prgb->format, -EINVAL);
 
 	DBGOUT("%s: %s, wait=%d - L=%d, T=%d, R=%d, B=%d\n",
@@ -2587,7 +2587,7 @@ static int display_soc_resume(struct platform_device *pldev)
 	NX_MLC_SetClockBClkMode(module, NX_BCLKMODE_ALWAYS);
 
 	/* BASE : DPC, PCLK */
-	NX_DPC_SetBaseAddress(module, (void*)IO_ADDRESS(NX_DPC_GetPhysicalAddress(module)));
+	NX_DPC_SetBaseAddress(module, (U32)IO_ADDRESS(NX_DPC_GetPhysicalAddress(module)));
 	NX_DPC_SetClockPClkMode(module, NX_PCLKMODE_ALWAYS);
 
 	return 0;

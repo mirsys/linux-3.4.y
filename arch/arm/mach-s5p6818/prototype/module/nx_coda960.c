@@ -47,8 +47,8 @@ U32   NX_CODA960_GetTEMP( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief	Initialize of prototype enviroment & local variables.
- *	@return CTRUE	indicate that Initialize is successed.
- *			CFALSE	indicate that Initialize is failed.
+ *	@return \b CTRUE	indicate that Initialize is successed.\n
+ *			\b CFALSE	indicate that Initialize is failed.
  *	@see	NX_CODA960_GetNumberOfModule
  */
 CBOOL	NX_CODA960_Initialize( void )
@@ -67,7 +67,7 @@ CBOOL	NX_CODA960_Initialize( void )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get number of modules in the chip.
- *	@return		Module's number. 
+ *	@return		Module's number. \n
  *				It is equal to NUMBER_OF_CODA960_MODULE in <nx_chip.h>.
  *	@see		NX_CODA960_Initialize
  */
@@ -80,6 +80,10 @@ U32		NX_CODA960_GetNumberOfModule( void )
 /**
  *	@brief		Get a size, in byte, of register set.
  *	@return		Size of module's register set.
+ *	@see		NX_CODA960_GetPhysicalAddress,
+ *				NX_CODA960_SetBaseAddress,			NX_CODA960_GetBaseAddress,
+ *				NX_CODA960_OpenModule,				NX_CODA960_CloseModule,
+ *				NX_CODA960_CheckBusy,
  */
 U32		NX_CODA960_GetSizeOfRegisterSet( void )
 {
@@ -91,8 +95,12 @@ return sizeof( *__g_pRegister );
  *	@brief		Set a base address of register set.
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
+ *	@see		NX_CODA960_GetPhysicalAddress,		NX_CODA960_GetSizeOfRegisterSet,
+ *				NX_CODA960_GetBaseAddress,
+ *				NX_CODA960_OpenModule,				NX_CODA960_CloseModule,
+ *				NX_CODA960_CheckBusy,
  */
-void	NX_CODA960_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
+void	NX_CODA960_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
     NX_ASSERT( NUMBER_OF_CODA960_MODULE > ModuleIndex );
@@ -103,20 +111,26 @@ void	NX_CODA960_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
 /**
  *	@brief		Get a base address of register set
  *	@return		Module's base address.
-
+ *	@see		NX_CODA960_GetPhysicalAddress,		NX_CODA960_GetSizeOfRegisterSet,
+ *				NX_CODA960_SetBaseAddress,
+ *				NX_CODA960_OpenModule,				NX_CODA960_CloseModule,
+ *				NX_CODA960_CheckBusy,
  */
-void*	NX_CODA960_GetBaseAddress( U32 ModuleIndex )
+U32		NX_CODA960_GetBaseAddress( U32 ModuleIndex )
 {
     NX_ASSERT( NUMBER_OF_CODA960_MODULE > ModuleIndex );
-	return (void*)__g_pRegister[ModuleIndex];
+	return (U32)__g_pRegister[ModuleIndex];
 }
 
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's physical address.
- *	@return		Module's physical address. 
+ *	@return		Module's physical address. \n
  *				It is equal to PHY_BASEADDR_CODA960?_MODULE in <nx_chip.h>.
-
+ *	@see		NX_CODA960_GetSizeOfRegisterSet,
+ *				NX_CODA960_SetBaseAddress,			NX_CODA960_GetBaseAddress,
+ *				NX_CODA960_OpenModule,				NX_CODA960_CloseModule,
+ *				NX_CODA960_CheckBusy,
  */
 U32		NX_CODA960_GetPhysicalAddress( U32 ModuleIndex )
 {
@@ -133,8 +147,12 @@ U32		NX_CODA960_GetPhysicalAddress( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Initialize selected modules with default value.
- *	@return		CTRUE	indicate that Initialize is successed. 
- *				CFALSE	indicate that Initialize is failed.
+ *	@return		\b CTRUE	indicate that Initialize is successed. \n
+ *				\b CFALSE	indicate that Initialize is failed.
+ *	@see		NX_CODA960_GetPhysicalAddress,		NX_CODA960_GetSizeOfRegisterSet,
+ *				NX_CODA960_SetBaseAddress,			NX_CODA960_GetBaseAddress,
+ *				NX_CODA960_CloseModule,
+ *				NX_CODA960_CheckBusy,
  */
 CBOOL	NX_CODA960_OpenModule( U32 ModuleIndex )
 {
@@ -147,8 +165,12 @@ CBOOL	NX_CODA960_OpenModule( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Deinitialize selected module to the proper stage.
- *	@return		CTRUE	indicate that Deinitialize is successed. 
- *				CFALSE	indicate that Deinitialize is failed.
+ *	@return		\b CTRUE	indicate that Deinitialize is successed. \n
+ *				\b CFALSE	indicate that Deinitialize is failed.
+ *	@see		NX_CODA960_GetPhysicalAddress,		NX_CODA960_GetSizeOfRegisterSet,
+ *				NX_CODA960_SetBaseAddress,			NX_CODA960_GetBaseAddress,
+ *				NX_CODA960_OpenModule,
+ *				NX_CODA960_CheckBusy,
  */
 CBOOL	NX_CODA960_CloseModule( U32 ModuleIndex )
 {
@@ -161,7 +183,11 @@ CBOOL	NX_CODA960_CloseModule( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Indicates whether the selected modules is busy or not.
- *	@return		CTRUE	indicate that Module is Busy. 
+ *	@return		\b CTRUE	indicate that Module is Busy. \n
+ *				\b CFALSE	indicate that Module is NOT Busy.
+ *	@see		NX_CODA960_GetPhysicalAddress,		NX_CODA960_GetSizeOfRegisterSet,
+ *				NX_CODA960_SetBaseAddress,			NX_CODA960_GetBaseAddress,
+ *				NX_CODA960_OpenModule,				NX_CODA960_CloseModule,
  */
 CBOOL	NX_CODA960_CheckBusy( U32 ModuleIndex )
 {
@@ -177,8 +203,14 @@ CBOOL	NX_CODA960_CheckBusy( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's clock index.
- *	@return		Module's clock index.
+ *	@return		Module's clock index.\n
  *				It is equal to CLOCKINDEX_OF_CODA960?_MODULE in <nx_chip.h>.
+ *	@see		NX_CLKGEN_SetClockDivisorEnable,
+ *				NX_CLKGEN_GetClockDivisorEnable,
+ *				NX_CLKGEN_SetClockSource,
+ *				NX_CLKGEN_GetClockSource,
+ *				NX_CLKGEN_SetClockDivisor,
+ *				NX_CLKGEN_GetClockDivisor
  */
 U32 NX_CODA960_GetClockNumber ( U32 ModuleIndex )
 {
@@ -194,8 +226,11 @@ U32 NX_CODA960_GetClockNumber ( U32 ModuleIndex )
 //------------------------------------------------------------------------------
 /**
  *	@brief		Get module's reset index.
- *	@return		Module's reset index.
+ *	@return		Module's reset index.\n
  *				It is equal to RESETINDEX_OF_CODA960?_MODULE_i_nRST in <nx_chip.h>.
+ *	@see		NX_RSTCON_Enter,
+ *				NX_RSTCON_Leave,
+ *				NX_RSTCON_GetStatus
  */
  /*
 U32 NX_CODA960_GetResetNumber ( U32 ModuleIndex )
@@ -216,8 +251,17 @@ U32 NX_CODA960_GetResetNumber ( U32 ModuleIndex )
 /**
  *	@brief		Get a interrupt number for the interrupt controller.
  *	@param[in]	ModuleIndex		an index of module.
- *	@return		A interrupt number.
+ *	@return		A interrupt number.\n
  *				It is equal to INTNUM_OF_CODA960?_MODULE in <nx_chip.h>.
+ *	@see		NX_CODA960_SetInterruptEnable,
+ *				NX_CODA960_GetInterruptEnable,
+ *				NX_CODA960_GetInterruptPending,
+ *				NX_CODA960_ClearInterruptPending,
+ *				NX_CODA960_SetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptPendingAll,
+ *				NX_CODA960_ClearInterruptPendingAll,
+ *				NX_CODA960_GetInterruptPendingNumber
  */
  /*
 U32 	NX_CODA960_GetInterruptNumber( U32 ModuleIndex )
@@ -235,12 +279,20 @@ U32 	NX_CODA960_GetInterruptNumber( U32 ModuleIndex )
 /**
  *	@brief		Set a specified interrupt to be enabled or disabled.
  *	@param[in]	ModuleIndex		an index of module.
- *	@param[in]	IntNum	a interrupt Number .
+ *	@param[in]	IntNum	a interrupt Number .\n
  *						refer to NX_CODA960_INTCH_xxx in <nx_coda960.h>
- *	@param[in]	Enable	Set as CTRUE to enable a specified interrupt. 
- *						Set as CFALSE to disable a specified interrupt.
+ *	@param[in]	Enable	\b Set as CTRUE to enable a specified interrupt. \r\n
+ *						\b Set as CFALSE to disable a specified interrupt.
  *	@return		None.
-
+ *	@see		NX_CODA960_GetInterruptNumber,
+ *				NX_CODA960_GetInterruptEnable,
+ *				NX_CODA960_GetInterruptPending,
+ *				NX_CODA960_ClearInterruptPending,
+ *				NX_CODA960_SetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptPendingAll,
+ *				NX_CODA960_ClearInterruptPendingAll,
+ *				NX_CODA960_GetInterruptPendingNumber
  */
 void	NX_CODA960_SetInterruptEnable( U32 ModuleIndex, U32 IntNum, CBOOL Enable )
 {
@@ -264,10 +316,19 @@ void	NX_CODA960_SetInterruptEnable( U32 ModuleIndex, U32 IntNum, CBOOL Enable )
 /**
  *	@brief		Indicates whether a specified interrupt is enabled or disabled.
  *	@param[in]	ModuleIndex		an index of module.
- *	@param[in]	IntNum	a interrupt Number.
+ *	@param[in]	IntNum	a interrupt Number.\n
  *						refer to NX_CODA960_INTCH_xxx in <nx_coda960.h>
- *	@return		CTRUE	indicates that a specified interrupt is enabled. 
- *				CFALSE	indicates that a specified interrupt is disabled.
+ *	@return		\b CTRUE	indicates that a specified interrupt is enabled. \r\n
+ *				\b CFALSE	indicates that a specified interrupt is disabled.
+ *	@see		NX_CODA960_GetInterruptNumber,
+ *				NX_CODA960_SetInterruptEnable,
+ *				NX_CODA960_GetInterruptPending,
+ *				NX_CODA960_ClearInterruptPending,
+ *				NX_CODA960_SetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptPendingAll,
+ *				NX_CODA960_ClearInterruptPendingAll,
+ *				NX_CODA960_GetInterruptPendingNumber
 
  */
 CBOOL	NX_CODA960_GetInterruptEnable( U32 ModuleIndex, U32 IntNum )
@@ -281,10 +342,19 @@ CBOOL	NX_CODA960_GetInterruptEnable( U32 ModuleIndex, U32 IntNum )
 /**
  *	@brief		Indicates whether a specified interrupt is pended or not
  *	@param[in]	ModuleIndex		an index of module.
- *	@param[in]	IntNum	a interrupt Number.
+ *	@param[in]	IntNum	a interrupt Number.\n
  *						refer to NX_CODA960_INTCH_xxx in <nx_coda960.h>
- *	@return		CTRUE	indicates that a specified interrupt is pended. 
- *				CFALSE	indicates that a specified interrupt is not pended.
+ *	@return		\b CTRUE	indicates that a specified interrupt is pended. \r\n
+ *				\b CFALSE	indicates that a specified interrupt is not pended.
+ *	@see		NX_CODA960_GetInterruptNumber,
+ *				NX_CODA960_SetInterruptEnable,
+ *				NX_CODA960_GetInterruptEnable,
+ *				NX_CODA960_ClearInterruptPending,
+ *				NX_CODA960_SetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptPendingAll,
+ *				NX_CODA960_ClearInterruptPendingAll,
+ *				NX_CODA960_GetInterruptPendingNumber
 
  */
 CBOOL	NX_CODA960_GetInterruptPending( U32 ModuleIndex, U32 IntNum )
@@ -303,9 +373,18 @@ CBOOL	NX_CODA960_GetInterruptPending( U32 ModuleIndex, U32 IntNum )
 /**
  *	@brief		Clear a pending state of specified interrupt.
  *	@param[in]	ModuleIndex		an index of module.
- *	@param[in]	IntNum	a interrupt number.
+ *	@param[in]	IntNum	a interrupt number.\n
  *						refer to NX_CODA960_INTCH_xxx in <nx_coda960.h>
  *	@return		None.
+ *	@see		NX_CODA960_GetInterruptNumber,
+ *				NX_CODA960_SetInterruptEnable,
+ *				NX_CODA960_GetInterruptEnable,
+ *				NX_CODA960_GetInterruptPending,
+ *				NX_CODA960_SetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptPendingAll,
+ *				NX_CODA960_ClearInterruptPendingAll,
+ *				NX_CODA960_GetInterruptPendingNumber
 
  */
 void	NX_CODA960_ClearInterruptPending( U32 ModuleIndex, U32 IntNum )
@@ -321,9 +400,18 @@ void	NX_CODA960_ClearInterruptPending( U32 ModuleIndex, U32 IntNum )
 /**
  *	@brief		Set all interrupts to be enabled or disabled.
  *	@param[in]	ModuleIndex		an index of module.
- *	@param[in]	Enable	Set as CTRUE to enable all interrupts. 
- *						Set as CFALSE to disable all interrupts.
+ *	@param[in]	Enable	\b Set as CTRUE to enable all interrupts. \r\n
+ *						\b Set as CFALSE to disable all interrupts.
  *	@return		None.
+ *	@see		NX_CODA960_GetInterruptNumber,
+ *				NX_CODA960_SetInterruptEnable,
+ *				NX_CODA960_GetInterruptEnable,
+ *				NX_CODA960_GetInterruptPending,
+ *				NX_CODA960_ClearInterruptPending,
+ *				NX_CODA960_GetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptPendingAll,
+ *				NX_CODA960_ClearInterruptPendingAll,
+ *				NX_CODA960_GetInterruptPendingNumber
 
  */
 void	NX_CODA960_SetInterruptEnableAll( U32 ModuleIndex, CBOOL Enable )
@@ -345,8 +433,17 @@ void	NX_CODA960_SetInterruptEnableAll( U32 ModuleIndex, CBOOL Enable )
 /**
  *	@brief		Indicates whether some of interrupts are enabled or not.
  *	@param[in]	ModuleIndex		an index of module.
- *	@return		CTRUE	indicates that one or more interrupts are enabled. 
- *				CFALSE	indicates that all interrupts are disabled.
+ *	@return		\b CTRUE	indicates that one or more interrupts are enabled. \r\n
+ *				\b CFALSE	indicates that all interrupts are disabled.
+ *	@see		NX_CODA960_GetInterruptNumber,
+ *				NX_CODA960_SetInterruptEnable,
+ *				NX_CODA960_GetInterruptEnable,
+ *				NX_CODA960_GetInterruptPending,
+ *				NX_CODA960_ClearInterruptPending,
+ *				NX_CODA960_SetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptPendingAll,
+ *				NX_CODA960_ClearInterruptPendingAll,
+ *				NX_CODA960_GetInterruptPendingNumber
 
  */
 CBOOL	NX_CODA960_GetInterruptEnableAll( U32 ModuleIndex )
@@ -360,8 +457,17 @@ CBOOL	NX_CODA960_GetInterruptEnableAll( U32 ModuleIndex )
 /**
  *	@brief		Indicates whether some of interrupts are pended or not.
  *	@param[in]	ModuleIndex		an index of module.
- *	@return		CTRUE	indicates that one or more interrupts are pended. 
- *				CFALSE	indicates that no interrupt is pended.
+ *	@return		\b CTRUE	indicates that one or more interrupts are pended. \r\n
+ *				\b CFALSE	indicates that no interrupt is pended.
+ *	@see		NX_CODA960_GetInterruptNumber,
+ *				NX_CODA960_SetInterruptEnable,
+ *				NX_CODA960_GetInterruptEnable,
+ *				NX_CODA960_GetInterruptPending,
+ *				NX_CODA960_ClearInterruptPending,
+ *				NX_CODA960_SetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptEnableAll,
+ *				NX_CODA960_ClearInterruptPendingAll,
+ *				NX_CODA960_GetInterruptPendingNumber
 
  */
 CBOOL	NX_CODA960_GetInterruptPendingAll( U32 ModuleIndex )
@@ -381,6 +487,15 @@ CBOOL	NX_CODA960_GetInterruptPendingAll( U32 ModuleIndex )
  *	@brief		Clear pending state of all interrupts.
  *	@param[in]	ModuleIndex		an index of module.
  *	@return		None.
+ *	@see		NX_CODA960_GetInterruptNumber,
+ *				NX_CODA960_SetInterruptEnable,
+ *				NX_CODA960_GetInterruptEnable,
+ *				NX_CODA960_GetInterruptPending,
+ *				NX_CODA960_ClearInterruptPending,
+ *				NX_CODA960_SetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptPendingAll,
+ *				NX_CODA960_GetInterruptPendingNumber
 
  */
 void	NX_CODA960_ClearInterruptPendingAll( U32 ModuleIndex )
@@ -389,7 +504,6 @@ void	NX_CODA960_ClearInterruptPendingAll( U32 ModuleIndex )
 	NX_ASSERT( NUMBER_OF_CODA960_MODULE > ModuleIndex );
 	NX_ASSERT( CNULL != __g_pRegister[ModuleIndex] );
 	pRegister = __g_pRegister[ModuleIndex];
-	
 	WriteIO32(&pRegister->INTPEND, 0xFFFFFFFF);	// just write operation make pending clear
 }
 
@@ -397,8 +511,17 @@ void	NX_CODA960_ClearInterruptPendingAll( U32 ModuleIndex )
 /**
  *	@brief		Get a interrupt number which has the most prority of pended interrupts.
  *	@param[in]	ModuleIndex		an index of module.
- *	@return		a interrupt number. A value of '-1' means that no interrupt is pended.
+ *	@return		a interrupt number. A value of '-1' means that no interrupt is pended.\n
  *				refer to NX_CODA960_INTCH_xxx in <nx_coda960.h>
+ *	@see		NX_CODA960_GetInterruptNumber,
+ *				NX_CODA960_SetInterruptEnable,
+ *				NX_CODA960_GetInterruptEnable,
+ *				NX_CODA960_GetInterruptPending,
+ *				NX_CODA960_ClearInterruptPending,
+ *				NX_CODA960_SetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptEnableAll,
+ *				NX_CODA960_GetInterruptPendingAll,
+ *				NX_CODA960_ClearInterruptPendingAll
 
  */
 S32		NX_CODA960_GetInterruptPendingNumber( U32 ModuleIndex )	// -1 if None
@@ -435,6 +558,8 @@ S32		NX_CODA960_GetInterruptPendingNumber( U32 ModuleIndex )	// -1 if None
  *	@param[in]	ModuleIndex	an index of module.
  *	@param[in]	ChannelIndex refer to NX_CODA960_DMACH_xxx in <nx_coda960.h>
  *	@return		DMA peripheral index.
+ *	@see		NX_DMA_TransferMemToIO(DestinationPeriID),
+ *				NX_DMA_TransferIOToMem(SourcePeriID)
  */
  /*
 U32 NX_CODA960_GetDMANumber ( U32 ModuleIndex , U32 ChannelIndex )

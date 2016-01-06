@@ -131,7 +131,7 @@ U32		NX_TMU_GetSizeOfRegisterSet( void )
  *				NX_TMU_OpenModule,			NX_TMU_CloseModule,
  *				NX_TMU_CheckBusy,			NX_TMU_CanPowerDown
  */
-void	NX_TMU_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
+void	NX_TMU_SetBaseAddress( U32 ModuleIndex, U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
 	NX_ASSERT( NUMBER_OF_TMU_MODULE > ModuleIndex );
@@ -149,11 +149,11 @@ void	NX_TMU_SetBaseAddress( U32 ModuleIndex, void* BaseAddress )
  *				NX_TMU_OpenModule,			NX_TMU_CloseModule,
  *				NX_TMU_CheckBusy,			NX_TMU_CanPowerDown
  */
-void*	NX_TMU_GetBaseAddress( U32 ModuleIndex )
+U32		NX_TMU_GetBaseAddress( U32 ModuleIndex )
 {
 	NX_ASSERT( NUMBER_OF_TMU_MODULE > ModuleIndex );
 
-	return (void*)__g_ModuleVariables[ModuleIndex].pRegister;
+	return (U32)__g_ModuleVariables[ModuleIndex].pRegister;
 }
 
 //------------------------------------------------------------------------------
@@ -176,7 +176,13 @@ CBOOL	NX_TMU_OpenModule( U32 ModuleIndex )
 
 	pRegister	=	__g_ModuleVariables[ModuleIndex].pRegister;
 
-    // Open Code Add..
+/*
+	WriteIO32(&pRegister->RSR_ECR, 0);	// status clear
+	WriteIO32(&pRegister->LCR_H, 0x60);	// 8 bits, fifo disable, one stop, no parity, break disable
+	WriteIO32(&pRegister->CR, 0);		// no AFC, RX TX disable, Loopback disable, SIR disable, TMU disable
+	WriteIO32(&pRegister->DMACR, 0);	// tx rx DMA disable
+	WriteIO32(&pRegister->IMSC, 0);	// all interrupt disable
+*/
 	return CTRUE;
 }
 
@@ -199,8 +205,13 @@ CBOOL	NX_TMU_CloseModule( U32 ModuleIndex )
 	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
 
 	pRegister	=	__g_ModuleVariables[ModuleIndex].pRegister;
-
-    // Open Code Add..
+/*
+	WriteIO32(&pRegister->RSR_ECR, 0);	// status clear
+	WriteIO32(&pRegister->LCR_H, 0x60);	// 8 bits, fifo disable, one stop, no parity, break disable
+	WriteIO32(&pRegister->CR, 0);		// no AFC, RX TX disable, Loopback disable, SIR disable, TMU disable
+	WriteIO32(&pRegister->DMACR, 0);	// tx rx DMA disable
+	WriteIO32(&pRegister->IMSC, 0);	// all interrupt disable
+*/
 return CTRUE;
 }
 
@@ -267,28 +278,29 @@ U32		NX_TMU_GetInterruptNumber( U32 ModuleIndex )
 	return	UartInterruptNumber[ModuleIndex];
 }
 
-void	NX_TMU_SetInterruptEnable( U32 ModuleIndex, NX_TMU_INT_MASK IntNum, CBOOL Enable )
+//------------------------------------------------------------------------------
+/**
+ *  @brief      Indicates whether a specified interrupt is pended or not
+ *  @param[in]	ModuleIndex     A index of module.
+ *  @param[in]	IntNum  Interrupt Number ( 0 ).
+ *  @return   	CTRUE  indicates that Pending is seted.
+ *             		CFALSE indicates that Pending is Not Seted.
+ *  @remarks    TMU Module have one interrupt. So always IntNum set to 0.
+
+ */
+CBOOL   NX_TMU_GetInterruptPending( U32 ModuleIndex, NX_TMU_INT IntNum )
 {
-	register U32	regvalue;
+    const U32 PEND_MASK  = 1UL << IntNum;
 
-	NX_ASSERT( NUMBER_OF_TMU_MODULE > ModuleIndex );
-	NX_ASSERT( (0==Enable) || (1==Enable) );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+    register struct NX_TMU_RegisterSet* pRegister;
 
-	regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTEN);
+    NX_ASSERT( NUMBER_OF_TMU_MODULE > ModuleIndex );
+	
+	pRegister = __g_ModuleVariables[ModuleIndex].pRegister;
+	NX_ASSERT( CNULL != pRegister );
 
-	if( CTRUE == Enable )
-	{
-		regvalue |= ( 1UL << IntNum );
-	}
-	else
-	{
-		regvalue &= ~( 1UL << IntNum );
-	}
-	//WriteIO32(&pRegister->P0_INTEN, regvalue);
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTEN, regvalue);
+    return  (CBOOL)( (ReadIO32(&pRegister->P0_INTSTAT) & PEND_MASK) >> IntNum );
 }
-
 
 void	NX_TMU_SetInterruptEnableAll( U32 ModuleIndex, CBOOL Enable )
 {
@@ -303,6 +315,7 @@ void	NX_TMU_SetInterruptEnableAll( U32 ModuleIndex, CBOOL Enable )
 
 	//WriteIO32(&pRegister->P0_INTEN, regvalue);
 	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTEN, regvalue);
+	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P1_INTEN, regvalue);
 }
 
 CBOOL	NX_TMU_GetInterruptEnableAll( U32 ModuleIndex )
@@ -315,64 +328,23 @@ CBOOL	NX_TMU_GetInterruptEnableAll( U32 ModuleIndex )
 	return (U32)(ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTEN));
 }
 
-//------------------------------------------------------------------------------
-/**
- *  @brief      Indicates whether a specified interrupt is pended or not
- *  @param[in]	ModuleIndex     A index of module.
- *  @param[in]	IntNum  Interrupt Number ( 0 ).
- *  @return   	CTRUE  indicates that Pending is seted.
- *             		CFALSE indicates that Pending is Not Seted.
- *  @remarks    TMU Module have one interrupt. So always IntNum set to 0.
-
- */
-CBOOL   NX_TMU_GetInterruptPending( U32 ModuleIndex, NX_TMU_INT_MASK IntNum )
-{
-    const U32 PEND_MASK  = 1UL << IntNum;
-
-    register struct NX_TMU_RegisterSet* pRegister;
-
-    NX_ASSERT( NUMBER_OF_TMU_MODULE > ModuleIndex );
-	
-	pRegister = __g_ModuleVariables[ModuleIndex].pRegister;
-	NX_ASSERT( CNULL != pRegister );
-
-    return  (CBOOL)( (ReadIO32(&pRegister->P0_INTSTAT) & PEND_MASK) >> IntNum );
-}
-
 CBOOL	NX_TMU_GetInterruptPendingAll( U32 ModuleIndex )
 {
-	register U32    regvalue;
+	register U32    p0_regvalue;
+    register U32    p1_regvalue;
 	
 	NX_ASSERT( NUMBER_OF_TMU_MODULE > ModuleIndex );
 	//NX_ASSERT( CNULL != __g_pRegister[ModuleIndex] );
 	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-    regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTSTAT); 
-    
-	return (CBOOL)( regvalue  ? 1 : 0  );
-}
-
-void    NX_TMU_ClearInterruptPending( U32 ModuleIndex, NX_TMU_INT_MASK IntNum )
-{
-    const U32 INTC_MASK  = 1UL << IntNum;
-
-    register struct NX_TMU_RegisterSet* pRegister;
-    register U32 ReadValue;
-
-    IntNum = IntNum;
-    NX_ASSERT( NUMBER_OF_I2C_MODULE > ModuleIndex );
 	
-	pRegister = __g_ModuleVariables[ModuleIndex].pRegister;
-	NX_ASSERT( CNULL != pRegister );
-    //NX_ASSERT( 0 == IntNum );
-
-    ReadValue   =   ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTCLEAR);
-    ReadValue   &=  ~INTC_MASK;
-    ReadValue   |=  INTC_MASK;
-
-    WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTCLEAR, ReadValue);
+	//regvalue  = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTEN);
+	//regvalue &= ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTCLEAR);
+    p0_regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTSTAT);
+    p1_regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P1_INTSTAT);
+ 
+    
+	return (CBOOL)( (p0_regvalue || p1_regvalue) ? 1 : 0  );
 }
-
 
 void	NX_TMU_ClearInterruptPendingAll( U32 ModuleIndex )
 {
@@ -380,7 +352,9 @@ void	NX_TMU_ClearInterruptPendingAll( U32 ModuleIndex )
 	//NX_ASSERT( CNULL != __g_pRegister[ModuleIndex] );
 	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
 
+	//WriteIO32(&pRegister->P0_INTCLEAR, 0xFFFFFFFF);	// just write operation make pending clear
 	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P0_INTCLEAR, 0xFFFFFFFF);
+	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->P1_INTCLEAR, 0xFFFFFFFF);
 }
 
 //--------------------------------------------------------------------------
@@ -475,70 +449,6 @@ void	NX_TMU_SetTmuTripEn		( U32 ModuleIndex, U32 value )	// TMU_CONTROL[12]
 	
 	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->TMU_CONTROL, temp);
 }
-
-void	NX_TMU_SetBufSlopeSel		( U32 ModuleIndex, U32 value )	// TMU_CONTROL[8]
-{
-	const U32 BUF_SLOPE_SEL_BITPOS	= 8;
-	const U32 BUF_SLOPE_SEL_MASK	= (0xF<<BUF_SLOPE_SEL_BITPOS);
-	register U32 temp;
-
-	NX_ASSERT( NUMBER_OF_TMU_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	temp = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->TMU_CONTROL);
-	temp &= ~BUF_SLOPE_SEL_MASK;
-	temp |= (value<<BUF_SLOPE_SEL_BITPOS);
-	
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->TMU_CONTROL, temp);
-}
-
-U32     NX_TMU_GetBufSlopeSel	( U32 ModuleIndex )	// TMU_CONTROL[8]
-{
-	const U32 BUF_SLOPE_SEL_BITPOS	= 8;
-	const U32 BUF_SLOPE_SEL_MASK	= (0xF<<BUF_SLOPE_SEL_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_TMU_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-    regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->TRIMINFO);
-    regvalue = ( regvalue & BUF_SLOPE_SEL_MASK ) >> BUF_SLOPE_SEL_BITPOS;
-
-	return regvalue;
-}
-
-void	NX_TMU_SetVRefVBESel		( U32 ModuleIndex, U32 value )	// TMU_CONTROL1[0]
-{
-	const U32 VREF_VBE_SEL_BITPOS	= 0;
-	const U32 VREF_VBE_SEL_MASK	= (0xF<<VREF_VBE_SEL_BITPOS);
-	register U32 temp;
-
-	NX_ASSERT( NUMBER_OF_TMU_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-	temp = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->TMU_CONTROL);
-	temp &= ~VREF_VBE_SEL_MASK;
-	temp |= (value<<VREF_VBE_SEL_BITPOS);
-	
-	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->TMU_CONTROL, temp);
-}
-
-U32     NX_TMU_GetVRefVBESel	( U32 ModuleIndex )	// TMU_CONTROL1[0]
-{
-	const U32 VREF_VBE_SEL_BITPOS	= 0;
-	const U32 VREF_VBE_SEL_MASK	= (0xF<<VREF_VBE_SEL_BITPOS);
-	register U32 regvalue;
-
-	NX_ASSERT( NUMBER_OF_TMU_MODULE > ModuleIndex );
-	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
-
-    regvalue = ReadIO32(&__g_ModuleVariables[ModuleIndex].pRegister->TRIMINFO);
-    regvalue = ( regvalue & VREF_VBE_SEL_MASK ) >> VREF_VBE_SEL_BITPOS;
-
-	return regvalue;
-}
-
-
 
 void	NX_TMU_SetTmuStart		( U32 ModuleIndex, CBOOL value )	// TMU_CONTROL[0]
 {

@@ -19,14 +19,17 @@ ifeq ($(CONFIG_PLAT_S5P6818_SVT),y)
 PLATBOARD :=svt
 endif
 
-ifeq ($(CONFIG_PLAT_S5P6818_ASB),y)
-PLATBOARD :=asb
+ifeq ($(CONFIG_PLAT_S5P6818_DRONEL),y)
+PLATBOARD :=dronel
 endif
 
 ifeq ($(CONFIG_PLAT_S5P6818_NANOPI3),y)
 PLATBOARD := nanopi3
 endif
 
+ifeq ($(CONFIG_PLAT_S5P6818_X6818),y)
+PLATBOARD :=x6818
+endif
 
 #
 # Build options

@@ -82,8 +82,7 @@ U32		NX_DREXSDRAM_GetSizeOfRegisterSet( void )
  *	@param[in]	BaseAddress Module's base address
  *	@return		None.
  */
-
-void	NX_DREXSDRAM_SetBaseAddress( void* BaseAddress )
+void	NX_DREXSDRAM_SetBaseAddress( U32 BaseAddress )
 {
 	NX_ASSERT( CNULL != BaseAddress );
 
@@ -95,11 +94,9 @@ void	NX_DREXSDRAM_SetBaseAddress( void* BaseAddress )
  *	@brief		Get a base address of register set
  *	@return		Module's base address.
  */
-
-void*	NX_DREXSDRAM_GetBaseAddress( void )
+U32		NX_DREXSDRAM_GetBaseAddress( void )
 {
-
-	return (void*)__g_pSDRAMRegister;
+	return (U32)__g_pSDRAMRegister;
 }
 
 //------------------------------------------------------------------------------
@@ -166,7 +163,7 @@ CBOOL	NX_DREXTZ_Initialize( void )
 
 	if( CFALSE == bInit )
 	{
-		__g_pTZRegister = (struct NX_DREXTZ_RegisterSet *)CNULL;
+		__g_pADDRRegister = (struct NX_DREXTZ_RegisterSet *)CNULL;
 
 		bInit = CTRUE;
 	}

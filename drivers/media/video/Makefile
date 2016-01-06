@@ -84,7 +84,6 @@ obj-$(CONFIG_VIDEO_S5K6AA)	+= s5k6aa.o
 obj-$(CONFIG_VIDEO_ADP1653)	+= adp1653.o
 obj-$(CONFIG_VIDEO_AS3645A)	+= as3645a.o
 obj-$(CONFIG_VIDEO_TW9992)	+= tw/
-obj-$(CONFIG_VIDEO_TW9900)	+= tw/
 
 obj-$(CONFIG_VIDEO_S5K5CAGX)    += s5k5cagx.o
 obj-$(CONFIG_VIDEO_S5K4ECGX)	+= s5k4ecgx.o
@@ -95,7 +94,6 @@ obj-$(CONFIG_VIDEO_GC2035)		+= gc2035.o
 obj-$(CONFIG_VIDEO_GC0308)		+= gc0308.o
 obj-$(CONFIG_VIDEO_HM2057)		+= hm2057.o
 obj-$(CONFIG_VIDEO_OV5645)		+= ov5645.o
-obj-$(CONFIG_VIDEO_OV5640)		+= ov5640.o
 
 obj-$(CONFIG_SOC_CAMERA_IMX074)		+= imx074.o
 obj-$(CONFIG_SOC_CAMERA_MT9M001)	+= mt9m001.o
@@ -213,8 +211,6 @@ obj-$(CONFIG_VIDEO_SAMSUNG_S5P_G2D)	+= s5p-g2d/
 obj-$(CONFIG_VIDEO_EXYNOS)		+= exynos/
 
 obj-$(CONFIG_V4L2_NXP)			+= nexell/
-
-obj-$(CONFIG_NXP_VPU)			+= coda960/
 
 obj-$(CONFIG_BLACKFIN)                  += blackfin/
 
