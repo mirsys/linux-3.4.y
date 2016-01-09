@@ -62,7 +62,7 @@
 
 /* UART name and device definitions */
 
-#define S3C24XX_SERIAL_NAME		"ttySAC"
+#define S3C24XX_SERIAL_NAME		"ttyAMA"
 #define S3C24XX_SERIAL_MAJOR	204
 #define S3C24XX_SERIAL_MINOR	64
 

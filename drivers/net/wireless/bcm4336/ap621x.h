@@ -68,6 +68,19 @@ static inline void ap621x_wifi_init(void) {
 	// nothing here yet
 }
 
+#elif defined(CONFIG_ARCH_S5P6818)
+#include <linux/platform_device.h>
+
+#define SRCBASE		"drivers/net/wireless/bcm4336"
+
+extern void force_presence_change(struct platform_device *dev, int state);
+extern int get_host_wake_irq(void);
+extern int wifi_pm_gpio_ctrl(char *name, int level);
+
+static inline void ap621x_wifi_init(void) {
+	// nothing here yet
+}
+
 #else
 
 /* Stubs */

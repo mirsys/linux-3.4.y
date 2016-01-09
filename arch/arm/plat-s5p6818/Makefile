@@ -23,6 +23,10 @@ ifeq ($(CONFIG_PLAT_S5P6818_ASB),y)
 PLATBOARD :=asb
 endif
 
+ifeq ($(CONFIG_PLAT_S5P6818_NANOPI3),y)
+PLATBOARD := nanopi3
+endif
+
 #
 # Build options
 #
