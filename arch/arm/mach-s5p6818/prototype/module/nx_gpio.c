@@ -1154,6 +1154,181 @@ U32		NX_GPIO_GetValidBit( U32 ModuleIndex )
 
 	return __g_NX_GPIO_VALID_BIT[ModuleIndex];
 }
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Set GPIO Slew
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@param[in]	Value			32bit input data
+ *	@return		None
+ */
+void		NX_GPIO_SetSLEW	( U32 ModuleIndex, U32 Value )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->GPIOx_SLEW, Value );
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Get GPIO Slew
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@return		GPIO slew value
+ */
+U32		NX_GPIO_GetSLEW	( U32 ModuleIndex )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	return __g_ModuleVariables[ModuleIndex].pRegister->GPIOx_SLEW;
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Set GPIO Slew Disable Default
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@param[in]	Value			32bit input data
+ *	@return		None
+ */
+void		NX_GPIO_SetSLEW_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->GPIOx_SLEW_DISABLE_DEFAULT, Value );
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Get GPIO Slew Disable Default
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@return		GPIO GPIO Slew Disable Default value
+ */
+U32		NX_GPIO_GetSLEW_DISABLE_DEFAULT	( U32 ModuleIndex )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	return __g_ModuleVariables[ModuleIndex].pRegister->GPIOx_SLEW_DISABLE_DEFAULT;
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Set GPIO DRV1
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@param[in]	Value			32bit input data
+ *	@return		None
+ */
+void		NX_GPIO_SetDRV1	( U32 ModuleIndex, U32 Value )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->GPIOx_DRV1, Value );
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Get GPIO DRV1
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@return		GPIO GPIO DRV1 value
+ */
+U32		NX_GPIO_GetDRV1	( U32 ModuleIndex )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	return __g_ModuleVariables[ModuleIndex].pRegister->GPIOx_DRV1;
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Set GPIO DRV1 Disable Default
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@param[in]	Value			32bit input data
+ *	@return		None
+ */
+void		NX_GPIO_SetDRV1_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->GPIOx_DRV1_DISABLE_DEFAULT, Value );
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Get DRV1 Disable Default
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@return		GPIO DRV1 Disable Default value
+ */
+U32		NX_GPIO_GetDRV1_DISABLE_DEFAULT	( U32 ModuleIndex )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	return __g_ModuleVariables[ModuleIndex].pRegister->GPIOx_DRV1_DISABLE_DEFAULT;
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Set GPIO DRV0
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@param[in]	Value			32bit input data
+ *	@return		None
+ */
+void		NX_GPIO_SetDRV0	( U32 ModuleIndex, U32 Value )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->GPIOx_DRV0, Value );
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Get GPIO DRV0
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@return		GPIO DRV0 value
+ */
+U32		NX_GPIO_GetDRV0	( U32 ModuleIndex )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	return __g_ModuleVariables[ModuleIndex].pRegister->GPIOx_DRV0;
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Set DRV0 Disable Default
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@param[in]	Value			32bit input data
+ *	@return		None
+ */
+void		NX_GPIO_SetDRV0_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	WriteIO32(&__g_ModuleVariables[ModuleIndex].pRegister->GPIOx_DRV0_DISABLE_DEFAULT, Value );
+}
+
+//------------------------------------------------------------------------------
+/**
+ *	@brief		Get DRV0 Disable Default
+ *	@param[in]	ModuleIndex		A index of module. (0:GPIOA, 1:GPIOB, 2:GPIOC )
+ *	@return		GPIO DRV0 Disable Default value
+ */
+U32		NX_GPIO_GetDRV0_DISABLE_DEFAULT	( U32 ModuleIndex )
+{
+	NX_ASSERT( NUMBER_OF_GPIO_MODULE > ModuleIndex );
+	NX_ASSERT( CNULL != __g_ModuleVariables[ModuleIndex].pRegister );
+
+	return __g_ModuleVariables[ModuleIndex].pRegister->GPIOx_DRV0_DISABLE_DEFAULT;
+}
+
 //------------------------------------------------------------------------------
 /**
  *	@brief		Set GPIO Slew

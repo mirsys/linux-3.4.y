@@ -36,4 +36,4 @@ endif
 #===============================================================================
 #	Build options for nexell soc
 #===============================================================================
-KBUILD_CFLAGS += -mfpu=vfp -mfloat-abi=softfp
+KBUILD_CFLAGS += -mfpu=vfpv4 -ftree-vectorize -ffast-math -mfloat-abi=softfp

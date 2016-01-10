@@ -5555,6 +5555,8 @@ bool dhd_is_concurrent_mode(dhd_pub_t *dhd)
 {
 	if (!dhd)
 		return FALSE;
+	if (dhd->op_mode & DHD_FLAG_STA_MODE)
+		return TRUE;
 
 	if (dhd->op_mode & DHD_FLAG_CONCURR_MULTI_CHAN_MODE)
 		return TRUE;

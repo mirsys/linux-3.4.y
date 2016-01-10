@@ -203,6 +203,19 @@ NX_GPIO_PADFUNC	NX_GPIO_GetPadFunction( U32 ModuleIndex, U32 BitNumber );
 //------------------------------------------------------------------------------
 ///	@name	GPIO Operation.
 //@{
+void	NX_GPIO_SetSLEW	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetSLEW	( U32 ModuleIndex );
+void	NX_GPIO_SetSLEW_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetSLEW_DISABLE_DEFAULT	( U32 ModuleIndex );
+void	NX_GPIO_SetDRV1	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetDRV1	( U32 ModuleIndex );
+void	NX_GPIO_SetDRV1_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetDRV1_DISABLE_DEFAULT	( U32 ModuleIndex );
+void	NX_GPIO_SetDRV0	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetDRV0	( U32 ModuleIndex );
+void	NX_GPIO_SetDRV0_DISABLE_DEFAULT	( U32 ModuleIndex, U32 Value );
+U32		NX_GPIO_GetDRV0_DISABLE_DEFAULT	( U32 ModuleIndex );
+
 void	NX_GPIO_SetSlew	( U32 ModuleIndex, U32 BitNumber, CBOOL Enable );
 CBOOL	NX_GPIO_GetSlew	( U32 ModuleIndex, U32 BitNumber );
 void	NX_GPIO_SetSlewDisableDefault	( U32 ModuleIndex, U32 BitNumber, CBOOL Enable );

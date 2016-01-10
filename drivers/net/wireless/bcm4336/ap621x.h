@@ -67,7 +67,6 @@ extern int wifi_pm_gpio_ctrl(char *name, int level);
 static inline void ap621x_wifi_init(void) {
 	// nothing here yet
 }
-
 #elif defined(CONFIG_ARCH_S5P6818)
 #include <linux/platform_device.h>
 

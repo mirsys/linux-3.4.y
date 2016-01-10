@@ -533,7 +533,7 @@ void nxp_cpu_arch_init(void)
 #endif
 
 #if (CFG_BUS_RECONFIG_ENB == 1)
-//	nxp_set_bus_config();
+  	nxp_set_bus_config();
 #endif
 
 	/* Check version */

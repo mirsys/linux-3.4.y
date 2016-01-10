@@ -1341,6 +1341,21 @@ void __init nxp_cpu_devs_register(void)
 #endif
 
 #if defined(CONFIG_NXP_DISPLAY_LCD)
+	__lcd_vsync.h_active_len	= CFG_DISP_PRI_RESOL_WIDTH,
+	__lcd_vsync.h_sync_width	= CFG_DISP_PRI_HSYNC_SYNC_WIDTH,
+	__lcd_vsync.h_back_porch	= CFG_DISP_PRI_HSYNC_BACK_PORCH,
+	__lcd_vsync.h_front_porch	= CFG_DISP_PRI_HSYNC_FRONT_PORCH,
+	__lcd_vsync.h_sync_invert	= CFG_DISP_PRI_HSYNC_ACTIVE_HIGH,
+	__lcd_vsync.v_active_len	= CFG_DISP_PRI_RESOL_HEIGHT,
+	__lcd_vsync.v_sync_width	= CFG_DISP_PRI_VSYNC_SYNC_WIDTH,
+	__lcd_vsync.v_back_porch	= CFG_DISP_PRI_VSYNC_BACK_PORCH,
+	__lcd_vsync.v_front_porch	= CFG_DISP_PRI_VSYNC_FRONT_PORCH,
+	__lcd_vsync.v_sync_invert	= CFG_DISP_PRI_VSYNC_ACTIVE_HIGH,
+	__lcd_vsync.pixel_clock_hz = CFG_DISP_PRI_PIXEL_CLOCK,
+	__lcd_vsync.clk_src_lv0	= CFG_DISP_PRI_CLKGEN0_SOURCE,
+	__lcd_vsync.clk_div_lv0	= CFG_DISP_PRI_CLKGEN0_DIV,
+	__lcd_vsync.clk_src_lv1	= CFG_DISP_PRI_CLKGEN1_SOURCE,
+	__lcd_vsync.clk_div_lv1	= CFG_DISP_PRI_CLKGEN1_DIV,
 	printk("mach: add device lcd \n");
 	platform_device_register(&lcd_device);
 #endif
@@ -1356,6 +1371,14 @@ void __init nxp_cpu_devs_register(void)
 #endif
 
 #if defined(CONFIG_NXP_DISPLAY_HDMI)
+	__hdmi_vsync.h_active_len = CFG_DISP_PRI_RESOL_WIDTH;
+	__hdmi_vsync.v_active_len =  CFG_DISP_PRI_RESOL_HEIGHT;
+	if((CFG_DISP_PRI_RESOL_WIDTH == 1280) && (CFG_DISP_PRI_RESOL_HEIGHT == 720))
+		__hdmi_devpar.preset = 0;
+	else if((CFG_DISP_PRI_RESOL_WIDTH == 1920) && (CFG_DISP_PRI_RESOL_HEIGHT == 1080))
+		__hdmi_devpar.preset = 1;
+	else
+		__hdmi_devpar.preset = 0;
 	printk("mach: add device hdmi \n");
 	platform_device_register(&hdmi_device);
 #endif

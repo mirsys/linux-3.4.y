@@ -56,7 +56,7 @@ int CFG_DISP_MIPI_DPHYCTL = 0;
 //};
 //struct mipi_reg_val * CFG_DISP_MIPI_INIT_DATA = &mipidef[0];
 
-static unsigned char lcdname[32] = "video";
+static unsigned char lcdname[32] = "lcd";
 static int __init lcd_setup(char * str)
 {
     if((str != NULL) && (*str != '\0'))
@@ -66,45 +66,11 @@ static int __init lcd_setup(char * str)
 	nanopi2_lcd_select();
 	return 1;
 }
-__setup("video=", lcd_setup);
+__setup("lcd=", lcd_setup);
 
 void nanopi2_lcd_select(void)
 {
-	if(strcmp(lcdname, "vga-1024x768") == 0)
-	{
-		CFG_DISP_PRI_RESOL_WIDTH = 1024;
-		CFG_DISP_PRI_RESOL_HEIGHT = 768;
-
-		CFG_DISP_PRI_HSYNC_SYNC_WIDTH = 136;
-		CFG_DISP_PRI_HSYNC_BACK_PORCH = 160;
-		CFG_DISP_PRI_HSYNC_FRONT_PORCH = 24;
-		CFG_DISP_PRI_HSYNC_ACTIVE_HIGH = 0;
-		CFG_DISP_PRI_VSYNC_SYNC_WIDTH = 6;
-		CFG_DISP_PRI_VSYNC_BACK_PORCH = 29;
-		CFG_DISP_PRI_VSYNC_FRONT_PORCH = 3;
-		CFG_DISP_PRI_VSYNC_ACTIVE_HIGH = 0;
-
-		CFG_DISP_PRI_CLKGEN0_DIV = 12;
-		CFG_DISP_PRI_PIXEL_CLOCK = (780000000 / CFG_DISP_PRI_CLKGEN0_DIV);
-	}
-	else if(strcmp(lcdname, "vga-1440x900") == 0)
-	{
-		CFG_DISP_PRI_RESOL_WIDTH = 1440;
-		CFG_DISP_PRI_RESOL_HEIGHT = 900;
-
-		CFG_DISP_PRI_HSYNC_SYNC_WIDTH = 32;
-		CFG_DISP_PRI_HSYNC_BACK_PORCH = 80;
-		CFG_DISP_PRI_HSYNC_FRONT_PORCH = 48;
-		CFG_DISP_PRI_HSYNC_ACTIVE_HIGH = 1;
-		CFG_DISP_PRI_VSYNC_SYNC_WIDTH = 6;
-		CFG_DISP_PRI_VSYNC_BACK_PORCH = 17;
-		CFG_DISP_PRI_VSYNC_FRONT_PORCH = 3;
-		CFG_DISP_PRI_VSYNC_ACTIVE_HIGH = 0;
-
-		CFG_DISP_PRI_CLKGEN0_DIV = 8;
-		CFG_DISP_PRI_PIXEL_CLOCK = (710000000 / CFG_DISP_PRI_CLKGEN0_DIV);
-	}
-	else if(strcmp(lcdname, "hdmi-720p") == 0)
+	if(strcmp(lcdname, "hdmi-720p") == 0)
 	{
 		CFG_DISP_PRI_RESOL_WIDTH = 1280;
 		CFG_DISP_PRI_RESOL_HEIGHT = 720;
