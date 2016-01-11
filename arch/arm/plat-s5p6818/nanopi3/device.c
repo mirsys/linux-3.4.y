@@ -1166,7 +1166,7 @@ static int _dwmci0_init(u32 slot_id, irq_handler_t handler, void *data)
 	struct dw_mci *host = (struct dw_mci *)data;
 	int io  = CFG_SDMMC0_DETECT_IO;
 	int irq = IRQ_GPIO_START + io;
-	int id  = 0, ret;
+	int id  = 0, ret = 0;
 
 	printk("dw_mmc dw_mmc.%d: Using external card detect irq %3d (io %2d)\n", id, irq, io);
 
@@ -1249,17 +1249,11 @@ static int _dwmci2_get_cd(u32 slot_id)
 }
 
 static struct dw_mci_board _dwmci2_data = {
-	.quirks			= DW_MCI_QUIRK_BROKEN_CARD_DETECTION |
-					  DW_MCI_QUIRK_HIGHSPEED |
-					  DW_MMC_QUIRK_HW_RESET_PW |
-					  DW_MCI_QUIRK_NO_DETECT_EBIT,
+	.quirks			= DW_MCI_QUIRK_HIGHSPEED,
 	.bus_hz			= 100 * 1000 * 1000,
-	.caps			= MMC_CAP_UHS_DDR50 |
-					  MMC_CAP_NONREMOVABLE |
-					  MMC_CAP_4_BIT_DATA | MMC_CAP_CMD23 |
-					  MMC_CAP_ERASE | MMC_CAP_HW_RESET,
+	.caps			= MMC_CAP_4_BIT_DATA | MMC_CAP_CMD23 | MMC_CAP_HW_RESET,
 	.cd_type		= DW_MCI_CD_EXTERNAL,
-	.clk_dly		= DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(3) | DW_MMC_SAMPLE_PHASE(2),
+	.clk_dly		= DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2) | DW_MMC_SAMPLE_PHASE(1),
 
 	.init			= _dwmci2_init,
 	.get_cd			= _dwmci2_get_cd,
@@ -1322,6 +1316,34 @@ static struct platform_device hdmi_cec_device = {
 	.name			= NXP_HDMI_CEC_DRV_NAME,
 };
 #endif /* CONFIG_NXP_HDMI_CEC */
+
+/*------------------------------------------------------------------------------
+ * SLsiAP Thermal Unit
+ */
+#if defined(CONFIG_SENSORS_NXP_TMU)
+
+struct nxp_tmu_trigger tmu_triggers[] = {
+	{
+		.trig_degree	=  85,	// 160
+		.trig_duration	=  100,
+		.trig_cpufreq	=  800*1000,	/* Khz */
+	},
+};
+
+static struct nxp_tmu_platdata tmu_data = {
+	.channel  = 0,
+	.triggers = tmu_triggers,
+	.trigger_size = ARRAY_SIZE(tmu_triggers),
+	.poll_duration = 100,
+};
+
+static struct platform_device tmu_device = {
+	.name			= "nxp-tmu",
+	.dev			= {
+		.platform_data	= &tmu_data,
+	}
+};
+#endif
 
 /*------------------------------------------------------------------------------
  * LED
@@ -1395,6 +1417,11 @@ void __init nxp_board_devs_register(void)
 	platform_device_register(&dfs_plat_device);
 #endif
 
+#if defined(CONFIG_SENSORS_NXP_TMU)
+	printk("plat: add device TMU\n");
+	platform_device_register(&tmu_device);
+#endif
+
 #if defined (CONFIG_FB_NXP)
 	#if defined (CONFIG_FB0_NXP)	
 		fb0_plat_data.module = CONFIG_FB0_NXP_DISPOUT,	
@@ -1445,9 +1472,11 @@ void __init nxp_board_devs_register(void)
 	platform_device_register(&key_plat_device);
 #endif
 
-#if defined(CONFIG_I2C_NXP_PORT3)
+#if defined(CONFIG_I2C_NXP) || defined (CONFIG_I2C_SLSI)
+	printk("plat: add device i2c\n");
 	platform_add_devices(i2c_devices, ARRAY_SIZE(i2c_devices));
 #endif
+
 
 #if defined(CONFIG_REGULATOR_FIXED_VOLTAGE)
 	printk("plat: add device fixed voltage\n");

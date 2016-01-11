@@ -285,6 +285,19 @@ static int _get_vsync_info(struct nxp_hdmi_context *me)
         vsync->v_sync_invert = 0;
         break;
 
+    case V4L2_DV_1080P24:
+        vsync->h_active_len = 1920;
+        vsync->h_sync_width = 44;
+        vsync->h_back_porch = 148;
+        vsync->h_front_porch = 638;
+        vsync->h_sync_invert = 0;
+        vsync->v_active_len = 1080;
+        vsync->v_sync_width = 5;
+        vsync->v_back_porch = 36;
+        vsync->v_front_porch = 4;
+        vsync->v_sync_invert = 0;
+        break;
+
     default:
         pr_err("%s: invalid preset value 0x%x\n", __func__, me->cur_preset);
         return -EINVAL;

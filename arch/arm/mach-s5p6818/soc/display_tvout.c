@@ -560,6 +560,7 @@ static int _create_sysfs(void)
 static int tvout_probe(struct platform_device *pdev)
 {
     nxp_soc_disp_register_proc_ops(DISP_DEVICE_TVOUT, &tvout_ops);
+    nxp_soc_disp_device_connect_to(DISP_DEVICE_TVOUT, DISP_DEVICE_SYNCGEN1, NULL);
     return 0;
 }
 

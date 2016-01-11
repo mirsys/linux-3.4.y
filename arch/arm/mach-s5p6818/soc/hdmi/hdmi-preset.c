@@ -2191,6 +2191,7 @@ const struct hdmi_conf hdmi_conf[] = {
     { V4L2_DV_720P50,           &hdmi_conf_720p50,          &info_2d },
     { V4L2_DV_720P59_94,        &hdmi_conf_720p59_94,       &info_2d },
     { V4L2_DV_720P60,           &hdmi_conf_720p60,          &info_2d },
+    { V4L2_DV_1080P24,          &hdmi_conf_1080p24,         &info_2d },
     { V4L2_DV_1080P50,          &hdmi_conf_1080p50,         &info_2d },
     { V4L2_DV_1080P59_94,       &hdmi_conf_1080p59_94,      &info_2d },
     { V4L2_DV_1080P60,          &hdmi_conf_1080p60,         &info_2d },

@@ -194,13 +194,15 @@ static struct nxp_clk_periph clk_periphs [] = {
 	CLK_PERI_2S(DEV_NAME_GMAC		, -1, CLK_ID_GMAC		, PHY_BASEADDR_CLKGEN10, (_PLL_0_3_|_EXTCLK1_), (_CLKOUTn_)),
 	CLK_PERI_1S(DEV_NAME_SPDIF_TX	, -1, CLK_ID_SPDIF_TX	, PHY_BASEADDR_CLKGEN11, (_PLL_0_2_)),
 	CLK_PERI_1S(DEV_NAME_MPEGTSI	, -1, CLK_ID_MPEGTSI	, PHY_BASEADDR_CLKGEN12, (_GATE_BCLK_)),
-	#if 0
-	CLK_PERI_1S(DEV_NAME_MALI		, -1, CLK_ID_MALI		, PHY_BASEADDR_CLKGEN21, (_GATE_BCLK_)),
+	#if 1
+	CLK_PERI_1S(DEV_NAME_VR			, -1, CLK_ID_VR			, PHY_BASEADDR_CLKGEN21, (_GATE_BCLK_)),
 	#endif
 	CLK_PERI_1S(DEV_NAME_DIT		, -1, CLK_ID_DIT		, PHY_BASEADDR_CLKGEN28, (_GATE_BCLK_)),
 	CLK_PERI_1S(DEV_NAME_PPM		, -1, CLK_ID_PPM		, PHY_BASEADDR_CLKGEN29, (_PLL_0_2_)),
 	#if 0
 	CLK_PERI_2S(DEV_NAME_USB2HOST	, -1, CLK_ID_USB2HOST	, PHY_BASEADDR_CLKGEN32, (_PLL_0_3_), (_PLL_0_3_|_EXTCLK1_)),
+	#endif
+	#if 1
 	CLK_PERI_1S(DEV_NAME_CODA		, -1, CLK_ID_CODA		, PHY_BASEADDR_CLKGEN33, (_GATE_PCLK_|_GATE_BCLK_)),
 	#endif
 	CLK_PERI_1S(DEV_NAME_CRYPTO		, -1, CLK_ID_CRYPTO	    , PHY_BASEADDR_CLKGEN34, (_GATE_PCLK_)),
@@ -212,10 +214,35 @@ static struct nxp_clk_periph clk_periphs [] = {
 };
 
 static struct clk_link_dev clk_link[] = {
+#if defined(CONFIG_SERIAL_AMBA_PL011)
+	#if defined(CONFIG_SERIAL_NXP_UART0)
+		{ .name = "uart-pl011.0", .id = CLK_ID_UART_0, },
+	#endif
+	#if defined(CONFIG_SERIAL_NXP_UART1)
+		{ .name = "uart-pl011.1", .id = CLK_ID_UART_1, },
+	#endif
+	#if defined(CONFIG_SERIAL_NXP_UART2)
+		{ .name = "uart-pl011.2", .id = CLK_ID_UART_2, },
+	#endif
+	#if defined(CONFIG_SERIAL_NXP_UART3)
+		{ .name = "uart-pl011.3", .id = CLK_ID_UART_3, },
+	#endif
+	#if defined(CONFIG_SERIAL_NXP_UART4)
+		{ .name = "uart-pl011.4", .id = CLK_ID_UART_4, },
+	#endif
+	#if defined(CONFIG_SERIAL_NXP_UART5)
+		{ .name = "uart-pl011.5", .id = CLK_ID_UART_5, },
+	#endif
+#endif
+#if defined(CONFIG_SPI_PL022_PORT0)
 	{ .name = "ssp-pl022.0" , .id = CLK_ID_SPI_0 , },
+#endif
+#if defined(CONFIG_SPI_PL022_PORT1)
 	{ .name = "ssp-pl022.1" , .id = CLK_ID_SPI_1 , },
+#endif
+#if defined(CONFIG_SPI_PL022_PORT2)
 	{ .name = "ssp-pl022.2" , .id = CLK_ID_SPI_2 , },
-
+#endif
 };
 
 #define	CLK_PERI_NUM		((int)ARRAY_SIZE(clk_periphs))
@@ -1083,7 +1110,7 @@ void __init nxp_cpu_clock_init(void)
 		}
 
 		/* prevent uart clock disable for low level debug message */
-#ifndef	CONFIG_PLAT_S5P6818_FDONE
+//#ifndef	CONFIG_PLAT_S5P6818_NANOPI3
 		#ifndef CONFIG_DEBUG_NXP_UART
 		if (peri->dev_name) {
 			#ifdef CONFIG_BACKLIGHT_PWM
@@ -1095,7 +1122,7 @@ void __init nxp_cpu_clock_init(void)
 			clk_gen_pclk(peri->base_addr, 0);
 		}
 		#endif
-#endif		
+//#endif		
 	}
 
 	cdev = clk_dev_get(CLK_CORE_NUM);
@@ -1183,7 +1210,7 @@ void nxp_cpu_clock_resume(void)
 		peri = &clk_periphs[i];
 		/* exception */
 		if (_GATE_PCLK_ & peri->clk_mask0) {
-	#ifdef CONFIG_I2C_SLSI
+	#if defined(CONFIG_I2C_SLSI) || defined(CONFIG_I2C_NXP)
 			if (!strcmp("nxp-i2c", peri->dev_name))
 				clk_gen_pclk(peri->base_addr, 1);
 	#endif

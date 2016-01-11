@@ -307,7 +307,9 @@ extern int CFG_DISP_MIPI_DPHYCTL;
 /*------------------------------------------------------------------------------
  * 	PMIC
  */
-/* AXP228 PMIC	*/
+/* AXP228 PMIC */
+#define CFG_PMIC_I2_CBUS						3					/* i2c channel */
+#define CFG_BATTERY_CAP							3000				/* Battery Capacity */
 #define CFG_SW_UBC_ENABLE						(1)					/* S/W UBC Check */
 #define CFG_USB_DET_FROM_PMIC_INT				(0)					/* 0 : GPIO interrupt (CFG_GPIO_PMIC_VUSB_DET)		1 : PMIC interrupt (FVUSBDETSINT) */
 #define CFG_GPIO_OTG_USBID_DET					(-1)	/* USB ID Deteict */
@@ -315,10 +317,6 @@ extern int CFG_DISP_MIPI_DPHYCTL;
 #define CFG_GPIO_PMIC_VUSB_DET					(PAD_GPIO_ALV + 2)	/* Choice for SW_UBC or Wake-up*/
 #define CFG_GPIO_PMIC_LOWBAT_DET				(-1)				/* Critical low battery detect */
 #define CFG_PMIC_BAT_CHG_SUPPORT				(1)
-
-/* AXP228 PMIC */
-#define CFG_PMIC_I2_CBUS						3					/* i2c channel */
-#define CFG_BATTERY_CAP							3000				/* Battery Capacity */
 
 /* PMIC Common */
 #define CFG_GPIO_PMIC_INTR						(PAD_GPIO_ALV + 4)	/* PMIC Interrupt */

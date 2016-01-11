@@ -27,7 +27,7 @@
 #include <mach/devices.h>
 #include <mach/soc.h>
 
-#if (0)
+#if (1)
 #define DBGOUT(msg...)		{ printk(KERN_INFO msg); }
 #else
 #define DBGOUT(msg...)		do {} while (0)

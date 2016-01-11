@@ -46,16 +46,19 @@
 /*------------------------------------------------------------------------------
  * Serial platform device
  */
-#if defined(CONFIG_SERIAL_NXP_S3C)
+
+#if defined(CONFIG_SERIAL_AMBA_PL011)
+#include "dev-uart-pl011.c"
+#else defined(CONFIG_SERIAL_NXP_S3C)
 #include "dev-uart.c"
-#endif /* CONFIG_SERIAL_NXP_S3C */
+#endif /* CONFIG_SERIAL */
 
 /*------------------------------------------------------------------------------
  * I2C Bus platform device
  */
 
 #if defined( CONFIG_I2C_NXP) || defined ( CONFIG_I2C_SLSI )
-#define I2CUDELAY(x)	1000000/x/2
+#define I2CUDELAY(x)	(1000000/x/2)
 /* gpio i2c 0 */
 #ifdef CFG_IO_I2C0_SCL
 #define	I2C0_SCL	CFG_IO_I2C0_SCL
@@ -1280,10 +1283,44 @@ struct platform_device nxp_device_wdt = {
  */
 #if defined(CONFIG_ARM_AMBA)
 #include "dev-dmac.c"
+
 static struct amba_device *amba_devices[] __initdata = {
+#if defined(CONFIG_SERIAL_AMBA_PL011)
+	#if defined(CONFIG_SERIAL_NXP_UART0)
+		&uart0_device,
+	#endif
+	#if defined(CONFIG_SERIAL_NXP_UART1)
+		&uart1_device,
+	#endif
+	#if defined(CONFIG_SERIAL_NXP_UART2)
+		&uart2_device,
+	#endif
+	#if defined(CONFIG_SERIAL_NXP_UART3)
+		&uart3_device,
+	#endif
+	#if defined(CONFIG_SERIAL_NXP_UART4)
+		&uart4_device,
+	#endif
+	#if defined(CONFIG_SERIAL_NXP_UART5)
+		&uart5_device,
+	#endif
+#endif
+
 #if defined (CONFIG_AMBA_PL08X)
 	&dmac0_device,
 	&dmac1_device,
+#endif
+
+#if defined(CONFIG_SPI_PL022_PORT0)
+	&spi0_device,
+#endif
+
+#if defined(CONFIG_SPI_PL022_PORT1)
+	&spi1_device,
+#endif
+
+#if defined(CONFIG_SPI_PL022_PORT2)
+	&spi2_device,
 #endif
 };
 #endif
@@ -1293,7 +1330,10 @@ static struct amba_device *amba_devices[] __initdata = {
  */
 void __init nxp_cpu_devs_register(void)
 {
+
+#if defined(CONFIG_ARM_AMBA)
 	int i = 0;
+#endif
 
 	printk("[Register machine platform devices]\n");
 #if defined(CONFIG_ARM_AMBA)
@@ -1371,16 +1411,19 @@ void __init nxp_cpu_devs_register(void)
 #endif
 
 #if defined(CONFIG_NXP_DISPLAY_HDMI)
-	__hdmi_vsync.h_active_len = CFG_DISP_PRI_RESOL_WIDTH;
-	__hdmi_vsync.v_active_len =  CFG_DISP_PRI_RESOL_HEIGHT;
-	if((CFG_DISP_PRI_RESOL_WIDTH == 1280) && (CFG_DISP_PRI_RESOL_HEIGHT == 720))
-		__hdmi_devpar.preset = 0;
-	else if((CFG_DISP_PRI_RESOL_WIDTH == 1920) && (CFG_DISP_PRI_RESOL_HEIGHT == 1080))
-		__hdmi_devpar.preset = 1;
-	else
-		__hdmi_devpar.preset = 0;
-	printk("mach: add device hdmi \n");
-	platform_device_register(&hdmi_device);
+	if(CFG_DISP_HDMI_USING != 0)
+	{
+		__hdmi_vsync.h_active_len = CFG_DISP_PRI_RESOL_WIDTH;
+		__hdmi_vsync.v_active_len =  CFG_DISP_PRI_RESOL_HEIGHT;
+		if((CFG_DISP_PRI_RESOL_WIDTH == 1280) && (CFG_DISP_PRI_RESOL_HEIGHT == 720))
+			__hdmi_devpar.preset = 0;
+		else if((CFG_DISP_PRI_RESOL_WIDTH == 1920) && (CFG_DISP_PRI_RESOL_HEIGHT == 1080))
+			__hdmi_devpar.preset = 1;
+		else
+			__hdmi_devpar.preset = 0;
+		printk("mach: add device hdmi \n");
+		platform_device_register(&hdmi_device);
+	}
 #endif
 
 #if defined(CONFIG_NXP_DISPLAY_RESC)
@@ -1391,6 +1434,12 @@ void __init nxp_cpu_devs_register(void)
 #if defined(CONFIG_NXP_DISPLAY_TVOUT)
 	printk("mach: add device tvout \n");
 	platform_device_register(&tvout_device);
+#endif
+
+#if defined(CONFIG_VR_400) || defined(CONFIG_MALI_400)
+    /* Register the platform devices */
+    printk("mach: add graphic device \n");
+    platform_device_register(&vr_gpu_device);
 #endif
 
 #if defined(CONFIG_SERIAL_NXP)

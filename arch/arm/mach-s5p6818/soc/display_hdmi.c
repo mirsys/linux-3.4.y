@@ -41,7 +41,7 @@
 
 #include <mach/hdmi/nxp-hdmi-context.h>
 
-#if (0)
+#if (1)
 #define DBGOUT(msg...)		{ printk(KERN_INFO msg); }
 #else
 #define DBGOUT(msg...)		do {} while (0)
