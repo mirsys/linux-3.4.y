@@ -292,6 +292,10 @@ source "drivers/net/wireless/wl1251/Kconfig"
 source "drivers/net/wireless/wl12xx/Kconfig"
 source "drivers/net/wireless/zd1211rw/Kconfig"
 source "drivers/net/wireless/mwifiex/Kconfig"
+<<<<<<< HEAD
+=======
+#source "drivers/net/wireless/mt7601u/Kconfig"
+>>>>>>> npi2
 
 config ESP8089
 	bool "ESP8089 Wireless device support"

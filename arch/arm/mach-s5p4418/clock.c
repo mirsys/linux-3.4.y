@@ -35,9 +35,9 @@
 #include <mach/platform.h>
 #include <mach/devices.h>
 
-/*
-#define	pr_debug	printk
-*/
+
+//#define	pr_debug	printk
+
 
 /*
  * clock generator macros
@@ -136,6 +136,9 @@ struct clk_gen_reg {
 	volatile U32 CLKENB;
 	volatile U32 CLKGEN[4];
 };
+#define CLK_PERI_0S(name, devid, id, base, mk) [id] = {	\
+	.dev_name = name, .dev_id = devid,.periph_id = id, .level = 0, 	\
+	.base_addr = (void*)base, .clk_mask0 = mk, .enable = false, }
 
 #define CLK_PERI_1S(name, devid, id, base, mk) [id] = {	\
 	.dev_name = name, .dev_id = devid,.periph_id = id, .level = 1, 	\
@@ -206,14 +209,21 @@ static struct nxp_clk_periph clk_periphs [] = {
 	CLK_PERI_2S(DEV_NAME_GMAC		, -1, CLK_ID_GMAC		, PHY_BASEADDR_CLKGEN10, (_PLL_0_3_|_EXTCLK1_), (_CLKOUTn_)),
 	CLK_PERI_1S(DEV_NAME_SPDIF_TX	, -1, CLK_ID_SPDIF_TX	, PHY_BASEADDR_CLKGEN11, (_PLL_0_2_)),
 	CLK_PERI_1S(DEV_NAME_MPEGTSI	, -1, CLK_ID_MPEGTSI	, PHY_BASEADDR_CLKGEN12, (_GATE_BCLK_)),
+<<<<<<< HEAD
 	#if 0
 	CLK_PERI_1S(DEV_NAME_VR			, -1, CLK_ID_VR			, PHY_BASEADDR_CLKGEN21, (_GATE_BCLK_)),
+=======
+	#if 1
+	CLK_PERI_0S(DEV_NAME_VR			, -1, CLK_ID_VR			, PHY_BASEADDR_CLKGEN21, (_GATE_BCLK_)),
+>>>>>>> npi2
 	#endif
 	CLK_PERI_1S(DEV_NAME_DIT		, -1, CLK_ID_DIT		, PHY_BASEADDR_CLKGEN28, (_GATE_BCLK_)),
 	CLK_PERI_1S(DEV_NAME_PPM		, -1, CLK_ID_PPM		, PHY_BASEADDR_CLKGEN29, (_PLL_0_2_)),
 	#if 0
 	CLK_PERI_2S(DEV_NAME_USB2HOST	, -1, CLK_ID_USB2HOST	, PHY_BASEADDR_CLKGEN32, (_PLL_0_3_), (_PLL_0_3_|_EXTCLK1_)),
-	CLK_PERI_1S(DEV_NAME_CODA		, -1, CLK_ID_CODA		, PHY_BASEADDR_CLKGEN33, (_GATE_PCLK_|_GATE_BCLK_)),
+	#endif
+	#if 1
+	CLK_PERI_0S(DEV_NAME_CODA		, -1, CLK_ID_CODA		, PHY_BASEADDR_CLKGEN33, (_GATE_PCLK_|_GATE_BCLK_)),
 	#endif
 	CLK_PERI_1S(DEV_NAME_CRYPTO		, -1, CLK_ID_CRYPTO	    , PHY_BASEADDR_CLKGEN34, (_GATE_PCLK_)),
 	CLK_PERI_1S(DEV_NAME_SCALER		, -1, CLK_ID_SCALER	    , PHY_BASEADDR_CLKGEN35, (_GATE_BCLK_)),

@@ -39,5 +39,5 @@ endif
 #===============================================================================
 #	Build options for nexell soc
 #===============================================================================
-KBUILD_CFLAGS += -mtune=cortex-a9 -mfpu=vfp -mfloat-abi=softfp
+KBUILD_CFLAGS += -mtune=cortex-a9 -mfpu=vfpv4 -fomit-frame-pointer -ftree-vectorize -ffast-math -mfloat-abi=softfp
 # -mfpu=vfpv3

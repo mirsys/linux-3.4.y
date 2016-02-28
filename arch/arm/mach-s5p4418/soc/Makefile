@@ -15,3 +15,5 @@ obj-$(CONFIG_NXP_DISPLAY_RESC)	+= display_resc.o
 obj-$(CONFIG_USB_EHCI_SYNOPSYS)	+= setup-usb-phy.o
 obj-$(CONFIG_NXP_OUT_HDMI)		+= hdmi/
 
+EXTRA_CFLAGS += -mtune=cortex-a9 -mfpu=neon -fomit-frame-pointer -ftree-vectorize -ffast-math 
+

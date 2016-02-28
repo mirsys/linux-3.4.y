@@ -22,5 +22,6 @@ $(TARGET)-objs	+= src/nx_vpu_gdi.o
 EXTRA_CFLAGS += -I./include
 EXTRA_CFLAGS += -I./firmware
 EXTRA_CFLAGS += -I../libnxvmalloc
+EXTRA_CFLAGS += -mtune=cortex-a9 -mfpu=neon -fomit-frame-pointer -ftree-vectorize -ffast-math
 
 ######################################################################

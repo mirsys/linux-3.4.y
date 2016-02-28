@@ -310,7 +310,8 @@ struct platform_device nxp_gmac_dev = {
 		static struct platform_device fb0_device = {	
 			.name	= DEV_NAME_FB,	
 			.id		= 0,	/* FB device node num */	
-			.dev    = {		.coherent_dma_mask 	= 0xffffffffUL,	/* for DMA allocate */		
+			.dev    = {		
+					.coherent_dma_mask 	= 0xffffffffUL,	/* for DMA allocate */		
 					.platform_data		= &fb0_plat_data	
 			},
 		};
@@ -1386,8 +1387,8 @@ static void __init board_hwrev_init(void)
 
 	/* Initialize system Revision & Serial */
 	system_rev = rev;
-	system_serial_high = 0xFA4418DB;
-	system_serial_low  = 0xA4420544;
+	system_serial_high = 0x00004418;
+	system_serial_low  = 0x00000001;
 
 	printk("plat: board revision %d\n", rev);
 }
@@ -1398,7 +1399,7 @@ static void __init board_hwrev_init(void)
 void __init nxp_board_devices_register(void)
 {
 //	struct nxp_lcd *lcd = nanopi2_get_lcd();
-
+	
 	printk("[Register board platform devices]\n");
 
 	board_hwrev_init();
@@ -1423,7 +1424,7 @@ void __init nxp_board_devices_register(void)
 		fb0_plat_data.bitperpixel = CFG_DISP_PRI_SCREEN_PIXEL_BYTE * 8,	
 		fb0_plat_data.x_resol = CFG_DISP_PRI_RESOL_WIDTH,	
 		fb0_plat_data.y_resol = CFG_DISP_PRI_RESOL_HEIGHT,	
-		fb0_plat_data.buffers = 3,	
+		fb0_plat_data.buffers = 2,	
 		fb0_plat_data.skip_pan_vsync = 0,	
 		fb0_plat_data.lcd_with_mm = CFG_DISP_PRI_LCD_WIDTH_MM,	
 		fb0_plat_data.lcd_height_mm	= CFG_DISP_PRI_LCD_HEIGHT_MM,
