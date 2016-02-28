@@ -11,7 +11,10 @@
 
 
 menu "ARM Mali GPU Configuration"
-source "drivers/gpu/arm/t6xx/kbase/Kconfig"
-source "drivers/gpu/arm/m400/Kconfig"
-source "drivers/gpu/arm/vr/Kconfig"
+#source "drivers/gpu/arm/t6xx/kbase/Kconfig"
+#source "drivers/gpu/arm/m400/Kconfig"
+#source "drivers/gpu/arm/vr/Kconfig"
+source "drivers/gpu/arm/mali/Kconfig"
+source "drivers/gpu/arm/ump/Kconfig"
+source "drivers/gpu/arm/umplock/Kconfig"
 endmenu

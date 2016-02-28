@@ -59,7 +59,7 @@ struct cpufreq_asv_ops {
 #include "s5p6818-cpufreq.h"
 #else
 #define	FREQ_MAX_FREQ_KHZ		(1400*1000)
-#define	FREQ_ARRAY_SIZE			(11)
+#define	FREQ_ARRAY_SIZE			(13)
 static struct cpufreq_asv_ops 	asv_freq_ops = { };
 #endif
 

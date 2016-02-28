@@ -6,3 +6,6 @@ obj-$(CONFIG_VIDEO_NXP_OUT) += out/
 EXTRA_CFLAGS += -Idrivers/media/video/nexell/capture \
 				-Idrivers/media/video/nexell/m2m \
 				-Idrivers/media/video/nexell/out
+
+EXTRA_CFLAGS += -mtune=cortex-a9 -mfpu=neon -fomit-frame-pointer -ftree-vectorize -ffast-math
+

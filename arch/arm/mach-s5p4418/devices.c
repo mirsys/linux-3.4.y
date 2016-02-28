@@ -36,7 +36,7 @@
 #include <mach/platform.h>
 #include <mach/devices.h>
 #include <mach/soc.h>
-#include <linux/vr/vr_utgard.h>
+#include <linux/mali/mali_utgard.h>
 
 /*------------------------------------------------------------------------------
  * Serial platform device
@@ -594,20 +594,21 @@ static struct platform_device *gpio_devices[] = {
 /*------------------------------------------------------------------------------
  * Graphic OpenGL|ES platform device(vr400)
  */
-#define VR_MEM_SIZE_DEFAULT CFG_MEM_PHY_SYSTEM_SIZE
+ #if 0
+#define MALI_MEM_SIZE_DEFAULT CFG_MEM_PHY_SYSTEM_SIZE
 #if defined( CFG_MEM_PHY_DMAZONE_SIZE )
-#undef  VR_MEM_SIZE
-#define VR_MEM_SIZE 	(VR_MEM_SIZE_DEFAULT + CFG_MEM_PHY_DMAZONE_SIZE)
+#undef  MALI_MEM_SIZE
+#define MALI_MEM_SIZE 	(MALI_MEM_SIZE_DEFAULT + CFG_MEM_PHY_DMAZONE_SIZE)
 #endif
 #if defined( CONFIG_ION_NXP_CONTIGHEAP_SIZE )
-#undef  VR_MEM_SIZE
-#define VR_MEM_SIZE 	(VR_MEM_SIZE_DEFAULT - (CONFIG_ION_NXP_CONTIGHEAP_SIZE * 1024))
+#undef  MALI_MEM_SIZE
+#define MALI_MEM_SIZE 	(MALI_MEM_SIZE_DEFAULT - (CONFIG_ION_NXP_CONTIGHEAP_SIZE * 1024))
 #endif
 
 #define S5P4418_DTK_3D_IRQ				(40)
-static struct vr_gpu_device_data vr_gpu_data =
+static struct mali_gpu_device_data mali_gpu_data =
 {
-	.shared_mem_size = VR_MEM_SIZE,
+	.shared_mem_size = MALI_MEM_SIZE,
 #if 0
 	.dedicated_mem_start = 0x5B400000, /* Reserved for graphic */
 	.dedicated_mem_size = 0x04C00000, /* 76MB */
@@ -622,28 +623,28 @@ static struct vr_gpu_device_data vr_gpu_data =
 	/* Mali Dynamic power domain configuration in sequence from 0-11
 	 *  GP  PP0 PP1  PP2  PP3  PP4  PP5  PP6  PP7, L2$0 L2$1 L2$2
 	 */
-	.pmu_domain_config = {0x1, 0x2, 0x4, 0, 0, 0, 0, 0, 0, 0x1, 0, 0},
+	//.pmu_domain_config = {0x1, 0x2, 0x4, 0, 0, 0, 0, 0, 0, 0x1, 0, 0},
 };
 
-static struct resource vr_gpu_resources[] =
+static struct resource mali_gpu_resources[] =
 {
-	VR_GPU_RESOURCES_VR400_MP2_PMU(PHY_BASEADDR_VR, S5P4418_DTK_3D_IRQ,
+	MALI_GPU_RESOURCES_MALI400_MP2_PMU(PHY_BASEADDR_VR, S5P4418_DTK_3D_IRQ,
 			S5P4418_DTK_3D_IRQ, S5P4418_DTK_3D_IRQ, S5P4418_DTK_3D_IRQ,
 			S5P4418_DTK_3D_IRQ, S5P4418_DTK_3D_IRQ)
 };
 
-static struct platform_device vr_gpu_device =
+static struct platform_device mali_gpu_device =
 {
-	.name		= VR_GPU_NAME_UTGARD,
+	.name		= MALI_GPU_NAME_UTGARD,
 	.id			= 0,
 	.dev		= {
 		.coherent_dma_mask	= DMA_BIT_MASK(32),
-		.platform_data		= &vr_gpu_data,
+		.platform_data		= &mali_gpu_data,
 	},
-	.resource	= vr_gpu_resources,
-	.num_resources	= ARRAY_SIZE(vr_gpu_resources),
+	.resource	= mali_gpu_resources,
+	.num_resources	= ARRAY_SIZE(mali_gpu_resources),
 };
-
+#endif
 /*------------------------------------------------------------------------------
  * Alsa sound platform device (I2S-PCM)
  */
@@ -1475,21 +1476,23 @@ void __init nxp_cpu_devices_register(void)
 	printk("mach: add device adc\n");
 	platform_device_register(&nxp_adc_device);
 #endif
+#if 0
 
-	/* Register the platform devices */
+	///* Register the platform devices */
 	printk("mach: add graphic device opengl|es\n");
-	platform_device_register(&vr_gpu_device);
-
+	platform_device_register(&mali_gpu_device);
+#endif
 #if defined(CONFIG_NXP_WDT)
 	printk("mach: add device watchdog\n");
 	platform_device_register(&nxp_device_wdt);
 #endif
-
+#if 0
 #ifdef CONFIG_PM_RUNTIME
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
-	pm_runtime_set_autosuspend_delay(&(vr_gpu_device.dev), 1000);
-	pm_runtime_use_autosuspend(&(vr_gpu_device.dev));
+	pm_runtime_set_autosuspend_delay(&(mali_gpu_device.dev), 1000);
+	pm_runtime_use_autosuspend(&(mali_gpu_device.dev));
 #endif
-	pm_runtime_enable(&(vr_gpu_device.dev));
+	pm_runtime_enable(&(mali_gpu_device.dev));
+#endif
 #endif
 }
