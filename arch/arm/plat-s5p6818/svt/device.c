@@ -233,7 +233,7 @@ static struct resource nxpmac_resource[] = {
 static u64 nxpmac_dmamask = DMA_BIT_MASK(32);
 
 struct platform_device nxp_gmac_dev = {
-    .name           = "stmmaceth",  //"s5p4418-gmac",
+    .name           = "stmmaceth",  //"s5p6818-gmac",
     .id             = -1,
     .num_resources  = ARRAY_SIZE(nxpmac_resource),
     .resource       = nxpmac_resource,

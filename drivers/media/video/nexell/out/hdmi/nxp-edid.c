@@ -81,7 +81,7 @@ static int _edid_i2c_read(struct nxp_edid *me, u8 segment, u8 offset,
         ret = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
         if (ret == ARRAY_SIZE(msg))
             break;
-
+		pr_debug("%s: drivers i2c->adapter.name %c\n", __func__,i2c->adapter->name);
         pr_err("%s: can't read data, retry %d\n", __func__, cnt);
         msleep(25);
         cnt++;

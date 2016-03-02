@@ -72,6 +72,8 @@
 
 #define CFG_ETHER_LOOPBACK_MODE					0			/* 0: disable, 1: 10M, 2: 100M(x), 3: 1000M(x) */
 
+#define CFG_NXPMAC_INIT_ENB						1
+
 /* RTL8211 */
 #define CFG_ETHER_GMAC_PHY_IRQ_NUM				(IRQ_GPIO_E_START + 23)
 #define CFG_ETHER_GMAC_PHY_RST_NUM				(PAD_GPIO_E + 22)

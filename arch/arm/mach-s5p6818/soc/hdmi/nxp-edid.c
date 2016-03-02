@@ -130,9 +130,9 @@ static int _edid_i2c_read(struct nxp_edid *me, u8 segment, u8 offset,
 
 	do {
 		ret = i2c_transfer(i2c->adapter, msg, ARRAY_SIZE(msg));
+		pr_debug("%s: 6818 i2c->adapter.name %s\n", __func__,i2c->adapter->name);
 		if (ret == ARRAY_SIZE(msg))
 			break;
-
 		pr_debug("%s: can't read data, retry %d\n", __func__, cnt);
 		msleep(25);
 		cnt++;

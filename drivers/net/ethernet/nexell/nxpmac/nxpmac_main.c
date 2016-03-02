@@ -61,11 +61,11 @@
 #include <mach/devices.h>
 #include <mach/soc.h>
 
-/*
-#define pr_debug	printk
-*/
 
-//#define __TRACE__
+#define pr_debug	printk
+
+
+#define __TRACE__
 #ifdef __TRACE__
 #define __trace(args, ...)	\
 	do { \
@@ -3237,6 +3237,8 @@ struct stmmac_priv *stmmac_dvr_probe(struct device *device,
 	ndev->features |= ndev->hw_features | NETIF_F_HIGHDMA;
 	ndev->watchdog_timeo = msecs_to_jiffies(watchdog);
 #ifdef NXPMAC_VLAN_TAG_USED
+#define NETIF_F_HW_VLAN_CTAG_RX 		NETIF_F_HW_VLAN_RX
+#define NETIF_F_HW_VLAN_CTAG_TX 		NETIF_F_HW_VLAN_TX
 	/* Both mac100 and gmac support receive VLAN tag detection */
 	ndev->features |= NETIF_F_HW_VLAN_CTAG_RX;
 #endif

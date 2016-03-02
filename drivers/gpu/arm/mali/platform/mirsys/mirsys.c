@@ -1455,6 +1455,17 @@ static struct resource mali_gpu_resources_m400_mp2[] =
 
 };
 
+static struct resource mali_gpu_resources_m400_mp4[] =
+{
+	MALI_GPU_RESOURCES_MALI400_MP4_PMU(PHY_BASEADDR_VR,
+			IRQ_PHY_VR, IRQ_PHY_VR,
+			IRQ_PHY_VR, IRQ_PHY_VR,
+			IRQ_PHY_VR, IRQ_PHY_VR,
+			IRQ_PHY_VR, IRQ_PHY_VR,
+			IRQ_PHY_VR, IRQ_PHY_VR)
+};
+
+
 static struct platform_device mali_gpu_device =
 {
 	.name = MALI_GPU_NAME_UTGARD,
@@ -1483,12 +1494,23 @@ int mali_platform_device_register(void)
 
 	mali_platform_init();
 
-	
+
+#if defined( CONFIG_ARCH_S5P4418 )
 	MALI_DEBUG_PRINT(4, ("Registering Mali-400 MP2 device\n"));
 		err = platform_device_add_resources(
 				&mali_gpu_device,
 				mali_gpu_resources_m400_mp2,
 				ARRAY_SIZE(mali_gpu_resources_m400_mp2));
+#elif defined(CONFIG_ARCH_S5P6818)
+	MALI_DEBUG_PRINT(4, ("Registering Mali-400 MP4 device\n"));
+		err = platform_device_add_resources(
+				&mali_gpu_device,
+				mali_gpu_resources_m400_mp4,
+				ARRAY_SIZE(mali_gpu_resources_m400_mp4));
+#endif
+
+	
+
 
 	if (0 == err)
 	{

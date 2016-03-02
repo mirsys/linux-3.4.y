@@ -1511,9 +1511,11 @@ void __init nxp_cpu_devs_register(void)
     printk("mach: add device adc\n");
     platform_device_register(&nxp_adc_device);
 #endif
-    /* Register the platform devices */
-    printk("mach: add graphic device opengl|es\n");
-    platform_device_register(&vr_gpu_device);
+
+	/* Register the platform devices */
+	printk("mach: add graphic device opengl|es\n");
+	platform_device_register(&vr_gpu_device);
+
 
 #if defined(CONFIG_NXP_WDT)
     printk("mach: add device watchdog\n");

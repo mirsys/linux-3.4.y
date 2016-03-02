@@ -60,11 +60,10 @@ obj-$(CONFIG_IWM)	+= iwmc3200wifi/
 obj-$(CONFIG_MWIFIEX)	+= mwifiex/
 
 obj-$(CONFIG_BCMDHD)	+= bcm4336/
-<<<<<<< HEAD
-=======
+
 
 #obj-$(CONFIG_MT7601U)	+= mt7601u/
->>>>>>> npi2
+
 
 obj-$(CONFIG_BRCMFMAC)	+= brcm80211/
 obj-$(CONFIG_BRCMSMAC)	+= brcm80211/

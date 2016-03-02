@@ -125,22 +125,27 @@ const u8 g_DispBusSI[3] = {
  * CPU Frequence
  */
 #if defined(CONFIG_ARM_NXP_CPUFREQ)
+
 static unsigned long dfs_freq_table[][2] = {
-	{ 1400000, },
-	{ 1200000, },
-	{ 1000000, },
-	{  800000, },
-	{  700000, },
-	{  600000, },
-	{  500000, },
-	{  400000, },
+    { 1400000, 1240000, },
+	{ 1300000, 1180000, },
+	{ 1200000, 1140000, },
+	{ 1100000, 1100000, },
+	{ 1000000, 1060000, },
+	{  900000, 1040000, },
+	{  800000, 1000000, },
+	{  700000,  940000, },
+	{  600000,  940000, },
+	{  500000,  940000, },
+	{  400000,  940000, },
 };
 
 struct nxp_cpufreq_plat_data dfs_plat_data = {
-	.pll_dev		= CONFIG_NXP_CPUFREQ_PLLDEV,
-	.supply_name	= "vdd_arm_1.3V",	// refer to CONFIG_REGULATOR_NXE2000
-	.freq_table		= dfs_freq_table,
-	.table_size		= ARRAY_SIZE(dfs_freq_table),
+	.pll_dev	   	= CONFIG_NXP_CPUFREQ_PLLDEV,
+	.supply_name	= "vdd_arm_1.3V",	//refer to CONFIG_REGULATOR_NXE2000
+	.supply_delay_us = 0,
+	.freq_table	   	= dfs_freq_table,
+	.table_size	   	= ARRAY_SIZE(dfs_freq_table),
 	.max_cpufreq	= 1400*1000,
 	.max_retention	=   20*1000,
 	.rest_cpufreq	=  400*1000,
@@ -153,7 +158,9 @@ static struct platform_device dfs_plat_device = {
 		.platform_data	= &dfs_plat_data,
 	}
 };
+
 #endif
+
 
 /*------------------------------------------------------------------------------
  * Network DM9000
@@ -194,6 +201,7 @@ static struct platform_device dm9000_plat_device = {
 };
 #endif /* CONFIG_DM9000 || CONFIG_DM9000_MODULE */
 
+
 /*------------------------------------------------------------------------------
  * DW GMAC board config
  */
@@ -202,105 +210,126 @@ static struct platform_device dm9000_plat_device = {
 #include <linux/nxpmac.h>
 #include <linux/delay.h>
 #include <linux/gpio.h>
-
-#if defined(CFG_NXPMAC_INIT_ENB)
-static int nxpmac_init(struct platform_device *pdev)
+int  nxpmac_init(struct platform_device *pdev)
 {
-	u32 addr;
+    u32 addr;
+
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E +  7), 3 );     // PAD_GPIOE7,     GMAC0_PHY_TXD[0]	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E +  8), 3 );     // PAD_GPIOE8,     GMAC0_PHY_TXD[1]	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E +  9), 3 );     // PAD_GPIOE9,     GMAC0_PHY_TXD[2]	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 10), 3 );     // PAD_GPIOE10,    GMAC0_PHY_TXD[3]	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 11), 3 );     // PAD_GPIOE11,    GMAC0_PHY_TXEN	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 14), 3 );     // PAD_GPIOE14,    GMAC0_PHY_RXD[0]	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 15), 3 );     // PAD_GPIOE15,    GMAC0_PHY_RXD[1]	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 16), 3 );     // PAD_GPIOE16,    GMAC0_PHY_RXD[2]	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 17), 3 );     // PAD_GPIOE17,    GMAC0_PHY_RXD[3]	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 18), 3 );     // PAD_GPIOE18,    GMAC0_RX_CLK	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 19), 3 );     // PAD_GPIOE19,    GMAC0_PHY_RX_DV	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 20), 3 );     // PAD_GPIOE20,    GMAC0_GMII_MDC	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 21), 3 );     // PAD_GPIOE21,    GMAC0_GMII_MDI	
+	nxp_soc_gpio_set_io_drv( (PAD_GPIO_E + 24), 3 );     // PAD_GPIOE24,    GMAC0_GTX_CLK	
+	printk("NXP mac 1000Base-T gpio init ..................\n");
+
+
 
 	// Clock control
 	NX_CLKGEN_Initialize();
 	addr = NX_CLKGEN_GetPhysicalAddress(CLOCKINDEX_OF_DWC_GMAC_MODULE);
-	NX_CLKGEN_SetBaseAddress(CLOCKINDEX_OF_DWC_GMAC_MODULE, (void*)IO_ADDRESS(addr) );
+	NX_CLKGEN_SetBaseAddress( CLOCKINDEX_OF_DWC_GMAC_MODULE, (void*)IO_ADDRESS(addr) );
 
-	NX_CLKGEN_SetClockSource(CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, 4);		// Sync mode for 100 & 10Base-T : External RX_clk
-	NX_CLKGEN_SetClockDivisor(CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, 1);		// Sync mode for 100 & 10Base-T
+	NX_CLKGEN_SetClockSource( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, 4);     // Sync mode for 100 & 10Base-T : External RX_clk
+	NX_CLKGEN_SetClockDivisor( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, 1);    // Sync mode for 100 & 10Base-T
 
-	NX_CLKGEN_SetClockOutInv(CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, CFALSE);	// TX Clk invert off : 100 & 10Base-T
+	NX_CLKGEN_SetClockOutInv( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, CFALSE);    // TX Clk invert off : 100 & 10Base-T
 
-	NX_CLKGEN_SetClockDivisorEnable(CLOCKINDEX_OF_DWC_GMAC_MODULE, CTRUE);
+	NX_CLKGEN_SetClockDivisorEnable( CLOCKINDEX_OF_DWC_GMAC_MODULE, CTRUE);
 
 	// Reset control
 	NX_RSTCON_Initialize();
 	addr = NX_RSTCON_GetPhysicalAddress();
 	NX_RSTCON_SetBaseAddress( (void*)IO_ADDRESS(addr) );
-	NX_RSTCON_SetnRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_ENABLE);
+	NX_RSTCON_SetRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_NEGATE);
 	udelay(100);
-	NX_RSTCON_SetnRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_DISABLE);
+	NX_RSTCON_SetRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_ASSERT);
 	udelay(100);
-	NX_RSTCON_SetnRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_ENABLE);
+	NX_RSTCON_SetRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_NEGATE);
 	udelay(100);
 
-	gpio_request(CFG_ETHER_GMAC_PHY_RST_NUM,"Ethernet Rst pin");
+
+    gpio_request(CFG_ETHER_GMAC_PHY_RST_NUM,"Ethernet Rst pin");
 	gpio_direction_output(CFG_ETHER_GMAC_PHY_RST_NUM, 1 );
-	udelay(100);
+	udelay( 100 );
 	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 0 );
-	udelay(100);
+	udelay( 100 );
 	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 1 );
 
-	gpio_free(CFG_ETHER_GMAC_PHY_RST_NUM);
+    gpio_free(CFG_ETHER_GMAC_PHY_RST_NUM);
 
-	printk("NXP Ethernet MAC initialized.\n");
+	printk("NXP mac init ..................\n");
 	return 0;
 }
-#endif
 
-static int gmac_phy_reset(void *priv)
+int gmac_phy_reset(void *priv)
 {
 	// Set GPIO nReset
 	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 1 );
-	udelay(100);
+	udelay( 100 );
 	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 0 );
-	udelay(100);
+	udelay( 100 );
 	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 1 );
-	msleep( 30);
+	msleep( 30 );
 
 	return 0;
 }
 
 static struct stmmac_mdio_bus_data nxpmac0_mdio_bus = {
-	.phy_reset	= gmac_phy_reset,
-	.phy_mask	= 0,
-	.probed_phy_irq	= CFG_ETHER_GMAC_PHY_IRQ_NUM,
+	.phy_reset = gmac_phy_reset,
+	.phy_mask = 0,
+	.probed_phy_irq = CFG_ETHER_GMAC_PHY_IRQ_NUM,
 };
 
 static struct plat_stmmacenet_data nxpmac_plat_data = {
-	.phy_addr	= 7,
-	.clk_csr	= 0x4,				/* PCLK 150~250 Mhz */
-	.speed		= SPEED_1000,
-	.interface	= PHY_INTERFACE_MODE_RGMII,
-	.autoneg	= AUTONEG_ENABLE,	/* or AUTONEG_DISABLE */
-	.duplex		= DUPLEX_FULL,
-	.pbl		= 16,				/* burst 16 */
-	.has_gmac	= 1,				/* GMAC ethernet */
-	.enh_desc	= 1,
-	.mdio_bus_data	= &nxpmac0_mdio_bus,
-#if defined(CFG_NXPMAC_INIT_ENB)
-	.init		= &nxpmac_init,
+#if defined (CONFIG_REALTEK_PHY_RTL8201)
+	.phy_addr = 3,
+    .clk_csr = 0xe,
+    .speed = SPEED_100,
+#else
+    .phy_addr = 0,
+    .clk_csr = 0x4, // PCLK 150~250 Mhz
+    .speed = SPEED_1000,	// SPEED_1000
 #endif
+    .interface = PHY_INTERFACE_MODE_RGMII,
+	.autoneg = AUTONEG_DISABLE, //AUTONEG_ENABLE or AUTONEG_DISABLE
+	.duplex = DUPLEX_FULL,
+	.pbl = 16,          /* burst 16 */
+	.has_gmac = 1,      /* GMAC ethernet    */
+	.enh_desc = 1,
+	.mdio_bus_data = &nxpmac0_mdio_bus,
+	.init = &nxpmac_init,
 };
 
 /* DWC GMAC Controller registration */
 
 static struct resource nxpmac_resource[] = {
-	[0] = DEFINE_RES_MEM(PHY_BASEADDR_GMAC, SZ_8K),
-	[1] = DEFINE_RES_IRQ_NAMED(IRQ_PHY_GMAC, "macirq"),
+    [0] = DEFINE_RES_MEM(PHY_BASEADDR_GMAC, SZ_8K),
+    [1] = DEFINE_RES_IRQ_NAMED(IRQ_PHY_GMAC, "macirq"),
 };
 
 static u64 nxpmac_dmamask = DMA_BIT_MASK(32);
 
 struct platform_device nxp_gmac_dev = {
-	.name			= "stmmaceth",
-	.id				= -1,
-	.num_resources	= ARRAY_SIZE(nxpmac_resource),
-	.resource		= nxpmac_resource,
-	.dev			= {
-		.dma_mask			= &nxpmac_dmamask,
-		.coherent_dma_mask	= DMA_BIT_MASK(32),
-		.platform_data		= &nxpmac_plat_data,
-	}
+    .name           = "stmmaceth",  //"s5p6818-gmac",
+    .id             = -1,
+    .num_resources  = ARRAY_SIZE(nxpmac_resource),
+    .resource       = nxpmac_resource,
+    .dev            = {
+        .dma_mask           = &nxpmac_dmamask,
+        .coherent_dma_mask  = DMA_BIT_MASK(32),
+        .platform_data      = &nxpmac_plat_data,
+    }
 };
-#endif /* CONFIG_NXPMAC_ETH */
+#endif
+
 
 /*------------------------------------------------------------------------------ 
 * DISPLAY (LVDS) / FB */
@@ -578,8 +607,8 @@ void __init nxp_reserve_mem(void)
 #if defined(CONFIG_I2C_NXP_PORT3)
 #define I2CUDELAY(x)	(1000000/x)
 /* gpio i2c 3 */
-#define	I2C3_SCL	(PAD_GPIO_D + 20)
-#define	I2C3_SDA	(PAD_GPIO_D + 16)
+#define	I2C3_SCL	(PAD_GPIO_E + 30)
+#define	I2C3_SDA	(PAD_GPIO_E + 31)
 
 static struct i2c_gpio_platform_data nxp_i2c_gpio_port3 = {
 	.sda_pin	= I2C3_SDA,
@@ -1395,8 +1424,8 @@ static void __init board_hwrev_init(void)
 
 	/* Initialize system Revision & Serial */
 	system_rev = rev;
-	system_serial_high = 0xFA4418DB;
-	system_serial_low  = 0xA4420544;
+	system_serial_high = 0xFA6818DB;
+	system_serial_low  = 0xA8820588;
 
 	printk("plat: board revision %d\n", rev);
 }
@@ -1538,7 +1567,7 @@ void __init nxp_board_devs_register(void)
 #endif
 
 #if defined(CONFIG_NXPMAC_ETH)
-	if (board_is_nanopc()) {
+	if (board_is_hello()||board_is_fire()) {
 		printk("plat: add device nxp-gmac\n");
 		platform_device_register(&nxp_gmac_dev);
 	}
